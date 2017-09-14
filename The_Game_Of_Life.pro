@@ -27,31 +27,20 @@ CONFIG += c++14
 
 
 SOURCES += \
+    cell.cpp \
     graphicalwindow.cpp \
     graphiccell.cpp \
     main.cpp \
     mainwindow.cpp \
+    seperatethread.cpp \
     settingswindow.cpp \
-    label.cpp \
-    settings.cpp \
-    separatethread.cpp \
-    cellsystem.cpp
+    label.cpp
 
 HEADERS  += \
     cell.h \
     graphicalwindow.h \
     graphiccell.h \
     mainwindow.h \
+    seperatethread.h \
     settingswindow.h \
-    label.h \
-    settings.h \
-    separatethread.h \
-    cellsystem.h
-
-TRANSLATIONS += gol_en.ts gol_de.ts
-
-RESOURCES += \
-    resources.qrc
-
-DISTFILES += \
-    README.md
+    label.h

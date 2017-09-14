@@ -3,14 +3,14 @@
 
 #include "graphicalwindow.h"
 #include "settingswindow.h"
-#include "separatethread.h"
+#include "seperatethread.h"
+#include <QApplication>
+#include <QWidget>
 #include <QMainWindow>
-
-class QCloseEvent;
-class QGridLayout;
-class QMenuBar;
-class QMenu;
-class QFile;
+#include <QCloseEvent>
+#include <QGridLayout>
+#include <QMenuBar>
+#include <QMenu>
 
 class MainWindow : public QMainWindow
 {
@@ -61,12 +61,11 @@ class MainWindow : public QMainWindow
 	int autoplayBreak;
 
 	QThread* secondThread;
-	SeparateThread* worker;
+	SeperateThread* worker;
 
 public:
-	explicit MainWindow(QWidget* parent = nullptr);
-	MainWindow(const QString& file, QWidget* parent = nullptr);
-	virtual ~MainWindow() override;
+	explicit MainWindow(QWidget *parent = 0);
+	~MainWindow();
 
 public slots:
 	void startNew();
@@ -79,11 +78,9 @@ public slots:
 	void updates();
 	void hidemenu(bool activated);
 	void showmenu();
-	void showContextMenu(const QPoint& pos);
+	void showContextMenu(const QPoint &pos);
 	void saveGame();
-	void loadGame();
-	void readSavefile(QFile& file);
-	void readStartfile(QFile& file);
+	void openGame();
 
 signals:
 	void startThread();

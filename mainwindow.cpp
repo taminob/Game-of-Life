@@ -1,17 +1,10 @@
 #include "mainwindow.h"
-#include <QApplication>
-#include <QThread>
-#include <QCloseEvent>
-#include <QGridLayout>
-#include <QMenuBar>
-#include <QMenu>
 #include <QMessageBox>
-#include <QFileDialog>
-#include <QDataStream>
-#include <QTextStream>
-#include <QDir>
+#include <QFont>
+#include <QPalette>
+#include <QTimer>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
 	mainwidget = new QWidget;
 	settwin = new SettingsWindow;
@@ -24,11 +17,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
 	grid = new QGridLayout;
 
-	graphic = new GraphicalWindow(settwin->settings());
+	graphic = new GraphicalWindow(settwin);
 	graphic->setContextMenu(contextmenu);
 	scene = new QGraphicsScene(this);
-	graphic->setCellScene(scene, settwin->settings()->getX(), settwin->settings()->getY());
-	generationTimer = new Label(settwin->settings(), graphic->system.getGeneration(), this);
+	graphic->setCellScene(scene, settwin->getX(), settwin->getY());
+	generationTimer = new Label(settwin, graphic->getGeneration(), this);
 	graphic->stackUnder(generationTimer);
 	grid->addWidget(graphic, 0, 0, 2, 2);
 	grid->addWidget(generationTimer, 1, 1);
@@ -37,16 +30,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
 	createMenu();
 
-	if(settwin->settings()->isFixed())
+	if(settwin->isFixed())
 	{
-		this->setFixedSize(QSize(settwin->settings()->getFixedWidth(), settwin->settings()->getFixedHeight()));
+		this->setFixedSize(QSize(settwin->getFixedWidth(), settwin->getFixedHeight()));
 		this->show();
 	}
 	else
 	{
 		customShow();
 	}
-	if(settwin->settings()->isMenuHidden())
+	if(settwin->isMenuHidden())
 	{
 		this->hidemenu(true);
 	}
@@ -55,46 +48,31 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 		showmenu();
 	}
 
+	settwin->setGraphicalWidgets(graphic, generationTimer);
+
 	secondThread = new QThread(this);
 	autoplayBreak = -3;
-	worker = new SeparateThread(graphic, settwin->settings(), generationTimer, graphic->system, autoplayBreak);
+	worker = new SeperateThread(graphic, settwin, generationTimer, autoplayBreak);
 	worker->moveToThread(secondThread);
 	QObject::connect(this, SIGNAL(startThread()), worker, SLOT(work()));
 	secondThread->start();
-
-	settwin->setGraphicalWidgets(graphic, generationTimer);
-}
-
-MainWindow::MainWindow(const QString& file, QWidget* parent) : MainWindow(parent)
-{
-	int pos = file.lastIndexOf('.');
-	if(file.midRef(pos == -1 ? 0 : pos) == ".save")
-	{
-		QFile f(file);
-		readSavefile(f);
-	}
-	else if(file.midRef(pos == -1 ? 0 : pos) == ".start")
-	{
-		QFile f(file);
-		readStartfile(f);
-	}
 }
 
 MainWindow::~MainWindow()
 {
-	pause();
-	secondThread->wait(1000);
-	secondThread->quit();
+	secondThread->exit(0);
 
+	delete menubar;
 	delete settwin;
 	delete worker;
+	delete secondThread;
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
-	if(settwin->settings()->isExitWarningEnabled())
+	if(settwin->isExitWarningEnabled())
 	{
-		QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Exit"), tr("Do you really want to exit?"), QMessageBox::Yes | QMessageBox::No);
+		QMessageBox::StandardButton btn = QMessageBox::question(this, "Exit", "Do you really want to exit?", QMessageBox::Yes | QMessageBox::No);
 
 		if(btn == QMessageBox::Yes)
 		{
@@ -109,7 +87,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::createMenu()
 {
-	menubar = new QMenuBar(this);
+	menubar = new QMenuBar;
 
 	start = menubar->addMenu(tr("&Start"));
 	view = menubar->addMenu(tr("&View"));
@@ -129,7 +107,7 @@ void MainWindow::createSubMenu()
 	this->addAction(startnew);
 	open = start->addAction(tr("&Open"));
 	open->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-	QObject::connect(open, SIGNAL(triggered(bool)), this, SLOT(loadGame()));
+	QObject::connect(open, SIGNAL(triggered(bool)), this, SLOT(openGame()));
 	this->addAction(open);
 	save = start->addAction(tr("&Save"));
 	save->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
@@ -163,7 +141,7 @@ void MainWindow::createSubMenu()
 
 	hideMenu = view->addAction(tr("&Hide Menu"));
 	hideMenu->setCheckable(true);
-	hideMenu->setChecked(settwin->settings()->isMenuHidden());
+	hideMenu->setChecked(settwin->isMenuHidden());
 	hideMenu->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
 	QObject::connect(hideMenu, SIGNAL(triggered(bool)), this, SLOT(hidemenu(bool)));
 	this->addAction(hideMenu);
@@ -194,9 +172,9 @@ void MainWindow::createSubMenu()
 	QObject::connect(help1, SIGNAL(triggered(bool)), this, SLOT(helpWindow()));
 	this->addAction(help1);
 	help->addSeparator();
-	QAction* aboutQt = help->addAction(tr("About &Qt"));
+	QAction* aboutQt = help->addAction(tr("About Qt"));
 	QObject::connect(aboutQt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));
-	QAction* aboutAction = help->addAction(tr("&About"));
+	QAction* aboutAction = help->addAction(tr("About"));
 	QObject::connect(aboutAction, SIGNAL(triggered(bool)), this, SLOT(about()));
 }
 
@@ -204,7 +182,7 @@ void MainWindow::startNew()
 {
 	pause();
 
-	graphic->setCellScene(scene, settwin->settings()->getX(), settwin->settings()->getY());
+	graphic->setCellScene(scene, settwin->getX(), settwin->getY());
 	generationTimer->newTimer();
 }
 
@@ -218,7 +196,7 @@ void MainWindow::clearAll()
 
 void MainWindow::autoplay()
 {
-	autoplayBreak = settwin->settings()->getMaxAutoplay();
+	autoplayBreak = settwin->getMaxAutoplay();
 	emit startThread();
 }
 
@@ -234,10 +212,21 @@ void MainWindow::resume()
 	emit startThread();
 }
 
+void MainWindow::saveGame()
+{
+	settwin->saveGame();
+}
+
+void MainWindow::openGame()
+{
+	qDebug("open . . .");
+	settwin->loadGame();
+}
+
 void MainWindow::updates()
 {
 	graphic->fullUpdate();
-	settwin->settings()->loadSettings();
+	settwin->loadSettings();
 	settwin->updateSettings();
 }
 
@@ -264,19 +253,19 @@ void MainWindow::showmenu()
 
 void MainWindow::customShow()
 {
-	if(settwin->settings()->getWindowStartmodus() == 0)
+	if(settwin->getWindowStartmodus() == 0)
 	{
 		this->show();
 	}
-	else if(settwin->settings()->getWindowStartmodus() == 1)
+	else if(settwin->getWindowStartmodus() == 1)
 	{
 		this->showMaximized();
 	}
-	else if(settwin->settings()->getWindowStartmodus() == 2)
+	else if(settwin->getWindowStartmodus() == 2)
 	{
 		this->showMinimized();
 	}
-	else if(settwin->settings()->getWindowStartmodus() == 3)
+	else if(settwin->getWindowStartmodus() == 3)
 	{
 		this->showFullScreen();
 	}
@@ -284,17 +273,17 @@ void MainWindow::customShow()
 
 void MainWindow::helpWindow()
 {
-	QMessageBox::information(this, tr("Help"), tr("Here you can get help!"));
+	QMessageBox::information(this, "Help", "Here you can get help!");
 }
 
 void MainWindow::about()
 {
-	QMessageBox::about(this, tr("About"), tr("Me"));
+	QMessageBox::about(this, "About", "Me");
 }
 
-void MainWindow::showContextMenu(const QPoint& pos)
-{
-	contextmenu->exec(mapToGlobal(pos));
+void MainWindow::showContextMenu(const QPoint &pos)
+{	
+   contextmenu->exec(mapToGlobal(pos));
 }
 
 void MainWindow::createContextMenu()
@@ -303,213 +292,9 @@ void MainWindow::createContextMenu()
 
 	hideMenu2 = contextmenu->addAction(tr("Hide Menu"));
 	hideMenu2->setCheckable(true);
-	hideMenu2->setChecked(settwin->settings()->isMenuHidden());
+	hideMenu2->setChecked(settwin->isMenuHidden());
 	QObject::connect(hideMenu2, SIGNAL(triggered(bool)), this, SLOT(hidemenu(bool)));
 
 	QAction* setting = contextmenu->addAction(tr("Settings"));
 	QObject::connect(setting, SIGNAL(triggered(bool)), settwin, SLOT(show()));
-}
-
-void MainWindow::saveGame()
-{
-	QString filename = QString::number(settwin->settings()->getGameNumber());
-	filename += "_SAVEFILE-GAME_OF_LIFE.save";
-
-	if(!QDir("save").exists())
-		QDir().mkdir("save");
-
-	while(QFile("save/" + filename).exists())
-	{
-		unsigned int temp = settwin->settings()->getGameNumber() + 1;
-
-		QMessageBox::StandardButtons btn = QMessageBox::warning(this, tr("Overwrite existing savefile?"), filename + tr(" exists already!\nOverwrite?"), QMessageBox::Yes | QMessageBox::Cancel | QMessageBox::No);
-
-		if(btn == QMessageBox::Yes)
-		{
-			break;
-		}
-		else if(btn == QMessageBox::No)
-		{
-			filename.replace(QString::number(settwin->settings()->getGameNumber()), QString::number(temp));
-			settwin->settings()->setGameNumber(settwin->settings()->getGameNumber() + 1);
-		}
-		else
-		{
-			return;
-		}
-	}
-	filename.insert(0, "save/");
-
-	QFile file(filename);
-	if(file.open(QIODevice::Truncate | QIODevice::WriteOnly))
-	{
-		QDataStream stream(&file);
-
-		SeparateThread::systemMutex.lock();
-		stream << static_cast<int>(graphic->system.getGeneration())
-			   << static_cast<int>(graphic->system.size()) - 1
-			   << static_cast<int>(graphic->system[0].size()) - 1;
-
-		for(unsigned int a = 0; a < graphic->system.size(); ++a)
-		{
-			for(unsigned int b = 0; b < graphic->system[0].size(); ++b)
-			{
-				stream << static_cast<int>(graphic->system[a][b].alive);
-			}
-		}
-		SeparateThread::systemMutex.unlock();
-	}
-	else
-		QMessageBox::warning(this, tr("ERROR"), tr("Game can not be saved!"), QMessageBox::Ok);
-
-	settwin->settings()->setting()->beginGroup("General");
-	settwin->settings()->setGameNumber(settwin->settings()->getGameNumber() + 1);
-	settwin->settings()->setting()->setValue("gameNumber", settwin->settings()->getGameNumber());
-	settwin->settings()->setting()->endGroup();
-
-	settwin->updateSettings();
-}
-
-void MainWindow::loadGame()
-{
-	QString selectedFilter(tr("Saved Games (*.save)"));
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select Savefile..."), QDir::currentPath() + "/save", tr("All Files (*.*);; Saved Games (*.save);; Startfiles (*.start)"), &selectedFilter);
-	if(filename.size() > 5)
-	{
-		int pos = filename.lastIndexOf('.');
-		if(filename.midRef(pos == -1 ? 0 : pos) == ".save")
-		{
-			QFile f(filename);
-			readSavefile(f);
-		}
-		else if(filename.midRef(pos == -1 ? 0 : pos) == ".start")
-		{
-			QFile f(filename);
-			readStartfile(f);
-		}
-		else
-		{
-			QMessageBox::information(this, tr("Invalid File"), filename + tr(" can not be opened!"));
-		}
-	}
-	else if(filename.size() == 0)
-	{
-
-	}
-	else
-	{
-		QMessageBox::information(this, tr("Invalid File"), filename + tr(" is invalid!"));
-	}
-}
-
-void MainWindow::readSavefile(QFile& file)
-{
-	if(file.open(QIODevice::ReadOnly))
-	{
-		int generation, w, h;
-		int alive;
-
-		QDataStream stream(&file);
-
-		stream >> generation >> w >> h;
-		std::vector<Cell> row;
-		SeparateThread::systemMutex.lock();
-		graphic->system.clear();
-
-		for(int a = 0; a <= w; ++a)
-		{
-			for(int b = 0; b <= h; ++b)
-			{
-				stream >> alive;
-
-				if(alive)
-					row.push_back(Cell(true));
-				else
-					row.push_back(Cell(false));
-			}
-
-			graphic->system.push_back(std::move(row));
-			row.clear();
-		}
-
-		graphic->system.setGeneration(generation);
-		graphic->system.calcNextGen();
-		SeparateThread::systemMutex.unlock();
-		graphic->setCellScene(graphic->scene, w + 1, h + 1, false);
-		generationTimer->changeTimer(generation);
-	}
-	else
-	{
-		QMessageBox::information(this, tr("Reading Error"), tr("File can not be opened!"), QMessageBox::Cancel);
-	}
-}
-
-void MainWindow::readStartfile(QFile& file)
-{
-	if(file.open(QIODevice::ReadOnly))
-	{
-		int w = 0, h = 0;
-		char alive;
-
-		QTextStream stream(&file);
-
-		std::vector<Cell> row;
-		SeparateThread::systemMutex.lock();
-		graphic->system.clear();
-		SeparateThread::systemMutex.unlock();
-
-		std::vector<bool> cellStates;
-
-		while(stream.status() == QTextStream::Ok)
-		{
-			stream >> alive;
-
-			if(alive == '1')
-			{
-				if(h == 0)
-					++w;
-				cellStates.push_back(true);
-			}
-			else if(alive == '0')
-			{
-				if(h == 0)
-					++w;
-				cellStates.push_back(false);
-			}
-			else if(alive == '\n')
-				++h;
-		}
-
-		if(w < 2)
-			for(int i = 0; i < h; ++i)
-				cellStates.push_back(false);
-		else if(h < 2)
-			for(int i = 0; i < w; ++i)
-				cellStates.push_back(false);
-
-		while(static_cast<unsigned int>(w * h) > cellStates.size())	// static_cast: avoid sign-compare warning
-			cellStates.push_back(false);
-
-		SeparateThread::systemMutex.lock();
-		for(int a = 0; a < w; ++a)
-		{
-			for(int b = 0; b < h; ++b)
-			{
-				row.push_back(Cell(cellStates[b + a * h]));
-			}
-
-			graphic->system.push_back(std::move(row));
-			row.clear();
-		}
-
-		graphic->system.setGeneration(0);
-		graphic->system.calcNextGen();
-		SeparateThread::systemMutex.unlock();
-		graphic->setCellScene(graphic->scene, w, h, false);
-		generationTimer->changeTimer(0);
-	}
-	else
-	{
-		QMessageBox::information(this, tr("Reading Error"), tr("File can not be opened!"), QMessageBox::Cancel);
-	}
 }

@@ -1,47 +1,54 @@
 #ifndef GRAPHICALWINDOW_H
 #define GRAPHICALWINDOW_H
 
-#include "cellsystem.h"
 #include "graphiccell.h"
 #include "cell.h"
-#include "settings.h"
+#include "settingswindow.h"
 #include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QThread>
+#include <QMouseEvent>
+#include <QMenu>
 
-class QGraphicsScene;
-class QMouseEvent;
-class QMenu;
+#include <vector>
 
 class GraphicalWindow : public QGraphicsView
 {
 	Q_OBJECT
 
-	Settings* settings;
+	SettingsWindow* settings;
 
 	QMenu* contextmenu;
 	std::vector<GraphicCell*> gcells;
+	std::vector< std::vector<Cell> > system;
 
 	unsigned int currentCellSize;
 
-	virtual void mousePressEvent(QMouseEvent* event) override;
-	virtual void mouseMoveEvent(QMouseEvent* event) override;
-	virtual void mouseReleaseEvent(QMouseEvent* event) override;
-	virtual void wheelEvent(QWheelEvent* event) override;
+	void mousePressEvent(QMouseEvent* event);
+	void mouseMoveEvent(QMouseEvent* event);
+	void wheelEvent(QWheelEvent* event);
 
 public:
-	GraphicalWindow(Settings* settings, QGraphicsView* parent = nullptr);
-
-	CellSystem system;
-	QGraphicsScene* scene;
+	GraphicalWindow(SettingsWindow* settings, QGraphicsView *parent = 0);
+	~GraphicalWindow() = default;
 
 	void setContextMenu(QMenu* contextMenu);
-	void setCellScene(QGraphicsScene* scene, const int& width, const int& height, const bool& createNewSystem = true);
+	QGraphicsScene* scene;
+	void setCellScene(QGraphicsScene* scene, int x, int y, std::vector<std::vector<Cell> >& system = GraphicalWindow::defaultVector);
 
-	const CellSystem& createCells(int w, int h);
+	const std::vector<std::vector<Cell> >& createCells(int w, int h);
+
+	void nextGraphicGen();
+
+	inline const unsigned int& getGeneration() { return gcells.back()->getGeneration(); }
+	inline const std::vector< std::vector<Cell> >& getSystem() { return system; }
+	inline std::vector< std::vector<Cell> >& getOriginalSystem() { return system; }
+
+	static std::vector< std::vector<Cell> > defaultVector;
 
 public slots:
-	void showContextMenu(const QPoint& pos);
+	void showContextMenu(const QPoint &pos);
 	void fullUpdate();
-	void sceneUpdate();
 	void clearAll();
 };
 

@@ -4,15 +4,16 @@
 #include "cell.h"
 #include "settingswindow.h"
 #include <QGraphicsItem>
-
-class QGraphicsSceneMouseEvent;
-class QPainter;
+#include <QPainter>
+#include <QGraphicsSceneMouseEvent>
 
 class GraphicCell : public QGraphicsItem
 {
-	Settings* settings;
+//	Q_OBJECT
 
-	Cell& cell;
+	SettingsWindow* settings;
+
+	Cell &cell;
 	QRectF rect;
 
 	unsigned int x;
@@ -20,17 +21,28 @@ class GraphicCell : public QGraphicsItem
 
 	unsigned int currentGridWidth;
 
-	virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+	void mousePressEvent(QGraphicsSceneMouseEvent* event);
+	void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 public:
-	GraphicCell(Cell& cell, const unsigned int& x, const unsigned int& y, Settings* settings);
+	GraphicCell(Cell &cell, SettingsWindow *settings);
+	~GraphicCell() = default;
 
-	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-	virtual QRectF boundingRect() const override;
+	std::vector<std::vector<Cell> > nextGen();
 
-	inline const unsigned int& getX() const { return x; }
-	inline const unsigned int& getY() const { return y; }
+	void kill();
+
+	inline const unsigned int& getGeneration() { return this->cell.getGeneration(); }
+	inline unsigned int& getOriginalGeneration() { return cell.getOriginalGeneration(); }
+
+	static bool clicked;
+
+	QRectF boundingRect() const;
+
+	inline unsigned int getX() { return x; }
+	inline unsigned int getY() { return y; }
 };
 
 #endif // GRAPHICCELL_H

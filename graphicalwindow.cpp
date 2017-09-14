@@ -1,14 +1,13 @@
 #include "graphicalwindow.h"
-#include "separatethread.h"
+#include <QSpinBox>
 #include <QStyleOptionGraphicsItem>
-#include <QGraphicsScene>
-#include <QMouseEvent>
-#include <QMenu>
 
 #include <random>
 #include <ctime>
 
-GraphicalWindow::GraphicalWindow(Settings* settings, QGraphicsView* parent) : QGraphicsView(parent)
+std::vector< std::vector<Cell> > GraphicalWindow::defaultVector;
+
+GraphicalWindow::GraphicalWindow(SettingsWindow* settings, QGraphicsView *parent) : QGraphicsView(parent)
 {
 	this->settings = settings;
 
@@ -34,7 +33,7 @@ GraphicalWindow::GraphicalWindow(Settings* settings, QGraphicsView* parent) : QG
 	}
 }
 
-void GraphicalWindow::mousePressEvent(QMouseEvent* event)
+void GraphicalWindow::mousePressEvent(QMouseEvent *event)
 {
 	if(event->buttons() == Qt::MidButton)
 	{
@@ -44,8 +43,7 @@ void GraphicalWindow::mousePressEvent(QMouseEvent* event)
 	{
 		QPointF posi = mapToScene(event->pos());
 
-		if(posi.x() < scene->sceneRect().topLeft().x() || posi.y() < scene->sceneRect().topLeft().y() ||
-			posi.x() > scene->sceneRect().bottomRight().x() || posi.y() > scene->sceneRect().bottomRight().y())
+		if(posi.x() < scene->sceneRect().topLeft().x() && posi.y() < scene->sceneRect().topLeft().y() && posi.x() > scene->sceneRect().bottomRight().x() && posi.y() > scene->sceneRect().bottomRight().y())
 		{
 			showContextMenu(event->pos());
 		}
@@ -54,36 +52,26 @@ void GraphicalWindow::mousePressEvent(QMouseEvent* event)
 	QGraphicsView::mousePressEvent(event);
 }
 
-void GraphicalWindow::mouseMoveEvent(QMouseEvent* event)
+void GraphicalWindow::mouseMoveEvent(QMouseEvent *event)
 {
-	QPointF posi = mapToScene(event->pos());
-
-	if(posi.x() > scene->sceneRect().topLeft().x() && posi.y() > scene->sceneRect().topLeft().y() &&
-		posi.x() < scene->sceneRect().bottomRight().x() && posi.y() < scene->sceneRect().bottomRight().y())
+	if(GraphicCell::clicked)
 	{
-		SeparateThread::systemMutex.lock();
-		if(event->buttons() == Qt::LeftButton)
-			system[posi.y() / currentCellSize][posi.x() / currentCellSize].alive = true;
-		else if(event->buttons() == Qt::RightButton)
-			system[posi.y() / currentCellSize][posi.x() / currentCellSize].alive = false;
-		SeparateThread::systemMutex.unlock();
-		scene->update(scene->sceneRect());
+		QPointF posi = mapToScene(event->pos());
+
+		if(posi.x() > scene->sceneRect().topLeft().x() && posi.y() > scene->sceneRect().topLeft().y() && posi.x() < scene->sceneRect().bottomRight().x() && posi.y() < scene->sceneRect().bottomRight().y())
+		{
+			if(event->buttons() == Qt::LeftButton)
+				system[posi.y() / currentCellSize][posi.x() / currentCellSize].getOriginalAlive() = true;
+			else if(event->buttons() == Qt::RightButton)
+				system[posi.y() / currentCellSize][posi.x() / currentCellSize].getOriginalAlive() = false;
+			scene->update(scene->sceneRect());
+		}
 	}
 
 	QGraphicsView::mouseMoveEvent(event);
 }
 
-void GraphicalWindow::mouseReleaseEvent(QMouseEvent* event)
-{
-	SeparateThread::systemMutex.lock();
-	system.calcNextGen();
-	SeparateThread::systemMutex.unlock();
-
-	scene->update(scene->sceneRect());
-	QGraphicsView::mouseReleaseEvent(event);
-}
-
-void GraphicalWindow::wheelEvent(QWheelEvent* event)
+void GraphicalWindow::wheelEvent(QWheelEvent *event)
 {
 	if(event->modifiers() == Qt::ControlModifier)
 	{
@@ -125,7 +113,7 @@ void GraphicalWindow::wheelEvent(QWheelEvent* event)
 
 }
 
-void GraphicalWindow::setCellScene(QGraphicsScene* scene, const int& width, const int& height, const bool& createNewSystem)
+void GraphicalWindow::setCellScene(QGraphicsScene *scene, int x, int y, std::vector<std::vector<Cell> >& system)
 {
 	this->scene = scene;
 
@@ -133,23 +121,20 @@ void GraphicalWindow::setCellScene(QGraphicsScene* scene, const int& width, cons
 	gcells.clear();
 
 	currentCellSize = settings->getCellSize();
-	this->scene->setSceneRect(QRectF(scene->sceneRect().x(), scene->sceneRect().y(), width * this->currentCellSize, height * this->currentCellSize));
+	this->scene->setSceneRect(QRectF(scene->sceneRect().x(), scene->sceneRect().y(), x * this->currentCellSize, y * this->currentCellSize));
 
-	SeparateThread::systemMutex.lock();
-	if(createNewSystem)
-		createCells(width, height);
+	if(system.size() <= 0)
+		createCells(x, y);
 
-	for(unsigned int a = 0; a < this->system.size(); ++a)
+	for(auto &a : this->system)
 	{
-		for(unsigned int b = 0; b < this->system[0].size(); ++b)
+		for(auto &b : a)
 		{
-			gcells.push_back(new GraphicCell(this->system[a][b], a, b, settings));
+			gcells.push_back(new GraphicCell(b, settings));
 		}
 	}
 
-	SeparateThread::systemMutex.unlock();
-
-	for(auto& a : gcells)
+	for(auto &a : gcells)
 		this->scene->addItem(a);
 
 	this->setScene(this->scene);
@@ -157,16 +142,19 @@ void GraphicalWindow::setCellScene(QGraphicsScene* scene, const int& width, cons
 
 void GraphicalWindow::setContextMenu(QMenu* contextMenu)
 {
-	contextmenu = contextMenu;		// mouse wheel (mid-button) click
+	contextmenu = contextMenu;
+//	this->setContextMenuPolicy(Qt::CustomContextMenu);
+//	QObject::connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));	// old contextmenu; new contextmenu: mouse wheel click
 }
 
-void GraphicalWindow::showContextMenu(const QPoint& pos)
+void GraphicalWindow::showContextMenu(const QPoint &pos)
 {
    contextmenu->exec(mapToGlobal(pos));
 }
 
-const CellSystem& GraphicalWindow::createCells(int w, int h)
+const std::vector< std::vector<Cell> >& GraphicalWindow::createCells(int w, int h)
 {
+
 	system.clear();
 
 	std::vector<Cell> row;
@@ -181,20 +169,23 @@ const CellSystem& GraphicalWindow::createCells(int w, int h)
 		for(int b = 0; b < w; b++)
 		{
 			if(dist(mt))
-				row.push_back(Cell(false));
+				row.push_back(Cell(system, false, b, a, w - 1, h - 1));
 			else
-				row.push_back(Cell(true));
+				row.push_back(Cell(system, true, b, a, w - 1, h - 1));
 		}
 
 		system.push_back(std::move(row));
 
 		row.clear();
+
 	}
 
-	system.setGeneration(0);
-	system.calcNextGen();
-
 	return system;
+}
+
+void GraphicalWindow::nextGraphicGen()
+{
+	this->gcells.back()->nextGen();
 }
 
 void GraphicalWindow::fullUpdate()
@@ -205,14 +196,10 @@ void GraphicalWindow::fullUpdate()
 	this->update();
 }
 
-void GraphicalWindow::sceneUpdate()
-{
-	this->scene->update(this->scene->sceneRect());
-}
-
 void GraphicalWindow::clearAll()
 {
-	system.killAll();
+	for(auto a : gcells)
+		a->kill();
 
 	this->scene->update(scene->sceneRect());
 }
