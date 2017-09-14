@@ -11,6 +11,7 @@ class QGridLayout;
 class QMenuBar;
 class QMenu;
 class QFile;
+class QTranslator;
 
 class MainWindow : public QMainWindow
 {
@@ -63,10 +64,16 @@ class MainWindow : public QMainWindow
 	QThread* secondThread;
 	SeparateThread* worker;
 
+	static QTranslator translate;
+	static QTranslator qtranslate;
+
 public:
 	explicit MainWindow(QWidget* parent = nullptr);
 	MainWindow(const QString& file, QWidget* parent = nullptr);
 	virtual ~MainWindow() override;
+
+	static void changeLanguage(int lang);
+
 
 public slots:
 	void startNew();

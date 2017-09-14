@@ -4,22 +4,27 @@
 #include <vector>
 
 #define ALG1		// ALG1, ALG2, ALG3
-// #define THREADS
+#define THREADS
 
 struct Cell;
 
 class CellSystem : public std::vector< std::vector<Cell> >
 {
-	unsigned int generation;
-	unsigned int maxX;
-	unsigned int maxY;
+	std::size_t generation;
+	std::size_t maxX;
+	std::size_t maxY;
+
+#ifdef THREADS
+	void task(int i, const int& v);
+#endif
+
 #ifdef ALG2
-	int countNeighbors(const unsigned int& x, const unsigned int& y);
+	int countNeighbors(const std::size_t& x, const std::size_t& y);
 #elif defined ALG3
 	bool check(int x, int y);
 #endif
 
-	void nextGenForCell(const unsigned int& x, const unsigned int& y);
+	void nextGenForCell(const std::size_t& x, const std::size_t& y);
 
 public:
 	CellSystem();
@@ -31,9 +36,9 @@ public:
 
 	void killAll();
 
-	inline const unsigned int& getGeneration() const { return this->generation; }
+	inline const std::size_t& getGeneration() const { return this->generation; }
 
-	inline void setGeneration(const unsigned int& newGen) { generation = newGen; }
+	inline void setGeneration(const std::size_t& newGen) { generation = newGen; }
 };
 
 #endif // CELLSYSTEM_H

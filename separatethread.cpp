@@ -1,12 +1,14 @@
 #include "separatethread.h"
 #include <QThread>
+#include <chrono>
+#include <qdebug.h>
 
 QMutex SeparateThread::systemMutex;
 
 SeparateThread::SeparateThread(GraphicalWindow* graphic, Settings* settings, Label* label, CellSystem& system, const int& loops, QObject* parent) : QObject(parent), loops(loops), autoplaySpeed(settings->getAutoplaySpeed()), system(system)
 {
-	QObject::connect(this, SIGNAL(changedTimer(uint)), label, SLOT(changeTimer(uint)));
-	QObject::connect(this, SIGNAL(updateGraphic()), graphic, SLOT(sceneUpdate()));
+	QObject::connect(this, &SeparateThread::changedTimer, label, &Label::changeTimer);
+	QObject::connect(this, &SeparateThread::updateGraphic, graphic, &GraphicalWindow::sceneUpdate);
 	QObject::connect(settings, &Settings::autoplaySpeedChanged, [this, settings](){ this->autoplaySpeed = settings->getAutoplaySpeed(); } );
 }
 
@@ -27,7 +29,10 @@ void SeparateThread::work()
 	else if(loops == -3)
 	{
 		systemMutex.lock();
+		const auto start = std::chrono::high_resolution_clock::now();
 		system.nextGen();
+		const auto end = std::chrono::high_resolution_clock::now();
+		qDebug() << "Complete: " << static_cast<std::chrono::duration<double, std::milli> >(end - start).count();
 		emit changedTimer(system.getGeneration());
 		emit updateGraphic();
 		systemMutex.unlock();

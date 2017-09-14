@@ -18,9 +18,8 @@ class GraphicalWindow : public QGraphicsView
 	Settings* settings;
 
 	QMenu* contextmenu;
-	std::vector<GraphicCell*> gcells;
 
-	unsigned int currentCellSize;
+	std::size_t currentCellSize;
 
 	virtual void mousePressEvent(QMouseEvent* event) override;
 	virtual void mouseMoveEvent(QMouseEvent* event) override;
@@ -34,9 +33,9 @@ public:
 	QGraphicsScene* scene;
 
 	void setContextMenu(QMenu* contextMenu);
-	void setCellScene(QGraphicsScene* scene, const int& width, const int& height, const bool& createNewSystem = true);
+	void setCellScene(QGraphicsScene* scene, const std::size_t& width, const std::size_t& height, const bool& createNewSystem = true);
 
-	const CellSystem& createCells(int w, int h);
+	const CellSystem& createCells(const std::size_t& w, const std::size_t& h);
 
 public slots:
 	void showContextMenu(const QPoint& pos);

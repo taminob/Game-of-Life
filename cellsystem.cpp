@@ -1,8 +1,6 @@
 #include "cellsystem.h"
 #include "cell.h"
-#include <atomic>
 #include <thread>
-#include <mutex>
 
 CellSystem::CellSystem() : std::vector< std::vector<Cell> >()
 {
@@ -13,7 +11,7 @@ CellSystem::CellSystem() : std::vector< std::vector<Cell> >()
 
 void CellSystem::clear()
 {
-	for(unsigned int i = 0; i < this->size(); ++i)
+	for(std::size_t i = 0; i < this->size(); ++i)
 	{
 		(*this)[i].clear();
 	}
@@ -23,11 +21,24 @@ void CellSystem::clear()
 	maxY = 0;
 }
 
+#ifdef THREADS
+void CellSystem::task(int i, const int& v)
+{
+	for(; i < v; ++i)
+	{
+		for(int b = 0; b <= maxX; ++b)
+		{
+			nextGenForCell(i, b);
+		}
+	}
+}
+#endif
+
 void CellSystem::nextGen()
 {
-	for(unsigned int a = 0; a <= maxX; ++a)
+	for(std::size_t a = 0; a <= maxX; ++a)
 	{
-		for(unsigned int b = 0; b <= maxY; ++b)
+		for(std::size_t b = 0; b <= maxY; ++b)
 		{
 			(*this)[a][b].alive = (*this)[a][b].next;
 		}
@@ -36,27 +47,21 @@ void CellSystem::nextGen()
 	++generation;
 
 #ifndef THREADS
-	for(unsigned int a = 0; a <= maxX; ++a)
+	for(std::size_t a = 0; a <= maxX; ++a)
 	{
-		for(unsigned int b = 0; b <= maxY; ++b)
+		for(std::size_t b = 0; b <= maxY; ++b)
 		{
 			nextGenForCell(a, b);
 		}
 	}
 #else
-	const auto task = [&](const int& i)
-	{
-		for(int a = i; a <= maxY; ++a)
-			for(int b = 0; b <= maxX; ++b)
-			{
-				nextGenForCell(a, b);
-			}
-	};
-
 	std::vector< std::thread > threads;
 	threads.reserve(std::thread::hardware_concurrency() - 1);
+	std::size_t part = maxY / (threads.capacity() + 1);
 	while(threads.size() < threads.capacity())
-		threads.emplace_back(task, maxY / (threads.capacity() - 1) * threads.size());
+		threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
+
+	task(part * threads.size(), maxY);
 
 	for(auto& a : threads)
 		a.join();
@@ -69,37 +74,32 @@ void CellSystem::calcNextGen()
 	maxY = (*this)[0].size() - 1;
 
 #ifndef THREADS
-	for(unsigned int a = 0; a <= maxX; ++a)
+	for(std::size_t a = 0; a <= maxX; ++a)
 	{
-		for(unsigned int b = 0; b <= maxY; ++b)
+		for(std::size_t b = 0; b <= maxY; ++b)
 		{
 			nextGenForCell(a, b);
 		}
 	}
 #else
-	const auto task = [&](const int& i)
-	{
-		for(int a = i; a <= maxY; ++a)
-			for(int b = 0; b <= maxX; ++b)
-			{
-				nextGenForCell(a, b);
-			}
-	};
-
 	std::vector< std::thread > threads;
-	threads.reserve(std::thread::hardware_concurrency() - 1 );
-	while( threads.size() < threads.capacity())
-		threads.emplace_back(task, maxY / (threads.capacity()) * threads.size());
-	for( auto& i : threads )
-		i.join();
+	threads.reserve(std::thread::hardware_concurrency() - 1);
+	std::size_t part = maxY / (threads.capacity() + 1);
+	while(threads.size() < threads.capacity())
+		threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
+
+	task(part * threads.size(), maxY);
+
+	for(auto& a : threads)
+		a.join();
 #endif
 }
 
 void CellSystem::killAll()
 {
-	for(unsigned int a = 0; a <= maxX; ++a)
+	for(std::size_t a = 0; a <= maxX; ++a)
 	{
-		for(unsigned int b = 0; b <= maxY; ++b)
+		for(std::size_t b = 0; b <= maxY; ++b)
 		{
 			(*this)[a][b].alive = false;
 			(*this)[a][b].next = false;
@@ -120,10 +120,10 @@ bool CellSystem::check(int x, int y)
 		y = (*this)[0].size() - ( ( -y ) % (*this)[0].size() );
 	else if( y >= (*this)[0].size() )
 		y %= (*this)[0].size();
-	return (*this)[x][y].alive;
+	return (*this)[x][y].alive
 }
 #elif defined ALG2
-int CellSystem::countNeighbors(const unsigned int& x, const unsigned int& y)
+int CellSystem::countNeighbors(const std::size_t& x, const std::size_t& y)
 {
 	int total = 0;
 	for (int a = -1; a <= 1; a += 1) {
@@ -139,7 +139,7 @@ int CellSystem::countNeighbors(const unsigned int& x, const unsigned int& y)
 	return total;
 }
 #endif
-void CellSystem::nextGenForCell(const unsigned int& x, const unsigned int& y)
+void CellSystem::nextGenForCell(const std::size_t& x, const std::size_t& y)
 {
 #ifdef ALG2
 	int aliveCellNeighbs = countNeighbors(x, y);
@@ -161,43 +161,43 @@ void CellSystem::nextGenForCell(const unsigned int& x, const unsigned int& y)
 	{
 		if(y == 0)										// left + top
 		{
-			aliveCellNeighbs += (*this)[0][1].alive;
-			aliveCellNeighbs += (*this)[1][0].alive;
-			aliveCellNeighbs += (*this)[1][1].alive;
+			aliveCellNeighbs += (*this)[0][1].alive
+			+ (*this)[1][0].alive
+			+ (*this)[1][1].alive
 
-			aliveCellNeighbs += (*this)[maxX][0].alive;
-			aliveCellNeighbs += (*this)[maxX][1].alive;
+			+ (*this)[maxX][0].alive
+			+ (*this)[maxX][1].alive
 
-			aliveCellNeighbs += (*this)[maxX][maxY].alive;
+			+ (*this)[maxX][maxY].alive
 
-			aliveCellNeighbs += (*this)[0][maxY].alive;
-			aliveCellNeighbs += (*this)[1][maxY].alive;
+			+ (*this)[0][maxY].alive
+			+ (*this)[1][maxY].alive;
 		}
 		else if(y == maxY)							// left + bottom
 		{
-			aliveCellNeighbs += (*this)[0][maxY - 1].alive;
-			aliveCellNeighbs += (*this)[1][maxY].alive;
-			aliveCellNeighbs += (*this)[1][maxY - 1].alive;
+			aliveCellNeighbs += (*this)[0][maxY - 1].alive
+			+ (*this)[1][maxY].alive
+			+ (*this)[1][maxY - 1].alive
 
-			aliveCellNeighbs += (*this)[maxX][maxY].alive;
-			aliveCellNeighbs += (*this)[maxX][maxY - 1].alive;
+			+ (*this)[maxX][maxY].alive
+			+ (*this)[maxX][maxY - 1].alive
 
-			aliveCellNeighbs += (*this)[maxX][0].alive;
+			+ (*this)[maxX][0].alive
 
-			aliveCellNeighbs += (*this)[0][0].alive;
-			aliveCellNeighbs += (*this)[1][0].alive;
+			+ (*this)[0][0].alive
+			+ (*this)[1][0].alive;
 		}
 		else										// left + mid
 		{
-			aliveCellNeighbs += (*this)[0][y - 1].alive;
-			aliveCellNeighbs += (*this)[0][y + 1].alive;
-			aliveCellNeighbs += (*this)[1][y].alive;
-			aliveCellNeighbs += (*this)[1][y - 1].alive;
-			aliveCellNeighbs += (*this)[1][y + 1].alive;
+			aliveCellNeighbs += (*this)[0][y - 1].alive
+			+ (*this)[0][y + 1].alive
+			+ (*this)[1][y].alive
+			+ (*this)[1][y - 1].alive
+			+ (*this)[1][y + 1].alive
 
-			aliveCellNeighbs += (*this)[maxX][y].alive;
-			aliveCellNeighbs += (*this)[maxX][y - 1].alive;
-			aliveCellNeighbs += (*this)[maxX][y + 1].alive;
+			+ (*this)[maxX][y].alive
+			+ (*this)[maxX][y - 1].alive
+			+ (*this)[maxX][y + 1].alive;
 		}
 
 
@@ -206,81 +206,81 @@ void CellSystem::nextGenForCell(const unsigned int& x, const unsigned int& y)
 	{
 		if(y == 0)									// right + top
 		{
-			aliveCellNeighbs += (*this)[maxX][1].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][0].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][1].alive;
+			aliveCellNeighbs += (*this)[maxX][1].alive
+			+ (*this)[maxX - 1][0].alive
+			+ (*this)[maxX - 1][1].alive
 
-			aliveCellNeighbs += (*this)[0][0].alive;
-			aliveCellNeighbs += (*this)[0][1].alive;
+			+ (*this)[0][0].alive
+			+ (*this)[0][1].alive
 
-			aliveCellNeighbs += (*this)[maxX][maxY].alive;
+			+ (*this)[maxX][maxY].alive
 
-			aliveCellNeighbs += (*this)[0][maxY].alive;
-			aliveCellNeighbs += (*this)[1][maxY].alive;
+			+ (*this)[0][maxY].alive
+			+ (*this)[1][maxY].alive;
 
 		}
 		else if(y == maxY)					// right + bottom
 		{
-			aliveCellNeighbs += (*this)[maxX][maxY - 1].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][maxY].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][maxY - 1].alive;
+			aliveCellNeighbs += (*this)[maxX][maxY - 1].alive
+			+ (*this)[maxX - 1][maxY].alive
+			+ (*this)[maxX - 1][maxY - 1].alive
 
-			aliveCellNeighbs += (*this)[0][maxY].alive;
-			aliveCellNeighbs += (*this)[0][maxY - 1].alive;
+			+ (*this)[0][maxY].alive
+			+ (*this)[0][maxY - 1].alive
 
-			aliveCellNeighbs += (*this)[0][0].alive;
+			+ (*this)[0][0].alive
 
-			aliveCellNeighbs += (*this)[maxX][0].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][0].alive;
+			+ (*this)[maxX][0].alive
+			+ (*this)[maxX - 1][0].alive;
 		}
 		else								// right + mid
 		{
-			aliveCellNeighbs += (*this)[maxX][y - 1].alive;
-			aliveCellNeighbs += (*this)[maxX][y + 1].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][y].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][y - 1].alive;
-			aliveCellNeighbs += (*this)[maxX - 1][y + 1].alive;
+			aliveCellNeighbs += (*this)[maxX][y - 1].alive
+			+ (*this)[maxX][y + 1].alive
+			+ (*this)[maxX - 1][y].alive
+			+ (*this)[maxX - 1][y - 1].alive
+			+ (*this)[maxX - 1][y + 1].alive
 
-			aliveCellNeighbs += (*this)[0][y].alive;
-			aliveCellNeighbs += (*this)[0][y - 1].alive;
-			aliveCellNeighbs += (*this)[0][y + 1].alive;
+			+ (*this)[0][y].alive
+			+ (*this)[0][y - 1].alive
+			+ (*this)[0][y + 1].alive;
 		}
 
 	}
 	else if(y == 0)								// mid + top
 	{
-		aliveCellNeighbs += (*this)[x][1].alive;
-		aliveCellNeighbs += (*this)[x - 1][0].alive;
-		aliveCellNeighbs += (*this)[x - 1][1].alive;
-		aliveCellNeighbs += (*this)[x + 1][0].alive;
-		aliveCellNeighbs += (*this)[x + 1][1].alive;
+		aliveCellNeighbs += (*this)[x][1].alive
+		+ (*this)[x - 1][0].alive
+		+ (*this)[x - 1][1].alive
+		+ (*this)[x + 1][0].alive
+		+ (*this)[x + 1][1].alive
 
-		aliveCellNeighbs += (*this)[x][maxY].alive;
-		aliveCellNeighbs += (*this)[x - 1][maxY].alive;
-		aliveCellNeighbs += (*this)[x + 1][maxY].alive;
+		+ (*this)[x][maxY].alive
+		+ (*this)[x - 1][maxY].alive
+		+ (*this)[x + 1][maxY].alive;
 	}
 	else if(y == maxY)							// mid + bottom
 	{
-		aliveCellNeighbs += (*this)[x][maxY - 1].alive;
-		aliveCellNeighbs += (*this)[x - 1][maxY].alive;
-		aliveCellNeighbs += (*this)[x - 1][maxY - 1].alive;
-		aliveCellNeighbs += (*this)[x + 1][maxY].alive;
-		aliveCellNeighbs += (*this)[x + 1][maxY - 1].alive;
+		aliveCellNeighbs += (*this)[x][maxY - 1].alive
+		+ (*this)[x - 1][maxY].alive
+		+ (*this)[x - 1][maxY - 1].alive
+		+ (*this)[x + 1][maxY].alive
+		+ (*this)[x + 1][maxY - 1].alive
 
-		aliveCellNeighbs += (*this)[x][0].alive;
-		aliveCellNeighbs += (*this)[x - 1][0].alive;
-		aliveCellNeighbs += (*this)[x + 1][0].alive;
+		+ (*this)[x][0].alive
+		+ (*this)[x - 1][0].alive
+		+ (*this)[x + 1][0].alive;
 	}
 	else										// mid + mid
 	{
-		aliveCellNeighbs += (*this)[x][y - 1].alive;
-		aliveCellNeighbs += (*this)[x][y + 1].alive;
-		aliveCellNeighbs += (*this)[x - 1][y].alive;
-		aliveCellNeighbs += (*this)[x - 1][y - 1].alive;
-		aliveCellNeighbs += (*this)[x - 1][y + 1].alive;
-		aliveCellNeighbs += (*this)[x + 1][y].alive;
-		aliveCellNeighbs += (*this)[x + 1][y - 1].alive;
-		aliveCellNeighbs += (*this)[x + 1][y + 1].alive;
+		aliveCellNeighbs += (*this)[x][y - 1].alive
+		+ (*this)[x][y + 1].alive
+		+ (*this)[x - 1][y].alive
+		+ (*this)[x - 1][y - 1].alive
+		+ (*this)[x - 1][y + 1].alive
+		+ (*this)[x + 1][y].alive
+		+ (*this)[x + 1][y - 1].alive
+		+ (*this)[x + 1][y + 1].alive;
 	}
 #endif
 #ifdef ALG2

@@ -79,7 +79,7 @@ void Settings::loadSettings()
 	dynSettingChange = settings->value("General/dynSettingChange").toBool();
 	customColorsSize = settings->value("General/customColorsSize").toUInt();
 	customColors.resize(customColorsSize);
-	for(unsigned int i = 0; i < customColorsSize; ++i)
+	for(std::size_t i = 0; i < customColorsSize; ++i)
 	{
 		customColors[i].setNamedColor(settings->value("General/customColors" + QString::number(i)).toString());
 	}

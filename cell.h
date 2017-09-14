@@ -5,8 +5,8 @@ struct Cell
 {
 	Cell(const bool& alive) : alive(alive), next(alive) {	}
 
-	bool alive;
-	bool next;
+	bool alive : 1;			// current state; size: 1 bit
+	bool next : 1;			// next state; size: 1 bit
 };
 
 #endif // CELL_H

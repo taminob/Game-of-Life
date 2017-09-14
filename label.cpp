@@ -1,7 +1,7 @@
 #include "label.h"
 #include <QApplication>
 
-Label::Label(Settings* settings, unsigned int value, QWidget* parent) : QLabel(parent)
+Label::Label(Settings* settings, std::size_t value, QWidget* parent) : QLabel(parent)
 {
 	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 	this->setAlignment(Qt::AlignRight | Qt::AlignBottom);
@@ -14,7 +14,7 @@ Label::Label(Settings* settings, unsigned int value, QWidget* parent) : QLabel(p
 	this->setNum(static_cast<int>(value));
 }
 
-void Label::changeTimer(unsigned int newValue)
+void Label::changeTimer(const unsigned int& newValue)
 {
 	value = newValue;
 	this->setNum(static_cast<int>(value));

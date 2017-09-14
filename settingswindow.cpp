@@ -31,8 +31,8 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent)
 	tabs->addTab(gametab, tr("Game"));
 
 	QDialogButtonBox* diabutts = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Close);
-	QObject::connect(diabutts->button(QDialogButtonBox::Save), SIGNAL(clicked(bool)), setts, SLOT(saveSettings()));
-	QObject::connect(diabutts->button(QDialogButtonBox::Close), SIGNAL(clicked(bool)), this, SLOT(close()));
+	QObject::connect(diabutts->button(QDialogButtonBox::Save), &QPushButton::clicked, setts, &Settings::saveSettings);
+	QObject::connect(diabutts->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &SettingsWindow::close);
 
 	createShortcuts();
 
@@ -165,22 +165,22 @@ void SettingsWindow::createWindowGroupbox(QGroupBox* windowGroup)
 	windowStartmodusCombobox->addItem(tr("Maximized"));
 	windowStartmodusCombobox->addItem(tr("Minimized"));
 	windowStartmodusCombobox->addItem(tr("Fullscreen"));
-	QObject::connect(windowStartmodusCombobox, SIGNAL(currentIndexChanged(int)), setts, SLOT(setNewWindowStartmodus(int)));
+	QObject::connect(windowStartmodusCombobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), setts, &Settings::setNewWindowStartmodus);
 	windowStartmodusCombobox->setCurrentIndex(setts->windowStartmodus);
 
 	fixedSizeCheckbox = new QCheckBox(tr("Fixed Window Size"));
-	QObject::connect(fixedSizeCheckbox, SIGNAL(toggled(bool)), setts, SLOT(fixedSizeActivated(bool)));
+	QObject::connect(fixedSizeCheckbox, &QCheckBox::toggled, setts, &Settings::fixedSizeActivated);
 	QLabel* fixedSizeWidthLabel = new QLabel(tr("Fixed Width:"));
 	fixedSizeWidthEnter = new QSpinBox;
 	fixedSizeWidthEnter->setMinimum(100);
 	fixedSizeWidthEnter->setMaximum(1920);
-	QObject::connect(fixedSizeWidthEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewFixedWidth(int)));
+	QObject::connect(fixedSizeWidthEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewFixedWidth);
 	fixedSizeWidthEnter->setValue(setts->fixedWidth);
 	QLabel* fixedSizeHeightLabel = new QLabel(tr("Fixed Height: "));
 	fixedSizeHeightEnter = new QSpinBox;
 	fixedSizeHeightEnter->setMinimum(100);
 	fixedSizeHeightEnter->setMaximum(1080);
-	QObject::connect(fixedSizeHeightEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewFixedHeight(int)));
+	QObject::connect(fixedSizeHeightEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewFixedHeight);
 	fixedSizeHeightEnter->setValue(setts->fixedHeight);
 
 	windowGroupLay->addWidget(windowStartmodusLabel);
@@ -203,7 +203,7 @@ void SettingsWindow::createOtherGroupbox(QGroupBox* otherGroup)
 	QGridLayout* otherGroupLayout = new QGridLayout;
 
 	hideMenu = new QCheckBox(tr("Hide menubar"));
-	QObject::connect(hideMenu, SIGNAL(clicked(bool)), setts, SLOT(hideMenuActivated(bool)));
+	QObject::connect(hideMenu, &QCheckBox::clicked, setts, &Settings::hideMenuActivated);
 	hideMenu->setChecked(setts->hiddenMenu);
 
 	QLabel* scrollBarEnabledLabel = new QLabel;
@@ -213,23 +213,23 @@ void SettingsWindow::createOtherGroupbox(QGroupBox* otherGroup)
 	scrollBarEnabledCombobox->addItem(tr("Always On"));
 	scrollBarEnabledCombobox->addItem(tr("As Needed"));
 	scrollBarEnabledCombobox->setCurrentIndex(setts->scrollBarEnabled);
-	QObject::connect(scrollBarEnabledCombobox, SIGNAL(currentIndexChanged(int)), setts, SLOT(newScrollBarPolicy(int)));
+	QObject::connect(scrollBarEnabledCombobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), setts, &Settings::newScrollBarPolicy);
 
 	enableDynSettingChange = new QCheckBox(tr("Enable dynamically settings changes"));
-	QObject::connect(enableDynSettingChange, SIGNAL(clicked(bool)), setts, SLOT(dynSettingChangeEnabled(bool)));
+	QObject::connect(enableDynSettingChange, &QCheckBox::clicked, setts, &Settings::dynSettingChangeEnabled);
 	enableDynSettingChange->setChecked(setts->dynSettingChange);
 	QLabel* gameNumberTxt = new QLabel;
 	gameNumberTxt->setText(tr("Saved Games: "));
 	gameNumberEnter = new QSpinBox;
 	gameNumberEnter->setValue(setts->gameNumber);
-	QObject::connect(gameNumberEnter, SIGNAL(valueChanged(int)), setts, SLOT(setGameNumber(int)));
+	QObject::connect(gameNumberEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setGameNumber);
 
 	exitWarningCheckbox = new QCheckBox(tr("Enable exit warning"));
-	QObject::connect(exitWarningCheckbox, SIGNAL(clicked(bool)), setts, SLOT(exitWarningActivated(bool)));
+	QObject::connect(exitWarningCheckbox, &QCheckBox::clicked, setts, &Settings::exitWarningActivated);
 	exitWarningCheckbox->setChecked(setts->exitWarning);
 
 	resetButton = new QPushButton(tr("Reset Settings"));
-	QObject::connect(resetButton, SIGNAL(clicked(bool)), this, SLOT(resetSettings()));
+	QObject::connect(resetButton, &QPushButton::clicked, this, &SettingsWindow::resetSettings);
 
 	otherGroupLayout->addWidget(hideMenu, 0, 0);
 	otherGroupLayout->addWidget(enableDynSettingChange, 1, 0);
@@ -254,7 +254,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	aliveCellColorPreview = new QLabel;
 	aliveCellColorPreview->setPalette(*setts->aliveCellColorPalette);
 	aliveCellColorPreview->setAutoFillBackground(true);
-	QObject::connect(aliveCellColorButton, SIGNAL(clicked(bool)), setts, SLOT(newAliveCellColor()));
+	QObject::connect(aliveCellColorButton, &QCheckBox::clicked, setts, &Settings::newAliveCellColor);
 
 	QLabel* deadCellColorLabel = new QLabel;
 	deadCellColorLabel->setText(tr("Color of dead cells:"));
@@ -263,7 +263,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	deadCellColorPreview = new QLabel;
 	deadCellColorPreview->setPalette(*setts->deadCellColorPalette);
 	deadCellColorPreview->setAutoFillBackground(true);
-	QObject::connect(deadCellColorButton, SIGNAL(clicked(bool)), setts, SLOT(newDeadCellColor()));
+	QObject::connect(deadCellColorButton, &QCheckBox::clicked, setts, &Settings::newDeadCellColor);
 
 	QLabel* lineColorLabel = new QLabel;
 	lineColorLabel->setText(tr("Color of the lines:"));
@@ -272,7 +272,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	lineColorPreview = new QLabel;
 	lineColorPreview->setPalette(*setts->lineColorPalette);
 	lineColorPreview->setAutoFillBackground(true);
-	QObject::connect(lineColorButton, SIGNAL(clicked(bool)), setts, SLOT(newLineColor()));
+	QObject::connect(lineColorButton, &QCheckBox::clicked, setts, &Settings::newLineColor);
 
 	QLabel* nextGenAliveCellColorLabel = new QLabel;
 	nextGenAliveCellColorLabel->setText(tr("Color of next generation born cells: "));
@@ -281,7 +281,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	nextGenAliveCellColorPreview = new QLabel;
 	nextGenAliveCellColorPreview->setPalette(*setts->nextGenAliveCellColorPalette);
 	nextGenAliveCellColorPreview->setAutoFillBackground(true);
-	QObject::connect(nextGenAliveCellColorButton, SIGNAL(clicked(bool)), setts, SLOT(newNextGenAliveCellColor()));
+	QObject::connect(nextGenAliveCellColorButton, &QCheckBox::clicked, setts, &Settings::newNextGenAliveCellColor);
 
 	QLabel* nextGenDeadCellColorLabel = new QLabel;
 	nextGenDeadCellColorLabel->setText(tr("Color of next generation dying cells: "));
@@ -290,7 +290,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	nextGenDeadCellColorPreview = new QLabel;
 	nextGenDeadCellColorPreview->setPalette(*setts->nextGenDeadCellColorPalette);
 	nextGenDeadCellColorPreview->setAutoFillBackground(true);
-	QObject::connect(nextGenDeadCellColorButton, SIGNAL(clicked(bool)), setts, SLOT(newNextGenDeadCellColor()));
+	QObject::connect(nextGenDeadCellColorButton, &QCheckBox::clicked, setts, &Settings::newNextGenDeadCellColor);
 
 	QLabel* backgroundColorLabel = new QLabel;
 	backgroundColorLabel->setText(tr("Background color:"));
@@ -299,7 +299,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	backgroundColorPreview = new QLabel;
 	backgroundColorPreview->setPalette(*setts->backgroundColorPalette);
 	backgroundColorPreview->setAutoFillBackground(true);
-	QObject::connect(backgroundColorButton, SIGNAL(clicked(bool)), setts, SLOT(newBackgroundColor()));
+	QObject::connect(backgroundColorButton, &QCheckBox::clicked, setts, &Settings::newBackgroundColor);
 
 	colorsGroupLayout->addWidget(aliveCellColorLabel, 0, 0);
 	colorsGroupLayout->addWidget(aliveCellColorPreview, 0, 1);
@@ -355,20 +355,20 @@ void SettingsWindow::createAutoplayGroupbox(QGroupBox* autoplayBox)
 	autoplaySpeedSpinbox->setMinimum(0);
 	autoplaySpeedSpinbox->setMaximum(10000);
 	autoplaySpeedSpinbox->setValue(setts->autoplaySpeed);
-	QObject::connect(autoplaySpeedSpinbox, SIGNAL(valueChanged(int)), setts, SLOT(setNewAutoplaySpeed(int)));
+	QObject::connect(autoplaySpeedSpinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewAutoplaySpeed);
 	QLabel* autoplaySpeedUnit = new QLabel;
 	autoplaySpeedUnit->setText(tr("milliseconds"));
 
 	enableMaxAutoplayCheckbox = new QCheckBox(tr("Enable maximal generations with autoplay"));
 	enableMaxAutoplayCheckbox->setChecked(setts->maxAutoplayEnabled);
-	QObject::connect(enableMaxAutoplayCheckbox, SIGNAL(clicked(bool)), setts, SLOT(maxAutoplayActivated(bool)));
+	QObject::connect(enableMaxAutoplayCheckbox, &QCheckBox::clicked, setts, &Settings::maxAutoplayActivated);
 	QLabel* maxAutoplayTxt = new QLabel;
 	maxAutoplayTxt->setText(tr("Maximal generations with autoplay: "));
 	maxAutoplaySpinbox = new QSpinBox;
 	maxAutoplaySpinbox->setMinimum(1);
 	maxAutoplaySpinbox->setMaximum(std::numeric_limits<decltype(setts->maxAutoplay)>::max());
 	maxAutoplaySpinbox->setValue(setts->maxAutoplay);
-	QObject::connect(maxAutoplaySpinbox, SIGNAL(valueChanged(int)), setts, SLOT(setNewMaxAutoplay(int)));
+	QObject::connect(maxAutoplaySpinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewMaxAutoplay);
 
 	if(enableMaxAutoplayCheckbox->isChecked())
 	{
@@ -398,7 +398,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	cellSizeEnter = new QSpinBox;
 	cellSizeEnter->setMinimum(1);
 	cellSizeEnter->setMaximum(1000);
-	QObject::connect(cellSizeEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewCellSize(int)));
+	QObject::connect(cellSizeEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewCellSize);
 	cellSizeEnter->setValue(setts->cellSize);
 	QLabel* cellSizeUnit = new QLabel;
 	cellSizeUnit->setText(tr("px"));
@@ -408,7 +408,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	gridWidthEnter = new QSpinBox;
 	gridWidthEnter->setMinimum(1);
 	gridWidthEnter->setMaximum(500);
-	QObject::connect(gridWidthEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewGridWidth(int)));
+	QObject::connect(gridWidthEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewGridWidth);
 	gridWidthEnter->setValue(setts->gridWidth);
 	QLabel* gridWidthUnit = new QLabel;
 	gridWidthUnit->setText(tr("px"));
@@ -418,7 +418,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	xEnter = new QSpinBox;
 	xEnter->setMinimum(2);
 	xEnter->setMaximum(10000);
-	QObject::connect(xEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewX(int)));
+	QObject::connect(xEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewX);
 	xEnter->setValue(setts->x);
 	QLabel* xUnit = new QLabel;
 	xUnit->setText(tr("Cells"));
@@ -428,7 +428,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	yEnter = new QSpinBox;
 	yEnter->setMinimum(2);
 	yEnter->setMaximum(10000);
-	QObject::connect(yEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewY(int)));
+	QObject::connect(yEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewY);
 	yEnter->setValue(setts->y);
 	QLabel* yUnit = new QLabel;
 	yUnit->setText(tr("Cells"));
@@ -438,7 +438,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	timerSizeEnter = new QSpinBox;
 	timerSizeEnter->setMinimum(5);
 	timerSizeEnter->setMaximum(200);
-	QObject::connect(timerSizeEnter, SIGNAL(valueChanged(int)), setts, SLOT(setNewTimerSize(int)));
+	QObject::connect(timerSizeEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewTimerSize);
 	timerSizeEnter->setValue(setts->timerSize);
 	QLabel* timerSizeUnit = new QLabel;
 	timerSizeUnit->setText(tr("px"));
@@ -466,22 +466,22 @@ void SettingsWindow::createShortcuts()
 {
 	QAction* closeSettings = new QAction(this);
 	closeSettings->setShortcut(QKeySequence(Qt::Key_Escape));
-	QObject::connect(closeSettings, SIGNAL(triggered(bool)), this, SLOT(close()));
+	QObject::connect(closeSettings, &QAction::triggered, this, &SettingsWindow::close);
 	this->addAction(closeSettings);
 
 	QAction* saveChanges = new QAction(this);
 	saveChanges->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-	QObject::connect(saveChanges, SIGNAL(triggered(bool)), setts, SLOT(saveSettings()));
+	QObject::connect(saveChanges, &QAction::triggered, setts, &Settings::saveSettings);
 	this->addAction(saveChanges);
 
 	QAction* showGeneralTab = new QAction(this);
 	showGeneralTab->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_1));
-	QObject::connect(showGeneralTab, SIGNAL(triggered(bool)), this, SLOT(showGeneral()));
+	QObject::connect(showGeneralTab, &QAction::triggered, this, &SettingsWindow::showGeneral);
 	this->addAction(showGeneralTab);
 
 	QAction* showGameTab = new QAction(this);
 	showGameTab->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_2));
-	QObject::connect(showGameTab, SIGNAL(triggered(bool)), this, SLOT(showGame()));
+	QObject::connect(showGameTab, &QAction::triggered, this, &SettingsWindow::showGame);
 	this->addAction(showGameTab);
 }
 

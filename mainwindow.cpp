@@ -10,6 +10,10 @@
 #include <QDataStream>
 #include <QTextStream>
 #include <QDir>
+#include <QTranslator>
+
+QTranslator MainWindow::translate;
+QTranslator MainWindow::qtranslate;
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 {
@@ -19,7 +23,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 	this->setWindowIcon(QIcon("game_of_life.ico"));
 
 	this->setContextMenuPolicy(Qt::CustomContextMenu);
-	QObject::connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+	QObject::connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::showContextMenu);
 	createContextMenu();
 
 	grid = new QGridLayout;
@@ -59,7 +63,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 	autoplayBreak = -3;
 	worker = new SeparateThread(graphic, settwin->settings(), generationTimer, graphic->system, autoplayBreak);
 	worker->moveToThread(secondThread);
-	QObject::connect(this, SIGNAL(startThread()), worker, SLOT(work()));
+	QObject::connect(this, &MainWindow::startThread, worker, &SeparateThread::work);
 	secondThread->start();
 
 	settwin->setGraphicalWidgets(graphic, generationTimer);
@@ -125,79 +129,79 @@ void MainWindow::createSubMenu()
 {
 	startnew = start->addAction(tr("&New"));
 	startnew->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
-	QObject::connect(startnew, SIGNAL(triggered(bool)), this, SLOT(startNew()));
+	QObject::connect(startnew, &QAction::triggered, this, &MainWindow::startNew);
 	this->addAction(startnew);
 	open = start->addAction(tr("&Open"));
 	open->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-	QObject::connect(open, SIGNAL(triggered(bool)), this, SLOT(loadGame()));
+	QObject::connect(open, &QAction::triggered, this, &MainWindow::loadGame);
 	this->addAction(open);
 	save = start->addAction(tr("&Save"));
 	save->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-	QObject::connect(save, SIGNAL(triggered(bool)), this, SLOT(saveGame()));
+	QObject::connect(save, &QAction::triggered, this, &MainWindow::saveGame);
 	this->addAction(save);
 	clearall = start->addAction(tr("&Clear"));
 	clearall->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-	QObject::connect(clearall, SIGNAL(triggered(bool)), this, SLOT(clearAll()));
+	QObject::connect(clearall, &QAction::triggered, this, &MainWindow::clearAll);
 	this->addAction(clearall);
 	autoplays = start->addAction(tr("&Auto Play"));
 	autoplays->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
-	QObject::connect(autoplays, SIGNAL(triggered(bool)), this, SLOT(autoplay()));
+	QObject::connect(autoplays, &QAction::triggered, this, &MainWindow::autoplay);
 	this->addAction(autoplays);
 	resumes = start->addAction(tr("&Resume"));
 	resumes->setShortcut(QKeySequence(Qt::Key_Space));
-	QObject::connect(resumes, SIGNAL(triggered(bool)), this, SLOT(resume()));
+	QObject::connect(resumes, &QAction::triggered, this, &MainWindow::resume);
 	this->addAction(resumes);
 	pauses = start->addAction(tr("&Pause"));
 	pauses->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_P));
-	QObject::connect(pauses, SIGNAL(triggered(bool)), this, SLOT(pause()));
+	QObject::connect(pauses, &QAction::triggered, this, &MainWindow::pause);
 	this->addAction(pauses);
-	QAction* updateScene = start->addAction(tr("&Update"));
-	QObject::connect(updateScene, SIGNAL(triggered(bool)), this, SLOT(updates()));
+//	QAction* updateScene = start->addAction(tr("&Update"));								// Not anymore required
+//	QObject::connect(updateScene, &QAction::triggered, this, &MainWindow::updates);		// Not anymore required
 
 	start->addSeparator();
 	QAction* startExit = start->addAction(tr("E&xit"));
-//	startExit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X));
+//	startExit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_X));					// old shortcut
 	startExit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-	QObject::connect(startExit, SIGNAL(triggered(bool)), this, SLOT(close()));
+	QObject::connect(startExit, &QAction::triggered, this, &MainWindow::close);
 	this->addAction(startExit);
 
 	hideMenu = view->addAction(tr("&Hide Menu"));
 	hideMenu->setCheckable(true);
 	hideMenu->setChecked(settwin->settings()->isMenuHidden());
 	hideMenu->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
-	QObject::connect(hideMenu, SIGNAL(triggered(bool)), this, SLOT(hidemenu(bool)));
+	QObject::connect(hideMenu, &QAction::triggered, this, &MainWindow::hidemenu);
 	this->addAction(hideMenu);
 	view->addSeparator();
 	QAction* minimize = view->addAction(tr("M&inimize"));
-	QObject::connect(minimize, SIGNAL(triggered(bool)), this, SLOT(showMinimized()));
+	QObject::connect(minimize, &QAction::triggered, this, &MainWindow::showMinimized);
 	maximize = view->addAction(tr("&Maximize"));
 	maximize->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-	QObject::connect(maximize, SIGNAL(triggered(bool)), this, SLOT(showMaximized()));
+	QObject::connect(maximize, &QAction::triggered, this, &MainWindow::showMaximized);
 	this->addAction(maximize);
 	fullscreen = view->addAction(tr("&Fullscreen"));
 	fullscreen->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
-	QObject::connect(fullscreen, SIGNAL(triggered(bool)), this, SLOT(showFullScreen()));
+	QObject::connect(fullscreen, &QAction::triggered, this, &MainWindow::showFullScreen);
 	this->addAction(fullscreen);
 
 	QAction* generalSetting = settings->addAction(tr("&General"));
-	QObject::connect(generalSetting, SIGNAL(triggered(bool)), settwin, SLOT(showGeneral()));
+	QObject::connect(generalSetting, &QAction::triggered, settwin, &SettingsWindow::showGeneral);
 	QAction* gameSetting = settings->addAction(tr("G&ame"));
-	QObject::connect(gameSetting, SIGNAL(triggered(bool)), settwin, SLOT(showGame()));
+	QObject::connect(gameSetting, &QAction::triggered, settwin, &SettingsWindow::showGame);
 	settings->addSeparator();
 	setting = settings->addAction(tr("&Settings"));
 	setting->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
-	QObject::connect(setting, SIGNAL(triggered(bool)), settwin, SLOT(show()));
+	QObject::connect(setting, &QAction::triggered, settwin, &MainWindow::show);
 	this->addAction(setting);
 
 	help1 = help->addAction(tr("&Help"));
 	help1->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
-	QObject::connect(help1, SIGNAL(triggered(bool)), this, SLOT(helpWindow()));
+	QObject::connect(help1, &QAction::triggered, this, &MainWindow::helpWindow);
 	this->addAction(help1);
 	help->addSeparator();
 	QAction* aboutQt = help->addAction(tr("About &Qt"));
-	QObject::connect(aboutQt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));
+	QObject::connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 	QAction* aboutAction = help->addAction(tr("&About"));
-	QObject::connect(aboutAction, SIGNAL(triggered(bool)), this, SLOT(about()));
+	QObject::connect(aboutAction, &QAction::triggered, this, &MainWindow::about);
 }
 
 void MainWindow::startNew()
@@ -289,7 +293,7 @@ void MainWindow::helpWindow()
 
 void MainWindow::about()
 {
-	QMessageBox::about(this, tr("About"), tr("Me"));
+	QMessageBox::about(this, tr("About"), tr("<b>Sources:</b> <br> https://www.github.com/sqytco/game-of-life <br><br> <b>Contact:</b> <br> sqyt.co@gmail.com"));
 }
 
 void MainWindow::showContextMenu(const QPoint& pos)
@@ -304,10 +308,10 @@ void MainWindow::createContextMenu()
 	hideMenu2 = contextmenu->addAction(tr("Hide Menu"));
 	hideMenu2->setCheckable(true);
 	hideMenu2->setChecked(settwin->settings()->isMenuHidden());
-	QObject::connect(hideMenu2, SIGNAL(triggered(bool)), this, SLOT(hidemenu(bool)));
+	QObject::connect(hideMenu2, &QAction::triggered, this, &MainWindow::hidemenu);
 
 	QAction* setting = contextmenu->addAction(tr("Settings"));
-	QObject::connect(setting, SIGNAL(triggered(bool)), settwin, SLOT(show()));
+	QObject::connect(setting, &QAction::triggered, settwin, &SettingsWindow::show);
 }
 
 void MainWindow::saveGame()
@@ -320,7 +324,7 @@ void MainWindow::saveGame()
 
 	while(QFile("save/" + filename).exists())
 	{
-		unsigned int temp = settwin->settings()->getGameNumber() + 1;
+		std::size_t temp = settwin->settings()->getGameNumber() + 1;
 
 		QMessageBox::StandardButtons btn = QMessageBox::warning(this, tr("Overwrite existing savefile?"), filename + tr(" exists already!\nOverwrite?"), QMessageBox::Yes | QMessageBox::Cancel | QMessageBox::No);
 
@@ -350,9 +354,9 @@ void MainWindow::saveGame()
 			   << static_cast<int>(graphic->system.size()) - 1
 			   << static_cast<int>(graphic->system[0].size()) - 1;
 
-		for(unsigned int a = 0; a < graphic->system.size(); ++a)
+		for(std::size_t a = 0; a < graphic->system.size(); ++a)
 		{
-			for(unsigned int b = 0; b < graphic->system[0].size(); ++b)
+			for(std::size_t b = 0; b < graphic->system[0].size(); ++b)
 			{
 				stream << static_cast<int>(graphic->system[a][b].alive);
 			}
@@ -364,7 +368,7 @@ void MainWindow::saveGame()
 
 	settwin->settings()->setting()->beginGroup("General");
 	settwin->settings()->setGameNumber(settwin->settings()->getGameNumber() + 1);
-	settwin->settings()->setting()->setValue("gameNumber", settwin->settings()->getGameNumber());
+	settwin->settings()->setting()->setValue("gameNumber", static_cast<unsigned int>(settwin->settings()->getGameNumber()));
 	settwin->settings()->setting()->endGroup();
 
 	settwin->updateSettings();
@@ -487,7 +491,7 @@ void MainWindow::readStartfile(QFile& file)
 			for(int i = 0; i < w; ++i)
 				cellStates.push_back(false);
 
-		while(static_cast<unsigned int>(w * h) > cellStates.size())	// static_cast: avoid sign-compare warning
+		while(static_cast<std::size_t>(w * h) > cellStates.size())	// static_cast: avoid sign-compare warning
 			cellStates.push_back(false);
 
 		SeparateThread::systemMutex.lock();
@@ -512,4 +516,25 @@ void MainWindow::readStartfile(QFile& file)
 	{
 		QMessageBox::information(this, tr("Reading Error"), tr("File can not be opened!"), QMessageBox::Cancel);
 	}
+}
+
+void MainWindow::changeLanguage(int lang)
+{
+	if(lang == 0)
+	{
+		if(!translate.load(":/translations/gol_en"))
+			qDebug("No EN-translation found!");
+		if(!qtranslate.load(":/translations/qt_en"))
+			qDebug("No EN-Qt-translation found!");
+	}
+	else if(lang == 1)
+	{
+		if(!translate.load(":/translations/gol_de"))
+			qDebug("No DE-translation found!");
+		if(!qtranslate.load(":/translations/qt_de.qm"))
+			qDebug("No DE-Qt-translation found!");
+	}
+
+	qApp->installTranslator(&translate);
+	qApp->installTranslator(&qtranslate);
 }

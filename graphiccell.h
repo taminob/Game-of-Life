@@ -15,22 +15,22 @@ class GraphicCell : public QGraphicsItem
 	Cell& cell;
 	QRectF rect;
 
-	unsigned int x;
-	unsigned int y;
+	std::size_t x;
+	std::size_t y;
 
-	unsigned int currentGridWidth;
+	std::size_t currentGridWidth;
 
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
 public:
-	GraphicCell(Cell& cell, const unsigned int& x, const unsigned int& y, Settings* settings);
+	GraphicCell(Cell& cell, const std::size_t& x, const std::size_t& y, Settings* settings);
 
 	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 	virtual QRectF boundingRect() const override;
 
-	inline const unsigned int& getX() const { return x; }
-	inline const unsigned int& getY() const { return y; }
+	inline const std::size_t& getX() const { return x; }
+	inline const std::size_t& getY() const { return y; }
 };
 
 #endif // GRAPHICCELL_H

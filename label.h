@@ -10,13 +10,13 @@ class Label : public QLabel
 
 	Settings* settings;
 
-	unsigned int value;
+	std::size_t value;
 
 public:
-	Label(Settings* settings, unsigned int value = 0, QWidget* parent = nullptr);
+	Label(Settings* settings, std::size_t value = 0, QWidget* parent = nullptr);
 
 public slots:
-	void changeTimer(unsigned int newValue);
+	void changeTimer(const unsigned int& newValue);
 	void newTimer();
 };
 

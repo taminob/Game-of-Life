@@ -14,6 +14,8 @@ GraphicalWindow::GraphicalWindow(Settings* settings, QGraphicsView* parent) : QG
 
 	this->setAutoFillBackground(true);
 	this->setBackgroundBrush(settings->getBackgroundColor());
+	this->setOptimizationFlag(QGraphicsView::DontSavePainterState);
+	this->setCacheMode(QGraphicsView::CacheBackground);
 
 	this->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -125,12 +127,11 @@ void GraphicalWindow::wheelEvent(QWheelEvent* event)
 
 }
 
-void GraphicalWindow::setCellScene(QGraphicsScene* scene, const int& width, const int& height, const bool& createNewSystem)
+void GraphicalWindow::setCellScene(QGraphicsScene* scene, const std::size_t& width, const std::size_t& height, const bool& createNewSystem)
 {
 	this->scene = scene;
 
 	this->scene->clear();
-	gcells.clear();
 
 	currentCellSize = settings->getCellSize();
 	this->scene->setSceneRect(QRectF(scene->sceneRect().x(), scene->sceneRect().y(), width * this->currentCellSize, height * this->currentCellSize));
@@ -139,18 +140,16 @@ void GraphicalWindow::setCellScene(QGraphicsScene* scene, const int& width, cons
 	if(createNewSystem)
 		createCells(width, height);
 
-	for(unsigned int a = 0; a < this->system.size(); ++a)
+	for(std::size_t a = 0; a < this->system.size(); ++a)
 	{
-		for(unsigned int b = 0; b < this->system[0].size(); ++b)
+		for(std::size_t b = 0; b < this->system[0].size(); ++b)
 		{
-			gcells.push_back(new GraphicCell(this->system[a][b], a, b, settings));
+			this->scene->addItem(new GraphicCell(this->system[a][b], a, b, settings));
 		}
 	}
 
 	SeparateThread::systemMutex.unlock();
 
-	for(auto& a : gcells)
-		this->scene->addItem(a);
 
 	this->setScene(this->scene);
 }
@@ -165,7 +164,7 @@ void GraphicalWindow::showContextMenu(const QPoint& pos)
    contextmenu->exec(mapToGlobal(pos));
 }
 
-const CellSystem& GraphicalWindow::createCells(int w, int h)
+const CellSystem& GraphicalWindow::createCells(const std::size_t& w, const std::size_t& h)
 {
 	system.clear();
 
@@ -176,9 +175,9 @@ const CellSystem& GraphicalWindow::createCells(int w, int h)
 	std::mt19937 mt(qrand());
 	std::uniform_int_distribution<int> dist(0, 2);
 
-	for(int a = 0; a < h; a++)
+	for(std::size_t a = 0; a < h; a++)
 	{
-		for(int b = 0; b < w; b++)
+		for(std::size_t b = 0; b < w; b++)
 		{
 			if(dist(mt))
 				row.push_back(Cell(false));
@@ -199,8 +198,6 @@ const CellSystem& GraphicalWindow::createCells(int w, int h)
 
 void GraphicalWindow::fullUpdate()
 {
-	for(auto a : gcells)
-		a->update();
 	this->scene->update(scene->sceneRect());
 	this->update();
 }
@@ -208,6 +205,9 @@ void GraphicalWindow::fullUpdate()
 void GraphicalWindow::sceneUpdate()
 {
 	this->scene->update(this->scene->sceneRect());
+/*	QRect viewport_rect(0, 0, this->viewport()->width(), this->viewport()->height());
+	QRectF visible_scene_rect = this->mapToScene(viewport_rect).boundingRect();
+	this->scene->update(visible_scene_rect);*/
 }
 
 void GraphicalWindow::clearAll()

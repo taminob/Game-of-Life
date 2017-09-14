@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <QGraphicsSceneMouseEvent>
 
-GraphicCell::GraphicCell(Cell& cell, const unsigned int& x, const unsigned int& y, Settings* settings) : cell(cell)
+GraphicCell::GraphicCell(Cell& cell, const std::size_t& x, const std::size_t& y, Settings* settings) : cell(cell)
 {
 	this->settings = settings;
 	this->x = this->settings->getCellSize() * x;
