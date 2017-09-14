@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 	secondThread = new QThread(this);
 	autoplayBreak = -3;
-	worker = new SeperateThread(graphic, settwin, generationTimer, autoplayBreak);
+	worker = new SeparateThread(graphic, settwin, generationTimer, autoplayBreak);
 	worker->moveToThread(secondThread);
 	QObject::connect(this, SIGNAL(startThread()), worker, SLOT(work()));
 	secondThread->start();

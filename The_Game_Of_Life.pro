@@ -32,7 +32,7 @@ SOURCES += \
     graphiccell.cpp \
     main.cpp \
     mainwindow.cpp \
-    seperatethread.cpp \
+    separatethread.cpp \
     settingswindow.cpp \
     label.cpp
 
@@ -41,6 +41,6 @@ HEADERS  += \
     graphicalwindow.h \
     graphiccell.h \
     mainwindow.h \
-    seperatethread.h \
+    separatethread.h \
     settingswindow.h \
     label.h

@@ -3,7 +3,7 @@
 
 #include "graphicalwindow.h"
 #include "settingswindow.h"
-#include "seperatethread.h"
+#include "separatethread.h"
 #include <QApplication>
 #include <QWidget>
 #include <QMainWindow>
@@ -61,7 +61,7 @@ class MainWindow : public QMainWindow
 	int autoplayBreak;
 
 	QThread* secondThread;
-	SeperateThread* worker;
+	SeparateThread* worker;
 
 public:
 	explicit MainWindow(QWidget *parent = 0);
