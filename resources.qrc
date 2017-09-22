@@ -1,8 +1,17 @@
 <RCC>
-    <qresource prefix="/translations">
-        <file>gol_en.qm</file>
-        <file>gol_de.qm</file>
-        <file>qt_de.qm</file>
-        <file>qt_en.qm</file>
+    <qresource prefix="/">
+        <file>translations/gol_de.qm</file>
+        <file>translations/qt_de.qm</file>
+        <file>images/us_flag.png</file>
+        <file>images/de_flag.png</file>
+        <file>images/gb_flag.png</file>
+        <file>images/preferences-system.png</file>
+        <file>images/qt_icon.png</file>
+        <file>images/game-of-life_icon.jpg</file>
+        <file>translations/qtbase_de.qm</file>
+        <file>translations/qtmultimedia_de.qm</file>
+        <file>translations/qtscript_de.qm</file>
+        <file>translations/qtxmlpatterns_de.qm</file>
+        <file>translations/qtquick1_de.qm</file>
     </qresource>
 </RCC>

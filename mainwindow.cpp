@@ -10,21 +10,22 @@
 #include <QDataStream>
 #include <QTextStream>
 #include <QDir>
-#include <QTranslator>
 
-QTranslator MainWindow::translate;
-QTranslator MainWindow::qtranslate;
-
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
+MainWindow::MainWindow(QWidget* parent, Language language) : QMainWindow(parent)
 {
+	installLanguage(language);
+
 	mainwidget = new QWidget;
 	settwin = new SettingsWindow;
 
-	this->setWindowIcon(QIcon("game_of_life.ico"));
+	QObject::connect(settwin->settings(), &Settings::languageChanged, this, &MainWindow::changeLanguage);
+	changeLanguage(settwin->settings()->getLanguage());
+
+	qApp->setWindowIcon(QIcon(":/images/game-of-life_icon.jpg"));
 
 	this->setContextMenuPolicy(Qt::CustomContextMenu);
-	QObject::connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::showContextMenu);
 	createContextMenu();
+	QObject::connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::showContextMenu);
 
 	grid = new QGridLayout;
 
@@ -41,15 +42,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
 	createMenu();
 
-	if(settwin->settings()->isFixed())
-	{
-		this->setFixedSize(QSize(settwin->settings()->getFixedWidth(), settwin->settings()->getFixedHeight()));
-		this->show();
-	}
-	else
-	{
-		customShow();
-	}
+	customShow();
+
 	if(settwin->settings()->isMenuHidden())
 	{
 		this->hidemenu(true);
@@ -67,9 +61,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 	secondThread->start();
 
 	settwin->setGraphicalWidgets(graphic, generationTimer);
+
+	exitBox = new QMessageBox(QMessageBox::Question, tr("Exit"), tr("Do you really want to exit?"), QMessageBox::Yes | QMessageBox::No, this);
 }
 
-MainWindow::MainWindow(const QString& file, QWidget* parent) : MainWindow(parent)
+MainWindow::MainWindow(const QString& file, Language language, QWidget* parent) : MainWindow(parent, language)
 {
 	int pos = file.lastIndexOf('.');
 	if(file.midRef(pos == -1 ? 0 : pos) == ".save")
@@ -98,7 +94,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
 	if(settwin->settings()->isExitWarningEnabled())
 	{
-		QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Exit"), tr("Do you really want to exit?"), QMessageBox::Yes | QMessageBox::No);
+	//	QMessageBox::StandardButton btn = QMessageBox::question(this, tr("Exit"), tr("Do you really want to exit?"), QMessageBox::Yes | QMessageBox::No);
+		QMessageBox::StandardButton btn = static_cast<QMessageBox::StandardButton>(exitBox->exec());
 
 		if(btn == QMessageBox::Yes)
 		{
@@ -116,16 +113,18 @@ void MainWindow::createMenu()
 	menubar = new QMenuBar(this);
 
 	start = menubar->addMenu(tr("&Start"));
+	createStartSubMenu();
 	view = menubar->addMenu(tr("&View"));
+	createViewSubMenu();
 	settings = menubar->addMenu(tr("Se&ttings"));
+	createSettingsSubMenu();
 	help = menubar->addMenu(tr("&Help"));
-
-	createSubMenu();
+	createHelpSubMenu();
 
 	this->setMenuBar(menubar);
 }
 
-void MainWindow::createSubMenu()
+void MainWindow::createStartSubMenu()
 {
 	startnew = start->addAction(tr("&New"));
 	startnew->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
@@ -164,7 +163,10 @@ void MainWindow::createSubMenu()
 	startExit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 	QObject::connect(startExit, &QAction::triggered, this, &MainWindow::close);
 	this->addAction(startExit);
+}
 
+void MainWindow::createViewSubMenu()
+{
 	hideMenu = view->addAction(tr("&Hide Menu"));
 	hideMenu->setCheckable(true);
 	hideMenu->setChecked(settwin->settings()->isMenuHidden());
@@ -182,25 +184,46 @@ void MainWindow::createSubMenu()
 	fullscreen->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
 	QObject::connect(fullscreen, &QAction::triggered, this, &MainWindow::showFullScreen);
 	this->addAction(fullscreen);
+}
+
+void MainWindow::createSettingsSubMenu()
+{
+	if(currentLanguage == Language::English)
+		languages = settings->addMenu(QIcon(":/images/gb_flag.png"), tr("Language"));
+	else if(currentLanguage == Language::German)
+		languages = settings->addMenu(QIcon(":/images/de_flag.png"), tr("Language"));
+	else
+		languages = settings->addMenu(tr("Language"));
+	QAction* english = languages->addAction(QIcon(":/images/gb_flag.png"), tr("English"));
+	english->setCheckable(true);
+	english->setChecked(currentLanguage == Language::English);
+	QObject::connect(english, &QAction::triggered, [this]() { this->changeLanguage(Language::English);} );
+	QAction* german = languages->addAction(QIcon(":/images/de_flag.png"), tr("German"));
+	german->setCheckable(true);
+	german->setChecked(currentLanguage == Language::German);
+	QObject::connect(german, &QAction::triggered, [this]() { this->changeLanguage(Language::German);} );
 
 	QAction* generalSetting = settings->addAction(tr("&General"));
 	QObject::connect(generalSetting, &QAction::triggered, settwin, &SettingsWindow::showGeneral);
 	QAction* gameSetting = settings->addAction(tr("G&ame"));
 	QObject::connect(gameSetting, &QAction::triggered, settwin, &SettingsWindow::showGame);
 	settings->addSeparator();
-	setting = settings->addAction(tr("&Settings"));
+	setting = settings->addAction(QIcon(":/images/preferences-system.png"), tr("&Settings"));
 	setting->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
 	QObject::connect(setting, &QAction::triggered, settwin, &MainWindow::show);
 	this->addAction(setting);
+}
 
-	help1 = help->addAction(tr("&Help"));
+void MainWindow::createHelpSubMenu()
+{
+	help1 = help->addAction(iconStyle.standardIcon(QStyle::SP_DialogHelpButton), tr("&Help"));
 	help1->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
 	QObject::connect(help1, &QAction::triggered, this, &MainWindow::helpWindow);
 	this->addAction(help1);
 	help->addSeparator();
-	QAction* aboutQt = help->addAction(tr("About &Qt"));
+	QAction* aboutQt = help->addAction(QIcon(":/images/qt_icon.png"), tr("About &Qt"));
 	QObject::connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
-	QAction* aboutAction = help->addAction(tr("&About"));
+	QAction* aboutAction = help->addAction(QIcon(":images/game-of-life_icon.jpg"), tr("&About"));
 	QObject::connect(aboutAction, &QAction::triggered, this, &MainWindow::about);
 }
 
@@ -268,21 +291,30 @@ void MainWindow::showmenu()
 
 void MainWindow::customShow()
 {
-	if(settwin->settings()->getWindowStartmodus() == 0)
+
+	if(settwin->settings()->isFixed())
 	{
+		this->setFixedSize(QSize(settwin->settings()->getFixedWidth(), settwin->settings()->getFixedHeight()));
 		this->show();
 	}
-	else if(settwin->settings()->getWindowStartmodus() == 1)
+	else
 	{
-		this->showMaximized();
-	}
-	else if(settwin->settings()->getWindowStartmodus() == 2)
-	{
-		this->showMinimized();
-	}
-	else if(settwin->settings()->getWindowStartmodus() == 3)
-	{
-		this->showFullScreen();
+		if(settwin->settings()->getWindowStartmodus() == 0)
+		{
+			this->show();
+		}
+		else if(settwin->settings()->getWindowStartmodus() == 1)
+		{
+			this->showMaximized();
+		}
+		else if(settwin->settings()->getWindowStartmodus() == 2)
+		{
+			this->showMinimized();
+		}
+		else if(settwin->settings()->getWindowStartmodus() == 3)
+		{
+			this->showFullScreen();
+		}
 	}
 }
 
@@ -368,7 +400,7 @@ void MainWindow::saveGame()
 
 	settwin->settings()->setting()->beginGroup("General");
 	settwin->settings()->setGameNumber(settwin->settings()->getGameNumber() + 1);
-	settwin->settings()->setting()->setValue("gameNumber", static_cast<unsigned int>(settwin->settings()->getGameNumber()));
+	settwin->settings()->setting()->setValue("gameNumber", settwin->settings()->getGameNumber());
 	settwin->settings()->setting()->endGroup();
 
 	settwin->updateSettings();
@@ -518,23 +550,41 @@ void MainWindow::readStartfile(QFile& file)
 	}
 }
 
-void MainWindow::changeLanguage(int lang)
+void MainWindow::changeLanguage(Language lang)
 {
-	if(lang == 0)
+	if(lang != currentLanguage)
+	{
+		currentLanguage = lang;
+		settwin->settings()->setLanguage(lang);
+		settwin->settings()->saveSettings();
+
+		installLanguage(lang);
+	}
+}
+#include <QLibraryInfo>
+void MainWindow::installLanguage(Language lang)
+{
+//	qApp->removeTranslator(&translate);			// not necessary
+//	qApp->removeTranslator(&qtranslate);		// not necessary
+
+	if(lang == Language::English)
 	{
 		if(!translate.load(":/translations/gol_en"))
 			qDebug("No EN-translation found!");
 		if(!qtranslate.load(":/translations/qt_en"))
 			qDebug("No EN-Qt-translation found!");
 	}
-	else if(lang == 1)
+	else if(lang == Language::German)
 	{
 		if(!translate.load(":/translations/gol_de"))
 			qDebug("No DE-translation found!");
-		if(!qtranslate.load(":/translations/qt_de.qm"))
+		if(!qtranslate.load("qt_de", ":/translations"))
+	//	if(!qtranslate.load("qt_de", QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
 			qDebug("No DE-Qt-translation found!");
 	}
 
 	qApp->installTranslator(&translate);
 	qApp->installTranslator(&qtranslate);
+
+	qApp->exit(197 + static_cast<int>(lang));
 }

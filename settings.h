@@ -30,6 +30,8 @@ public:
 
 	QSettings* setting() { return settings; }
 
+	enum Language { English, German };
+
 private:
 // Settings
 	unsigned int autoplaySpeed;				// new attributs need:
@@ -57,6 +59,7 @@ private:
 	QVector<QColor> customColors;
 	unsigned int customColorsSize;
 	int scrollBarEnabled;
+	Language language;			// 0: English; 1: Deutsch;
 
 public:
 // get Settings
@@ -81,6 +84,7 @@ public:
 	inline const QColor& getNextGenDeadCellColor() { return nextGenDeadCellColor; }
 	inline const QColor& getBackgroundColor() { return backgroundColor; }
 	inline const int& isScrollBarEnabled() { return scrollBarEnabled; }
+	inline const Language& getLanguage() { return language; }
 
 public slots:
 	void setDefaultValues();
@@ -88,6 +92,7 @@ public slots:
 	void loadSettings();
 
 	void setGameNumber(int newValue);
+	void setLanguage(int newValue);
 
 private slots:
 	void setNewAutoplaySpeed(int newValue);
@@ -115,6 +120,7 @@ private slots:
 
 signals:
 	void autoplaySpeedChanged();
+	void languageChanged(Language);
 };
 
 #endif // SETTINGS_H

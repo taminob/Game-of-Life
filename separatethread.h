@@ -7,6 +7,7 @@
 #include <QMutex>
 
 #include <vector>
+#include <atomic>
 
 class QThread;
 
@@ -17,7 +18,7 @@ class SeparateThread : public QObject
 	Q_OBJECT
 
 	const int& loops;
-	int autoplaySpeed;
+	std::atomic<int> autoplaySpeed;
 	CellSystem& system;
 
 public:

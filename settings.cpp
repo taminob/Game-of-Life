@@ -45,6 +45,7 @@ void Settings::saveSettings()
 		for(int i = 0; i < customColors.size(); ++i)
 			settings->setValue("customColors" + QString::number(i), customColors[i].name());
 		settings->setValue("scrollBarEnabled", scrollBarEnabled);
+		settings->setValue("language", language);
 		settings->endGroup();
 		settings->beginGroup("Game");
 		settings->setValue("autoplaySpeed", autoplaySpeed);
@@ -84,6 +85,7 @@ void Settings::loadSettings()
 		customColors[i].setNamedColor(settings->value("General/customColors" + QString::number(i)).toString());
 	}
 	scrollBarEnabled = settings->value("General/scrollBarEnabled").toInt();
+	language = static_cast<Language>(settings->value("General/language").toInt());
 
 	autoplaySpeed = settings->value("Game/autoplaySpeed").toUInt();
 	maxAutoplayEnabled = settings->value("Game/maxAutoplayEnabled").toBool();
@@ -124,6 +126,7 @@ void Settings::setDefaultValues()
 		customColors[i] = Qt::white;
 	customColorsSize = QColorDialog::customCount();
 	scrollBarEnabled = 0;
+	language = static_cast<Language>(QLocale::system().language() == QLocale::German);	// true = 1 = German; false = 0 = English;
 }
 
 void Settings::setNewAutoplaySpeed(int newValue)
@@ -411,4 +414,11 @@ void Settings::newScrollBarPolicy(int newValue)
 		settwin->graphic->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 		settwin->graphic->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	}
+}
+
+void Settings::setLanguage(int newValue)
+{
+	saved = false;
+
+	language = static_cast<Language>(newValue);
 }

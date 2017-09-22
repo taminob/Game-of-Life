@@ -1,18 +1,19 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include <QTranslator>
-#include <QLibraryInfo>
 
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
 
-	if(QLocale::system().language() == QLocale::German)
-		MainWindow::changeLanguage(1);
-	else
-		MainWindow::changeLanguage(0);
+	int ret = 197;
 
-	MainWindow win(argv[argc - 1]);
+	while(true)
+	{
+		MainWindow win(argv[argc - 1], static_cast<MainWindow::Language>(ret - 197));
 
-	return app.exec();
+		 ret = app.exec();
+
+		if(ret < 197 || ret > 198)			// ret = 197: English (0); ret = 198: German (1)
+			return ret;
+	}
 }

@@ -26,7 +26,7 @@ void CellSystem::task(int i, const int& v)
 {
 	for(; i < v; ++i)
 	{
-		for(int b = 0; b <= maxX; ++b)
+		for(unsigned int b = 0; b <= maxX; ++b)
 		{
 			nextGenForCell(i, b);
 		}

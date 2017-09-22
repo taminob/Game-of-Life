@@ -5,13 +5,15 @@
 #include "settingswindow.h"
 #include "separatethread.h"
 #include <QMainWindow>
+#include <QTranslator>
+#include <QCommonStyle>
 
+class QMessageBox;
 class QCloseEvent;
 class QGridLayout;
 class QMenuBar;
 class QMenu;
 class QFile;
-class QTranslator;
 
 class MainWindow : public QMainWindow
 {
@@ -43,18 +45,25 @@ class MainWindow : public QMainWindow
 		QAction* maximize;
 		QAction* fullscreen;
 	QMenu* settings;
+		QMenu* languages;
 		QAction* setting;
 	QMenu* help;
 		QAction* help1;
 
+	QCommonStyle iconStyle;
+
 	void createMenu();
-	void createSubMenu();
+	void createStartSubMenu();
+	void createViewSubMenu();
+	void createSettingsSubMenu();
+	void createHelpSubMenu();
 
 	QMenu* contextmenu;
 		QAction* hideMenu2;
 
 	void createContextMenu();
 
+	QMessageBox* exitBox;
 	void closeEvent(QCloseEvent* event);
 
 	void customShow();
@@ -64,16 +73,22 @@ class MainWindow : public QMainWindow
 	QThread* secondThread;
 	SeparateThread* worker;
 
-	static QTranslator translate;
-	static QTranslator qtranslate;
+	QTranslator translate;
+	QTranslator qtranslate;
 
 public:
-	explicit MainWindow(QWidget* parent = nullptr);
-	MainWindow(const QString& file, QWidget* parent = nullptr);
+	using Language = Settings::Language;
+
+	void changeLanguage(Language lang);
+
+private:
+	void installLanguage(Language lang);
+	Language currentLanguage;
+
+public:
+	explicit MainWindow(QWidget* parent = nullptr, Language language = Language::English);
+	MainWindow(const QString& file, Language language = Language::English, QWidget* parent = nullptr);
 	virtual ~MainWindow() override;
-
-	static void changeLanguage(int lang);
-
 
 public slots:
 	void startNew();
