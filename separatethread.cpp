@@ -29,10 +29,7 @@ void SeparateThread::work()
 	else if(loops == -3)
 	{
 		systemMutex.lock();
-		const auto start = std::chrono::high_resolution_clock::now();
 		system.nextGen();
-		const auto end = std::chrono::high_resolution_clock::now();
-		qDebug() << "Complete: " << static_cast<std::chrono::duration<double, std::milli> >(end - start).count();
 		emit changedTimer(system.getGeneration());
 		emit updateGraphic();
 		systemMutex.unlock();

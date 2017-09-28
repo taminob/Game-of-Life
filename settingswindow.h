@@ -35,6 +35,35 @@ class SettingsWindow : public QDialog
 	QWidget* generaltab;
 	QWidget* gametab;
 
+	QGroupBox* windowGroup;
+	QLabel* windowStartmodusLabel;
+	QLabel* fixedSizeWidthLabel;
+	QLabel* fixedSizeHeightLabel;
+
+	QGroupBox* otherGroup;
+	QLabel* scrollBarEnabledLabel;
+	QLabel* gameNumberLabel;
+
+	QGroupBox* autoplayBox;
+	QLabel* autoplaySpeedLabel;
+	QLabel* autoplaySpeedUnit;
+	QLabel* maxAutoplayLabel;
+
+	QGroupBox* areaBox;
+	QLabel* cellSizeLabel;
+	QLabel* gridWidthLabel;
+	QLabel* xUnit;
+	QLabel* yUnit;
+	QLabel* timerSizeLabel;
+
+	QGroupBox* colorsGroup;
+	QLabel* aliveCellColorLabel;
+	QLabel* deadCellColorLabel;
+	QLabel* lineColorLabel;
+	QLabel* nextGenAliveCellColorLabel;
+	QLabel* nextGenDeadCellColorLabel;
+	QLabel* backgroundColorLabel;
+
 	void createGeneralTab();
 		void createWindowGroupbox(QGroupBox* windowGroup);
 		void createOtherGroupbox(QGroupBox* otherGroup);
@@ -43,6 +72,10 @@ class SettingsWindow : public QDialog
 	void createGameTab();
 		void createAutoplayGroupbox(QGroupBox* autoplayBox);
 		void createAreaGroupbox(QGroupBox* areaBox);
+
+	QPushButton* englishButton;
+	QPushButton* germanButton;
+	void createLanguageButtons();
 
 	void createShortcuts();
 
@@ -93,6 +126,10 @@ public slots:
 	void setDefaultValues() { setts->setDefaultValues(); }
 	void updateSettings();
 	void resetSettings();
+	void retranslate();
+
+signals:
+	void languageChanged(Settings::Language);
 };
 
 #endif // SETTINGSWINDOW_H

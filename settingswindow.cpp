@@ -36,20 +36,7 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent)
 	QObject::connect(diabutts->button(QDialogButtonBox::Save), &QPushButton::clicked, setts, &Settings::saveSettings);
 	QObject::connect(diabutts->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &SettingsWindow::close);
 
-	QPushButton* restartButton = new QPushButton(tr("Restart"));
-	restartButton->setVisible(false);
-	QPushButton* englishButton = new QPushButton(QIcon(":/images/gb_flag.png"), "");
-	englishButton->setCheckable(true);
-	englishButton->setChecked(setts->getLanguage() == Settings::Language::English);
-	QObject::connect(englishButton, &QPushButton::clicked, [this]() { this->setts->setLanguage(static_cast<int>(Settings::Language::English)); } );
-	QPushButton* germanButton = new QPushButton(QIcon(":/images/de_flag.png"), "");
-	germanButton->setCheckable(true);
-	germanButton->setChecked(setts->getLanguage() == Settings::Language::German);
-	QObject::connect(germanButton, &QPushButton::clicked, [this]() { this->setts->setLanguage(static_cast<int>(Settings::Language::German)); } );
-	QObject::connect(englishButton, &QPushButton::clicked, [germanButton, restartButton]() { germanButton->setChecked(false); restartButton->setVisible(true); } );
-	QObject::connect(germanButton, &QPushButton::clicked, [englishButton, restartButton]() { englishButton->setChecked(false); restartButton->setVisible(true); } );
-	QObject::connect(restartButton, &QPushButton::clicked, [this]() { this->close(); emit this->setts->languageChanged(this->setts->getLanguage()); } );
-
+	createLanguageButtons();
 	createShortcuts();
 
 	grid = new QGridLayout;
@@ -57,7 +44,6 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent)
 	grid->addWidget(tabs, 0, 0, 1, 5);
 	grid->addWidget(englishButton, 3, 0);
 	grid->addWidget(germanButton, 3, 1);
-	grid->addWidget(restartButton, 3, 2);
 	grid->addWidget(diabutts, 3, 3);
 
 	this->setLayout(grid);
@@ -120,6 +106,70 @@ void SettingsWindow::show(int tab)
 	QDialog::show();
 }
 
+void SettingsWindow::retranslate()
+{
+	tabs->setTabText(0, tr("General"));
+	tabs->setTabText(1, tr("Game"));
+
+	windowGroup->setTitle(tr("Window"));
+	windowStartmodusLabel->setText(tr("Start Mode:"));
+	QObject::disconnect(windowStartmodusCombobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), setts, &Settings::setNewWindowStartmodus);
+	windowStartmodusCombobox->clear();
+	windowStartmodusCombobox->addItem(tr("Standard"));
+	windowStartmodusCombobox->addItem(tr("Maximized"));
+	windowStartmodusCombobox->addItem(tr("Minimized"));
+	windowStartmodusCombobox->addItem(tr("Fullscreen"));
+	QObject::connect(windowStartmodusCombobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), setts, &Settings::setNewWindowStartmodus);
+	fixedSizeCheckbox->setText(tr("Fixed Window Size"));
+	fixedSizeWidthLabel->setText(tr("Fixed Width:"));
+	fixedSizeHeightLabel->setText(tr("Fixed Height:"));
+	gameNumberLabel->setText(tr("Saved Games: "));
+
+	otherGroup->setTitle(tr("Other"));
+	hideMenu->setText(tr("Hide menubar"));
+	scrollBarEnabledLabel->setText(tr("Scrollbar behaviour: "));
+	QObject::disconnect(scrollBarEnabledCombobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), setts, &Settings::newScrollBarPolicy);
+	scrollBarEnabledCombobox->clear();
+	scrollBarEnabledCombobox->addItem(tr("Always Off"));
+	scrollBarEnabledCombobox->addItem(tr("Always On"));
+	scrollBarEnabledCombobox->addItem(tr("As Needed"));
+	QObject::connect(scrollBarEnabledCombobox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), setts, &Settings::newScrollBarPolicy);
+	enableDynSettingChange->setText(tr("Enable dynamically settings changes"));
+	exitWarningCheckbox->setText(tr("Enable exit warning"));
+	resetButton->setText(tr("Reset Settings"));
+
+	autoplayBox->setTitle(tr("Autoplay"));
+	autoplaySpeedLabel->setText(tr("Time between two generations with autoplay: "));
+	autoplaySpeedUnit->setText(tr("milliseconds"));
+	enableMaxAutoplayCheckbox->setText(tr("Enable maximal generations with autoplay"));
+	maxAutoplayLabel->setText(tr("Maximal generations with autoplay: "));
+	maxAutoplayLabel->setText(tr("Maximal generations with autoplay: "));
+
+	areaBox->setTitle(tr("Area"));
+	cellSizeLabel->setText(tr("Cell size: "));
+	gridWidthLabel->setText(tr("Line thickness: "));
+	xUnit->setText(tr("Cells"));
+	yUnit->setText(tr("Cells"));
+	timerSizeLabel->setText(tr("Counter size: "));
+
+	colorsGroup->setTitle(tr("Colors"));
+	aliveCellColorLabel->setText(tr("Color of living cells:"));
+	aliveCellColorButton->setText(tr("Change"));
+	deadCellColorLabel->setText(tr("Color of dead cells:"));
+	deadCellColorButton->setText(tr("Change"));
+	lineColorLabel->setText(tr("Color of the lines:"));
+	lineColorButton->setText(tr("Change"));
+	nextGenAliveCellColorLabel->setText(tr("Color of next generation born cells: "));
+	nextGenAliveCellColorButton->setText(tr("Change"));
+	nextGenDeadCellColorLabel->setText(tr("Color of next generation dying cells: "));
+	nextGenDeadCellColorButton->setText(tr("Change"));
+	backgroundColorLabel->setText(tr("Background color:"));
+	backgroundColorButton->setText(tr("Change"));
+
+	germanButton->setChecked(setts->getLanguage() == Settings::Language::German);
+	englishButton->setChecked(setts->getLanguage() == Settings::Language::English);
+}
+
 void SettingsWindow::updateSettings()
 {
 	fixedSizeCheckbox->setChecked(setts->fixedSize);
@@ -161,10 +211,10 @@ void SettingsWindow::createGeneralTab()
 	generaltab = new QWidget;
 	QGridLayout* tabLay = new QGridLayout;
 
-	QGroupBox* windowGroup = new QGroupBox(tr("Window"));
+	windowGroup = new QGroupBox(tr("Window"));
 	createWindowGroupbox(windowGroup);
 
-	QGroupBox* otherGroup = new QGroupBox(tr("Other"));
+	otherGroup = new QGroupBox(tr("Other"));
 	createOtherGroupbox(otherGroup);
 
 	tabLay->addWidget(windowGroup, 0, 0);
@@ -178,7 +228,7 @@ void SettingsWindow::createWindowGroupbox(QGroupBox* windowGroup)
 {
 	QVBoxLayout* windowGroupLay = new QVBoxLayout;
 
-	QLabel* windowStartmodusLabel = new QLabel(tr("Start Mode:"));
+	windowStartmodusLabel = new QLabel(tr("Start Mode:"));
 	windowStartmodusCombobox = new QComboBox;
 	windowStartmodusCombobox->addItem(tr("Standard"));
 	windowStartmodusCombobox->addItem(tr("Maximized"));
@@ -189,13 +239,13 @@ void SettingsWindow::createWindowGroupbox(QGroupBox* windowGroup)
 
 	fixedSizeCheckbox = new QCheckBox(tr("Fixed Window Size"));
 	QObject::connect(fixedSizeCheckbox, &QCheckBox::toggled, setts, &Settings::fixedSizeActivated);
-	QLabel* fixedSizeWidthLabel = new QLabel(tr("Fixed Width:"));
+	fixedSizeWidthLabel = new QLabel(tr("Fixed Width:"));
 	fixedSizeWidthEnter = new QSpinBox;
 	fixedSizeWidthEnter->setMinimum(100);
 	fixedSizeWidthEnter->setMaximum(1920);
 	fixedSizeWidthEnter->setValue(setts->fixedWidth);
 	QObject::connect(fixedSizeWidthEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewFixedWidth);
-	QLabel* fixedSizeHeightLabel = new QLabel(tr("Fixed Height: "));
+	fixedSizeHeightLabel = new QLabel(tr("Fixed Height:"));
 	fixedSizeHeightEnter = new QSpinBox;
 	fixedSizeHeightEnter->setMinimum(100);
 	fixedSizeHeightEnter->setMaximum(1080);
@@ -226,8 +276,7 @@ void SettingsWindow::createOtherGroupbox(QGroupBox* otherGroup)
 	hideMenu->setChecked(setts->hiddenMenu);
 	QObject::connect(hideMenu, &QCheckBox::clicked, setts, &Settings::hideMenuActivated);
 
-	QLabel* scrollBarEnabledLabel = new QLabel;
-	scrollBarEnabledLabel->setText(tr("Scrollbar behaviour: "));
+	scrollBarEnabledLabel = new QLabel(tr("Scrollbar behaviour: "));
 	scrollBarEnabledCombobox = new QComboBox;
 	scrollBarEnabledCombobox->addItem(tr("Always Off"));
 	scrollBarEnabledCombobox->addItem(tr("Always On"));
@@ -239,8 +288,7 @@ void SettingsWindow::createOtherGroupbox(QGroupBox* otherGroup)
 	enableDynSettingChange->setChecked(setts->dynSettingChange);
 	QObject::connect(enableDynSettingChange, &QCheckBox::clicked, setts, &Settings::dynSettingChangeEnabled);
 
-	QLabel* gameNumberTxt = new QLabel;
-	gameNumberTxt->setText(tr("Saved Games: "));
+	gameNumberLabel = new QLabel(tr("Saved Games: "));
 	gameNumberEnter = new QSpinBox;
 	gameNumberEnter->setValue(setts->gameNumber);
 	QObject::connect(gameNumberEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setGameNumber);
@@ -257,7 +305,7 @@ void SettingsWindow::createOtherGroupbox(QGroupBox* otherGroup)
 	otherGroupLayout->addWidget(exitWarningCheckbox, 2, 0);
 	otherGroupLayout->addWidget(scrollBarEnabledLabel, 3, 0);
 	otherGroupLayout->addWidget(scrollBarEnabledCombobox, 3, 1);
-	otherGroupLayout->addWidget(gameNumberTxt, 4, 0);
+	otherGroupLayout->addWidget(gameNumberLabel, 4, 0);
 	otherGroupLayout->addWidget(gameNumberEnter, 4, 1);
 	otherGroupLayout->addWidget(resetButton, 5, 3);
 
@@ -268,7 +316,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 {
 	QGridLayout* colorsGroupLayout = new QGridLayout;
 
-	QLabel* aliveCellColorLabel = new QLabel(tr("Color of living cells:"));
+	aliveCellColorLabel = new QLabel(tr("Color of living cells:"));
 	setts->aliveCellColorPalette = new QPalette(setts->aliveCellColor);
 	aliveCellColorButton = new QPushButton(tr("Change"));
 	aliveCellColorPreview = new QLabel;
@@ -276,7 +324,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	aliveCellColorPreview->setAutoFillBackground(true);
 	QObject::connect(aliveCellColorButton, &QCheckBox::clicked, setts, &Settings::newAliveCellColor);
 
-	QLabel* deadCellColorLabel = new QLabel(tr("Color of dead cells:"));
+	deadCellColorLabel = new QLabel(tr("Color of dead cells:"));
 	setts->deadCellColorPalette = new QPalette(setts->deadCellColor);
 	deadCellColorButton = new QPushButton(tr("Change"));
 	deadCellColorPreview = new QLabel;
@@ -284,7 +332,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	deadCellColorPreview->setAutoFillBackground(true);
 	QObject::connect(deadCellColorButton, &QCheckBox::clicked, setts, &Settings::newDeadCellColor);
 
-	QLabel* lineColorLabel = new QLabel(tr("Color of the lines:"));
+	lineColorLabel = new QLabel(tr("Color of the lines:"));
 	setts->lineColorPalette = new QPalette(setts->lineColor);
 	lineColorButton = new QPushButton(tr("Change"));
 	lineColorPreview = new QLabel;
@@ -292,7 +340,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	lineColorPreview->setAutoFillBackground(true);
 	QObject::connect(lineColorButton, &QCheckBox::clicked, setts, &Settings::newLineColor);
 
-	QLabel* nextGenAliveCellColorLabel = new QLabel(tr("Color of next generation born cells: "));
+	nextGenAliveCellColorLabel = new QLabel(tr("Color of next generation born cells: "));
 	setts->nextGenAliveCellColorPalette = new QPalette(setts->nextGenAliveCellColor);
 	nextGenAliveCellColorButton = new QPushButton(tr("Change"));
 	nextGenAliveCellColorPreview = new QLabel;
@@ -300,7 +348,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	nextGenAliveCellColorPreview->setAutoFillBackground(true);
 	QObject::connect(nextGenAliveCellColorButton, &QCheckBox::clicked, setts, &Settings::newNextGenAliveCellColor);
 
-	QLabel* nextGenDeadCellColorLabel = new QLabel(tr("Color of next generation dying cells: "));
+	nextGenDeadCellColorLabel = new QLabel(tr("Color of next generation dying cells: "));
 	setts->nextGenDeadCellColorPalette = new QPalette(setts->nextGenDeadCellColor);
 	nextGenDeadCellColorButton = new QPushButton(tr("Change"));
 	nextGenDeadCellColorPreview = new QLabel;
@@ -308,8 +356,7 @@ void SettingsWindow::createColorsGroupbox(QGroupBox* colorsGroup)
 	nextGenDeadCellColorPreview->setAutoFillBackground(true);
 	QObject::connect(nextGenDeadCellColorButton, &QCheckBox::clicked, setts, &Settings::newNextGenDeadCellColor);
 
-	QLabel* backgroundColorLabel = new QLabel;
-	backgroundColorLabel->setText(tr("Background color:"));
+	backgroundColorLabel = new QLabel(tr("Background color:"));
 	setts->backgroundColorPalette = new QPalette(setts->backgroundColor);
 	backgroundColorButton = new QPushButton(tr("Change"));
 	backgroundColorPreview = new QLabel;
@@ -344,13 +391,13 @@ void SettingsWindow::createGameTab()
 	gametab = new QWidget;
 	QGridLayout* tabLay = new QGridLayout;
 
-	QGroupBox* autoplayBox = new QGroupBox(tr("Autoplay"));
+	autoplayBox = new QGroupBox(tr("Autoplay"));
 	createAutoplayGroupbox(autoplayBox);
 
-	QGroupBox* areaBox = new QGroupBox(tr("Area"));
+	areaBox = new QGroupBox(tr("Area"));
 	createAreaGroupbox(areaBox);
 
-	QGroupBox* colorsGroup = new QGroupBox(tr("Colors"));
+	colorsGroup = new QGroupBox(tr("Colors"));
 	createColorsGroupbox(colorsGroup);
 
 	tabLay->addWidget(autoplayBox, 1, 2);
@@ -365,18 +412,18 @@ void SettingsWindow::createAutoplayGroupbox(QGroupBox* autoplayBox)
 {
 	QGridLayout* autoplayBoxLayout = new QGridLayout;
 
-	QLabel* autoplaySpeedTxt = new QLabel(tr("Time between two generations with autoplay: "));
+	autoplaySpeedLabel = new QLabel(tr("Time between two generations with autoplay: "));
 	autoplaySpeedSpinbox = new QSpinBox;
 	autoplaySpeedSpinbox->setMinimum(0);
 	autoplaySpeedSpinbox->setMaximum(10000);
 	autoplaySpeedSpinbox->setValue(setts->autoplaySpeed);
 	QObject::connect(autoplaySpeedSpinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewAutoplaySpeed);
-	QLabel* autoplaySpeedUnit = new QLabel(tr("milliseconds"));
+	autoplaySpeedUnit = new QLabel(tr("milliseconds"));
 
 	enableMaxAutoplayCheckbox = new QCheckBox(tr("Enable maximal generations with autoplay"));
 	enableMaxAutoplayCheckbox->setChecked(setts->maxAutoplayEnabled);
 	QObject::connect(enableMaxAutoplayCheckbox, &QCheckBox::clicked, setts, &Settings::maxAutoplayActivated);
-	QLabel* maxAutoplayTxt = new QLabel(tr("Maximal generations with autoplay: "));
+	maxAutoplayLabel = new QLabel(tr("Maximal generations with autoplay: "));
 	maxAutoplaySpinbox = new QSpinBox;
 	maxAutoplaySpinbox->setMinimum(1);
 	maxAutoplaySpinbox->setMaximum(std::numeric_limits<decltype(setts->maxAutoplay)>::max());
@@ -392,11 +439,11 @@ void SettingsWindow::createAutoplayGroupbox(QGroupBox* autoplayBox)
 		maxAutoplaySpinbox->setDisabled(true);
 	}
 
-	autoplayBoxLayout->addWidget(autoplaySpeedTxt, 0, 1);
+	autoplayBoxLayout->addWidget(autoplaySpeedLabel, 0, 1);
 	autoplayBoxLayout->addWidget(autoplaySpeedSpinbox, 0, 2);
 	autoplayBoxLayout->addWidget(autoplaySpeedUnit, 0, 3);
 	autoplayBoxLayout->addWidget(enableMaxAutoplayCheckbox, 1, 1);
-	autoplayBoxLayout->addWidget(maxAutoplayTxt, 2, 1);
+	autoplayBoxLayout->addWidget(maxAutoplayLabel, 2, 1);
 	autoplayBoxLayout->addWidget(maxAutoplaySpinbox, 3, 1);
 
 	autoplayBox->setLayout(autoplayBoxLayout);
@@ -406,7 +453,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 {
 	QGridLayout* areaBoxLayout = new QGridLayout;
 
-	QLabel* cellSizeTxt = new QLabel(tr("Cell size: "));
+	cellSizeLabel = new QLabel(tr("Cell size: "));
 	cellSizeEnter = new QSpinBox;
 	cellSizeEnter->setMinimum(1);
 	cellSizeEnter->setMaximum(1000);
@@ -414,7 +461,7 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	QObject::connect(cellSizeEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewCellSize);
 	QLabel* cellSizeUnit = new QLabel(tr("px"));
 
-	QLabel* gridWidthTxt = new QLabel(tr("Line thickness: "));
+	gridWidthLabel = new QLabel(tr("Line thickness: "));
 	gridWidthEnter = new QSpinBox;
 	gridWidthEnter->setMinimum(1);
 	gridWidthEnter->setMaximum(500);
@@ -422,23 +469,23 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	QObject::connect(gridWidthEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewGridWidth);
 	QLabel* gridWidthUnit = new QLabel(tr("px"));
 
-	QLabel* xTxt = new QLabel(tr("x: "));
+	QLabel* xLabel = new QLabel(tr("x: "));
 	xEnter = new QSpinBox;
 	xEnter->setMinimum(2);
 	xEnter->setMaximum(10000);
 	xEnter->setValue(setts->x);
 	QObject::connect(xEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewX);
-	QLabel* xUnit = new QLabel(tr("Cells"));
+	xUnit = new QLabel(tr("Cells"));
 
-	QLabel* yTxt = new QLabel(tr("y: "));
+	QLabel* yLabel = new QLabel(tr("y: "));
 	yEnter = new QSpinBox;
 	yEnter->setMinimum(2);
 	yEnter->setMaximum(10000);
 	yEnter->setValue(setts->y);
 	QObject::connect(yEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewY);
-	QLabel* yUnit = new QLabel(tr("Cells"));
+	yUnit = new QLabel(tr("Cells"));
 
-	QLabel* timerSizeTxt = new QLabel(tr("Counter size: "));
+	timerSizeLabel = new QLabel(tr("Counter size: "));
 	timerSizeEnter = new QSpinBox;
 	timerSizeEnter->setMinimum(5);
 	timerSizeEnter->setMaximum(200);
@@ -446,23 +493,41 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 	QObject::connect(timerSizeEnter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), setts, &Settings::setNewTimerSize);
 	QLabel* timerSizeUnit = new QLabel(tr("px"));
 
-	areaBoxLayout->addWidget(cellSizeTxt, 0, 0);
+	areaBoxLayout->addWidget(cellSizeLabel, 0, 0);
 	areaBoxLayout->addWidget(cellSizeEnter, 0, 1);
 	areaBoxLayout->addWidget(cellSizeUnit, 0, 2);
-	areaBoxLayout->addWidget(gridWidthTxt, 1, 0);
+	areaBoxLayout->addWidget(gridWidthLabel, 1, 0);
 	areaBoxLayout->addWidget(gridWidthEnter, 1, 1);
 	areaBoxLayout->addWidget(gridWidthUnit, 1, 2);
-	areaBoxLayout->addWidget(xTxt, 2, 0);
+	areaBoxLayout->addWidget(xLabel, 2, 0);
 	areaBoxLayout->addWidget(xEnter, 2, 1);
 	areaBoxLayout->addWidget(xUnit, 2, 2);
-	areaBoxLayout->addWidget(yTxt, 3, 0);
+	areaBoxLayout->addWidget(yLabel, 3, 0);
 	areaBoxLayout->addWidget(yEnter, 3, 1);
 	areaBoxLayout->addWidget(yUnit, 3, 2);
-	areaBoxLayout->addWidget(timerSizeTxt, 4, 0);
+	areaBoxLayout->addWidget(timerSizeLabel, 4, 0);
 	areaBoxLayout->addWidget(timerSizeEnter, 4, 1);
 	areaBoxLayout->addWidget(timerSizeUnit, 4, 2);
 
 	areaBox->setLayout(areaBoxLayout);
+}
+
+void SettingsWindow::createLanguageButtons()
+{
+	englishButton = new QPushButton(QIcon(":/images/gb_flag.png"), "");
+	englishButton->setCheckable(true);
+	englishButton->setChecked(setts->getLanguage() == Settings::Language::English);
+	QObject::connect(englishButton, &QPushButton::clicked, [this]()
+	{
+		emit languageChanged(Settings::Language::English);
+	} );
+	germanButton = new QPushButton(QIcon(":/images/de_flag.png"), "");
+	germanButton->setCheckable(true);
+	germanButton->setChecked(setts->getLanguage() == Settings::Language::German);
+	QObject::connect(germanButton, &QPushButton::clicked, [this]()
+	{
+		emit languageChanged(Settings::Language::German);
+	} );
 }
 
 void SettingsWindow::createShortcuts()

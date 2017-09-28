@@ -5,7 +5,7 @@
 #include <vector>
 
 #define ALG1		// ALG1, ALG2, ALG3
-#define THREADS
+// #define THREADS
 
 class CellSystem : public std::vector< std::vector<Cell> >
 {

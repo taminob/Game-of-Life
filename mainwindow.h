@@ -4,6 +4,7 @@
 #include "graphicalwindow.h"
 #include "settingswindow.h"
 #include "separatethread.h"
+#include "helpwindow.h"
 #include <QMainWindow>
 #include <QTranslator>
 #include <QCommonStyle>
@@ -27,6 +28,8 @@ class MainWindow : public QMainWindow
 
 	Label* generationTimer;
 
+	HelpWindow helpwin;
+
 	QGridLayout* grid;
 
 	void createLayout();
@@ -42,15 +45,20 @@ class MainWindow : public QMainWindow
 		QAction* resumes;
 	QMenu* view;
 		QAction* hideMenu;
+		QAction* minimize;
 		QAction* maximize;
 		QAction* fullscreen;
 	QMenu* settings;
 		QMenu* languages;
+		QAction* english;
+		QAction* german;
+		QAction* generalSetting;
+		QAction* gameSetting;
 		QAction* setting;
 	QMenu* help;
 		QAction* help1;
-
-	QCommonStyle iconStyle;
+		QAction* aboutQt;
+		QAction* aboutAction;
 
 	void createMenu();
 	void createStartSubMenu();
@@ -60,8 +68,12 @@ class MainWindow : public QMainWindow
 
 	QMenu* contextmenu;
 		QAction* hideMenu2;
+		QAction* setting2;
 
 	void createContextMenu();
+
+	QAction* zoomIn;
+	QAction* zoomOut;
 
 	QMessageBox* exitBox;
 	void closeEvent(QCloseEvent* event);
@@ -86,9 +98,11 @@ private:
 	Language currentLanguage;
 
 public:
-	explicit MainWindow(QWidget* parent = nullptr, Language language = Language::English);
-	MainWindow(const QString& file, Language language = Language::English, QWidget* parent = nullptr);
+	explicit MainWindow(QWidget* parent = nullptr);
+	MainWindow(const QString& file, QWidget* parent = nullptr);
 	virtual ~MainWindow() override;
+
+	static QCommonStyle iconStyle;
 
 public slots:
 	void startNew();
@@ -106,6 +120,7 @@ public slots:
 	void loadGame();
 	void readSavefile(QFile& file);
 	void readStartfile(QFile& file);
+	void retranslate();
 
 signals:
 	void startThread();

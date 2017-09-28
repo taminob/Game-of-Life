@@ -120,7 +120,6 @@ private slots:
 
 signals:
 	void autoplaySpeedChanged();
-	void languageChanged(Language);
 };
 
 #endif // SETTINGS_H

@@ -1,6 +1,8 @@
 #include "cellsystem.h"
 #include "cell.h"
+#ifdef THREADS
 #include <thread>
+#endif
 
 CellSystem::CellSystem() : std::vector< std::vector<Cell> >()
 {
@@ -24,7 +26,7 @@ void CellSystem::clear()
 #ifdef THREADS
 void CellSystem::task(int i, const int& v)
 {
-	for(; i < v; ++i)
+	for(; i <= v; ++i)
 	{
 		for(unsigned int b = 0; b <= maxX; ++b)
 		{
@@ -55,11 +57,14 @@ void CellSystem::nextGen()
 		}
 	}
 #else
-	std::vector< std::thread > threads;
+	std::vector<std::thread> threads;
 	threads.reserve(std::thread::hardware_concurrency() - 1);
-	std::size_t part = maxY / (threads.capacity() + 1);
-	while(threads.size() < threads.capacity())
-		threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
+	std::size_t part = (maxY > 10) ? maxY / (threads.capacity() + 1) : 0;
+	if(part > 0)
+	{
+		while(threads.size() < threads.capacity())
+			threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
+	}
 
 	task(part * threads.size(), maxY);
 
@@ -82,11 +87,14 @@ void CellSystem::calcNextGen()
 		}
 	}
 #else
-	std::vector< std::thread > threads;
+	std::vector<std::thread> threads;
 	threads.reserve(std::thread::hardware_concurrency() - 1);
-	std::size_t part = maxY / (threads.capacity() + 1);
-	while(threads.size() < threads.capacity())
-		threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
+	std::size_t part = (maxY > 10) ? maxY / (threads.capacity() + 1) : 0;
+	if(part > 0)
+	{
+		while(threads.size() < threads.capacity())
+			threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
+	}
 
 	task(part * threads.size(), maxY);
 

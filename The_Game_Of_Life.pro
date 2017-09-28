@@ -35,7 +35,8 @@ SOURCES += \
     label.cpp \
     settings.cpp \
     separatethread.cpp \
-    cellsystem.cpp
+    cellsystem.cpp \
+    helpwindow.cpp
 
 HEADERS  += \
     cell.h \
@@ -46,9 +47,10 @@ HEADERS  += \
     label.h \
     settings.h \
     separatethread.h \
-    cellsystem.h
+    cellsystem.h \
+    helpwindow.h
 
-TRANSLATIONS += gol_en.ts gol_de.ts
+TRANSLATIONS += gol_de.ts
 
 RESOURCES += \
     resources.qrc

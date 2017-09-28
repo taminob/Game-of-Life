@@ -112,8 +112,6 @@ void GraphicalWindow::wheelEvent(QWheelEvent* event)
 		double lf = pos.x() - event->pos().x() * wf / w;
 		double tf = pos.y() - event->pos().y() * hf / h;
 
-		this->ensureVisible(lf, tf, wf, hf, 0, 0);
-
 		QPointF newPos = this->mapToScene(event->pos());
 
 		this->ensureVisible(QRectF(QPointF(lf, tf) - newPos + pos, QSizeF(wf, hf)), 0, 0);
@@ -175,8 +173,11 @@ const CellSystem& GraphicalWindow::createCells(const std::size_t& w, const std::
 	std::mt19937 mt(qrand());
 	std::uniform_int_distribution<int> dist(0, 2);
 
+	system.reserve(h * w);
+
 	for(std::size_t a = 0; a < h; a++)
 	{
+		row.reserve(w);
 		for(std::size_t b = 0; b < w; b++)
 		{
 			if(dist(mt))
@@ -205,9 +206,6 @@ void GraphicalWindow::fullUpdate()
 void GraphicalWindow::sceneUpdate()
 {
 	this->scene->update(this->scene->sceneRect());
-/*	QRect viewport_rect(0, 0, this->viewport()->width(), this->viewport()->height());
-	QRectF visible_scene_rect = this->mapToScene(viewport_rect).boundingRect();
-	this->scene->update(visible_scene_rect);*/
 }
 
 void GraphicalWindow::clearAll()
