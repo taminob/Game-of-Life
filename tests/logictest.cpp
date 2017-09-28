@@ -42,13 +42,16 @@ int main(int argc, char* argv[])
 		row.clear();
 	}
 
+	system.calcNextGen();
+
 	for(int i = 0; i < data.gens; ++i)
 	{
+		std::cout << "Generation " << system.getGeneration() << ":\n";
 		for(int a = 0; a < system.size(); ++a)
 		{
-			for(int b = 0; b < system[0].size(); ++b)
+			for(int b = 0; b < system.at(0).size(); ++b)
 			{
-				std::cout << system[a][b].alive << ' ';
+				std::cout << system.at(a).at(b).alive << ' ';
 			}
 			std::cout << '\n';
 		}

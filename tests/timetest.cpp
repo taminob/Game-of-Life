@@ -45,12 +45,22 @@ int main(int argc, char* argv[])
 		row.clear();
 	}
 
+	system.calcNextGen();
+
 	const auto end = std::chrono::high_resolution_clock::now();
 
 	const auto begin = std::chrono::high_resolution_clock::now();
 	for(int i = 0; i < data.gens; ++i)
 	{
-			system.nextGen();
+	/*	for(int a = 0; a < system.size(); ++a)
+		{
+			for(int b = 0; b < system.at(0).size(); ++b)
+				std::cout << system.at(a).at(b).alive << ' ';
+			std::cout << '\n';
+		}
+		std::cout << '\n';*/
+
+		system.nextGen();
 	}
 	const auto finished = std::chrono::high_resolution_clock::now();
 	const std::chrono::duration<double, std::milli> creatdur = end - start;
