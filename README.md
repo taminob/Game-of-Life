@@ -21,3 +21,5 @@ The structure is easy: 0 is dead, 1 is alive. A newline marks the next row. Any 
 ### *.save-file
 You can pass a *.save-file as an argument to the program, open it through a file manager or open it inside the program.
 This is the format where saved games will be stored. They are binary written and can not be read through a editor.
+
+For rules and navigation read the in-program help (CTRL + H).
