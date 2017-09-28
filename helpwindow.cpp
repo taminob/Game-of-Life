@@ -6,9 +6,11 @@ HelpWindow::HelpWindow(QWidget *parent) : QWidget(parent), closeButton(tr("&Clos
 	this->setWindowTitle(tr("Help"));
 	this->setWindowIcon(MainWindow::iconStyle.standardIcon(QStyle::SP_DialogHelpButton));
 
-	browser.setMinimumSize(400, 500);
+	browser.setMinimumSize(400, 400);
 	browser.setSearchPaths(QStringList(":/"));
 	browser.setSource(QUrl("en_help.html"));
+
+	QObject::connect(&closeButton, &QPushButton::clicked, this, &HelpWindow::close);
 
 	grid.addWidget(&browser, 0, 0, 1, 2);
 	grid.addWidget(&closeButton, 1, 1);

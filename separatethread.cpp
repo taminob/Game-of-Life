@@ -1,7 +1,5 @@
 #include "separatethread.h"
 #include <QThread>
-#include <chrono>
-#include <qdebug.h>
 
 QMutex SeparateThread::systemMutex;
 
