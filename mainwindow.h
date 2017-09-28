@@ -70,10 +70,12 @@ class MainWindow : public QMainWindow
 		QAction* hideMenu2;
 		QAction* setting2;
 
-	void createContextMenu();
+	void createContextMenu();	
 
 	QAction* zoomIn;
 	QAction* zoomOut;
+
+	void createZoomShortcuts();
 
 	QMessageBox* exitBox;
 	void closeEvent(QCloseEvent* event);

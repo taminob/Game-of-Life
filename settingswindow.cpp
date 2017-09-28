@@ -514,20 +514,26 @@ void SettingsWindow::createAreaGroupbox(QGroupBox* areaBox)
 
 void SettingsWindow::createLanguageButtons()
 {
-	englishButton = new QPushButton(QIcon(":/images/gb_flag.png"), "");
+	englishButton = new QPushButton(QIcon(":/images/us_flag.png"), "");
+//	englishButton = new QPushButton(QIcon(":/images/gb_flag.png"), "");
 	englishButton->setCheckable(true);
 	englishButton->setChecked(setts->getLanguage() == Settings::Language::English);
 	QObject::connect(englishButton, &QPushButton::clicked, [this]()
 	{
-		emit languageChanged(Settings::Language::English);
+		if(setts->getLanguage() != Settings::Language::English)
+			emit languageChanged(Settings::Language::English);
+		else
+			this->englishButton->setChecked(true);
 	} );
 	germanButton = new QPushButton(QIcon(":/images/de_flag.png"), "");
 	germanButton->setCheckable(true);
 	germanButton->setChecked(setts->getLanguage() == Settings::Language::German);
 	QObject::connect(germanButton, &QPushButton::clicked, [this]()
 	{
-		emit languageChanged(Settings::Language::German);
-	} );
+		if(setts->getLanguage() != Settings::Language::German)
+			emit languageChanged(Settings::Language::German);
+		else
+			this->germanButton->setChecked(true);	} );
 }
 
 void SettingsWindow::createShortcuts()

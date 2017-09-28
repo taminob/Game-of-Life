@@ -192,14 +192,6 @@
         <translation type="unfinished">&lt;b&gt;Version: &lt;/b&gt; 2.0 &lt;br&gt;&lt;br&gt; &lt;b&gt;Quellcode:&lt;/b&gt; &lt;br&gt; &lt;a href=&apos;https://www.github.com/sqytco/game-of-life&apos;&gt;https://www.github.com/sqytco/game-of-life&lt;/a&gt; &lt;br&gt;&lt;br&gt; &lt;b&gt;Kontakt:&lt;/b&gt; &lt;br&gt; sqyt.co@gmail.com</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Version: &lt;/b&gt; 2.0 &lt;br&gt;&lt;br&gt; &lt;b&gt;Sources:&lt;/b&gt; &lt;br&gt; https://www.github.com/sqytco/game-of-life &lt;br&gt;&lt;br&gt; &lt;b&gt;Contact:&lt;/b&gt; &lt;br&gt; sqyt.co@gmail.com</source>
-        <translation type="obsolete">&lt;b&gt;Version: &lt;/b&gt; 2.0 &lt;br&gt;&lt;br&gt; &lt;b&gt;Quellcode:&lt;/b&gt; &lt;br&gt; https://www.github.com/sqytco/game-of-life &lt;br&gt;&lt;br&gt; &lt;b&gt;Kontakt:&lt;/b&gt; &lt;br&gt; sqyt.co@gmail.com</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Sources:&lt;/b&gt; &lt;br&gt; https://www.github.com/sqytco/game-of-life &lt;br&gt;&lt;br&gt; &lt;b&gt;Contact:&lt;/b&gt; &lt;br&gt; sqyt.co@gmail.com</source>
-        <translation type="obsolete">&lt;b&gt;Quellcode:&lt;/b&gt; &lt;br&gt; https://www.github.com/sqytco/game-of-life &lt;br&gt;&lt;br&gt; &lt;b&gt;Kontakt:&lt;/b&gt; &lt;br&gt; sqyt.co@gmail.com</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="411"/>
         <source>Overwrite existing savefile?</source>
         <translation type="unfinished">Vorhandene Datei überschreiben?</translation>

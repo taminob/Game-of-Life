@@ -61,15 +61,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
 	exitBox = new QMessageBox(QMessageBox::Question, tr("Exit"), tr("Do you really want to exit?"), QMessageBox::Yes | QMessageBox::No, this);
 
-	zoomIn = new QAction;
-	zoomIn->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Plus));
-	QObject::connect(zoomIn, &QAction::triggered, [this]() { this->graphic->scale(1.1, 1.1); } );
-	this->addAction(zoomIn);
-	zoomOut = new QAction;
-	zoomOut->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Minus));
-	QObject::connect(zoomOut, &QAction::triggered, [this]() { this->graphic->scale(0.9, 0.9); } );
-	this->addAction(zoomOut);
-
 	QObject::connect(settwin, &SettingsWindow::languageChanged, this, &MainWindow::changeLanguage);
 	installLanguage(settwin->settings()->getLanguage());
 }
@@ -123,6 +114,13 @@ void MainWindow::retranslate()
 
 	settings->setTitle(tr("Se&ttings"));
 	languages->setTitle(tr("&Language"));
+	if(currentLanguage == Language::English)
+		languages->setIcon(QIcon(":/images/us_flag.png"));
+	//	languages->setIcon(QIcon(":/images/gb_flag.png"));
+	else if(currentLanguage == Language::German)
+		languages->setIcon(QIcon(":/images/de_flag.png"));
+	else
+		languages->setIcon(QIcon());
 	english->setText(tr("&English"));
 	english->setChecked(currentLanguage == Language::English);
 	german->setText(tr("&German"));
@@ -239,12 +237,14 @@ void MainWindow::createViewSubMenu()
 void MainWindow::createSettingsSubMenu()
 {
 	if(currentLanguage == Language::English)
-		languages = settings->addMenu(QIcon(":/images/gb_flag.png"), tr("&Language"));
+		languages = settings->addMenu(QIcon(":/images/us_flag.png"), tr("&Language"));
+	//	languages = settings->addMenu(QIcon(":/images/gb_flag.png"), tr("&Language"));
 	else if(currentLanguage == Language::German)
 		languages = settings->addMenu(QIcon(":/images/de_flag.png"), tr("&Language"));
 	else
 		languages = settings->addMenu(tr("&Language"));
-	english = languages->addAction(QIcon(":/images/gb_flag.png"), tr("&English"));
+	english = languages->addAction(QIcon(":/images/us_flag.png"), tr("&English"));
+//	english = languages->addAction(QIcon(":/images/gb_flag.png"), tr("&English"));
 	english->setCheckable(true);
 	english->setChecked(currentLanguage == Language::English);
 	QObject::connect(english, &QAction::triggered, [this]() { this->changeLanguage(Language::English); this->english->setChecked(true); } );
@@ -275,6 +275,18 @@ void MainWindow::createHelpSubMenu()
 	QObject::connect(aboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 	aboutAction = help->addAction(QIcon(":images/game-of-life_icon.jpg"), tr("&About"));
 	QObject::connect(aboutAction, &QAction::triggered, this, &MainWindow::about);
+}
+
+void MainWindow::createZoomShortcuts()
+{
+	zoomIn = new QAction;
+	zoomIn->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Plus));
+	QObject::connect(zoomIn, &QAction::triggered, [this]() { this->graphic->scale(1.1, 1.1); } );
+	this->addAction(zoomIn);
+	zoomOut = new QAction;
+	zoomOut->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Minus));
+	QObject::connect(zoomOut, &QAction::triggered, [this]() { this->graphic->scale(0.9, 0.9); } );
+	this->addAction(zoomOut);
 }
 
 void MainWindow::startNew()
