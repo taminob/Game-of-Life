@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #include "settings.h"
 #include "settingswindow.h"
 #include "separatethread.h"

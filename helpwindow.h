@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef HELPWINDOW_H
 #define HELPWINDOW_H
 

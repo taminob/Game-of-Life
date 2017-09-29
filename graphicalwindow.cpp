@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #include "graphicalwindow.h"
 #include "separatethread.h"
 #include <QStyleOptionGraphicsItem>

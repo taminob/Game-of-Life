@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

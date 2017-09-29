@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
 

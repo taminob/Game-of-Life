@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef GRAPHICALWINDOW_H
 #define GRAPHICALWINDOW_H
 

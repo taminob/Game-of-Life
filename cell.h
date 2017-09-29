@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef CELL_H
 #define CELL_H
 

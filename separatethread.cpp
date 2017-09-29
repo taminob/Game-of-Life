@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #include "separatethread.h"
 #include <QThread>
 

@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef SETTINGS_H
 #define SETTINGS_H
 

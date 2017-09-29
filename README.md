@@ -23,3 +23,5 @@ You can pass a *.save-file as an argument to the program, open it through a file
 This is the format where saved games will be stored. They are binary written and can not be read through a editor.
 
 For rules and navigation read the help (CTRL + H) or en_help.html/de_help.html.
+
+© Copyright (c) 2017 SqYtCO

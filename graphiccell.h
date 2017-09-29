@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef GRAPHICCELL_H
 #define GRAPHICCELL_H
 

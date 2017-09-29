@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #ifndef SEPARATETHREAD_H
 #define SEPARATETHREAD_H
 

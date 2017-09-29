@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #include "mainwindow.h"
 #include <QApplication>
 

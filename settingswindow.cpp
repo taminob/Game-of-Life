@@ -1,3 +1,5 @@
+// © Copyright (c) 2017 SqYtCO
+
 #include "settingswindow.h"
 #include "settings.h"
 #include "graphicalwindow.h"
