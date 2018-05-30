@@ -1,0 +1,159 @@
+<!-- © Copyright (c) 2018 SqYtCO -->
+
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Game Of Life Hilfe</title>
+		<meta charset="UTF-8">
+		<style>
+			p{ line-height: 120%; }
+		</style>
+	</head>
+	<body>
+		<h1 align=center>Conways Game Of Life</h1>
+		<a align=center name="index"></a>
+		<h2 align=center>Das Spiel<br></h2>
+		<a align=center href="#game-of-life">Game Of Life<br></a>
+		<a align=center href="#rules">Regeln<br></a>
+		<h2 align=center>Die Anwendung<br></h2>
+		<a align=center href="#views">Ansichten<br></a>
+		<a align=center href="#navigation">Navigation<br></a>
+		<a align=center href="#playing">Spielen<br></a>
+		<a align=center href="#preferences">Einstellungen<br></a>
+		<a align=center href="#shortcuts">Tastaturbefehle<br></a>
+
+		<a name="game-of-life"></a>
+		<h3 align=center>Game Of Life:</h3>
+		<p>Game Of Life ist ein zellulärer Automat, der im Jahre 1970 von dem britischen Mathmatiker John Horton Conway entwickelt wurde.<br>
+		Das Spiel besteht aus einem Spielfeld mit X mal Y toten oder lebendigen Zellen. Der Status jeder Zellen hängt dabei von ihren acht Nachbarn ab.<br>
+		Jede Runde wird dabei der neue Status für die einzelnen Zellen von den verwendeten Regeln abhängig errechnet, wobei eine Runde auch "Generation" genannt wird.</p>
+
+		<a name="rules"></a>
+		<h3 align=center>Regeln Des Lebens:</h3>
+		<p>1. Jede lebende Zelle mit weniger als zwei lebenden Nachbarn vereinsamt und stirbt aufgrund von Unterbevölkerung.<br>
+		2. Jede lebende Zelle mit genau zwei oder drei lebenden Nachbarn fühlt sich wohl und lebt weiterhin in der nächsten Generation.<br>
+		3. Jede lebende Zelle mit mehr als drei lebenden Nachbarn verhungert und stirbt aufgrund von Überbevölkerung.<br>
+		4. Jede tote Zelle mit genau drei lebenden Nachbarn wird aufgrund von optimalen Bedingungen geboren.</p>
+
+		<a name="views"></a>
+		<h3 align=center>Ansichten:</h3>
+		<h4>Generelles</h4>
+		<p>Die gesamte Anwendung ist in verschieden Ansichten unterteilt.<br>
+		Diese können über <a href="#shortcuts-views">Tastaturbefehle</a> aktiviert werden und mit 'Esc' wieder verlassen werden.</p>
+
+		<h4>Spielansicht</h4>
+		<p>Die Spielansicht ist die Hauptansicht und wird nach dem Starten angezeigt.<br>
+		Sie enthält das Spielfeld mit den Zellen und einen Generationenzähler, der die derzeitige Generation anzeigt. <a href="#navigation">Zur Navigation</a></p>
+
+		<h4>Einstellungsansicht</h4>
+		<p>Die Einstellungsansicht lässt lässt sich mit dem Tastaturbefehl 'P' einblenden und ist der Ort, an dem Anpassungen der Anwendung möglich sind.<br>
+		Hier gibt es Optionen, die von den verwendeten Farben bis hin zu eigenen Regeln viele Möglichkeiten bieten.<br>
+		Eine Erklärung zu den Einstellungen ist <a href="#preferences">hier</a> zu finden.</p>
+
+		<h4>Hilfeansicht</h4>
+		<p>Die Hilfeansicht ist eine Erweiterung am linken Rand der Spielansicht, die mit dem Tastaturbefehl 'H' eingeblendet werden kann.<br>
+		Hier sind alle benötigten Informationen für den Umgang mit der Anwendung gesammelt vorzufinden.</p>
+
+		<h4>Werkzeugeansicht</h4>
+		<p>Die Werkzeugeansicht ist eine kleine Zusatzleiste, die an der oberen Seite der Spielansicht durch den Tastaturbefehl 'T' erscheint.<br>
+		Sie enthält Optionen für das Speichern und Öffnen sowie Werkzeuge zur Generierung von nächsten Generationen, zur Navigation und noch mehr.<br>
+		Weiterhin wird hier die aktuelle Größe des Spielfeldes. In der Hilfeansicht und der Einstellungsansicht wird die Werkzeugeansicht versteckt.</p>
+
+		<a name="navigation"></a>
+		<h3 align=center>Navigation:</h3>
+		<p>Die Fortbewegung auf dem Spielfeld ist mithilfe von verschiedenen <a href="#shortcuts-navigation">Tastaturbefehlen</a> möglich.
+		Dabei gibt es die Möglichkeit, sich langsam zu bewegen (Pfeiltasten/Mausrad), sich schnell zu bewegen (STRG+Pfeiltasten) und herein-/ und herauszuzoomen (STRG+[+/-]/STRG+Mausrad).
+		Die Position kann jederzeit wieder mit der Taste 'M' oder in der Werkzeugeansicht mit dem Button "Position zurücksetzen" wieder in die Ausgangsposition zurückversetzt werden.</p>
+
+		<a name="playing"></a>
+		<h3 align=center>Spielen:</h3>
+		<p>Es gibt insgesamt zwei Möglichkeiten, wie man die nächsten Generationen generieren kann.<br>
+		Die eine Möglichkeit ist die Autogenerierung, die automatisch mit der eingestellten Verzögerung immer neue Generationen berechnet und automatisch aktualisiert.
+		Dies lässt sich mit dem Tastaturbefehl 'R' starten sowie stoppen. Das maximale Tempo wird dabei an die Updategeschwindigkeit der Anzeige angepasst.<br>
+		Die andere Möglichkeit ist das schrittweise Generieren, auch Stepping genannt, das es ermöglicht, mehrere Generationen auf einmal zu berechnen.
+		Die Anzahl an Generationen pro Schritt lässt sich in dem entsprechenden Eingabefeld in der Werkzeugeansicht einstellen.
+		Da hierbei die Berechnungen im Hintergrund stattfinden und die Spieleansicht während der Berechnungen nicht aktualisiert wird,
+		ist es auch möglich, mit hohem Tempo Generationen schnell zu erzeugen.<br>
+		Dieser Modus lässt sich mit der 'Leertaste' starten und ebenso wieder stoppen.
+		Beim Unterbrechen der Berechnungen (auch durch einen Mausklick auf eine Zelle möglich) wird die derzeit berechnete Generation angezeigt.</p>
+		<p>Als weiteres Feature unterstützt die Anwendung die Verwendung von eigenen Regelsätzen. Dabei kann man einstellen, wie viele Nachbarn eine Zelle braucht um zu überleben
+		oder um geboren zu werden. Die Standardregeln lassen sich dabei so formulieren, dass eine Zelle 2 oder 3 Nachbarn braucht um zu überleben und 3 Nachbarn um geboren zu werden.
+		In allen anderen Fällen wird die Zelle sterben.</p>
+		<p>Ebenso ist es möglich, das Verhalten an den Rändern einzustellen, wobei es die Möglichkeiten gibt, dass die Nachbarn der am Rand liegenden Zellen sich auf der jeweils
+		gegenüberliegenden Seite wiederfinden, dass das Feld von einem Rand aus toten Zellen umgeben ist und dass das Feld von einem Rand aus lebenden Zellen umgeben ist.</p>
+
+		<a name="preferences"></a>
+		<h3 align=center>Einstellungen:</h3>
+		<h4>Spiel</h4>
+		<p>Weite: <br><i>Diese Option legt die Größe des Spielfeldes entlang der x-Achse fest.</i></p>
+		<p>Höhe: <br><i>Diese Option legt die Größe des Spielfeldes entlang der y-Achse fest.</i></p>
+		<p>Verhalten An Den Rändern: <br><i>Die Auswahl hier legt fest, was für Nachbarn die an den Rängern liegenden Zellen haben (siehe auch <a href="#playing">hier</a>).</i></p>
+		<p>Neues Spiel Mit Zufälligen Zellen Füllen: <br><i>Wenn diese Option aktiv ist, wird bei dem Starten eines neuen Spieles (Tastenbefehl: 'N') das Spielfeld mit zufälligen Zellen gefüllt.</i></p>
+		<p>Verhältnis Zufällig Generierter Zellen: <br><i>Mit dieser Option lässt sich das Verhältnis der zufällig generierten Startzellen beeinflussen.(Diese Option ist nur verfügbar, wenn "Neues Spiel Mit Zufälligen Zellen Füllen" aktiv ist)</i></p>
+		<p>Autogenerierungsverzögerung: <br><i>Die hier eingestellte Verzögerung ist der Zeitraum, der zwischen zwei Generationen bei der Autogenerierung (Tastenbefehl: 'R') vergeht.</i></p>
+		<p>Anzahl An Benötigen Nachbarn, Um Zu Überleben: <br><i>Mithilfe dieser Option ist es möglich, eigene Regelsätze zu erstellen. Dabei steht jeder Button für eine Anzahl an Nachbarn, mit der eine Zelle überleben kann.</i></p>
+		<p>Anzahl An Benötigen Nachbarn, Um Geboren Zu Werden: <br><i>Mithilfe dieser Option ist es möglich, eigene Regelsätze zu erstellen. Dabei steht jeder Button für eine Anzahl an Nachbarn, mit der eine Zelle geboren werden kann.</i></p>
+		<p>Sperre Zellen Nach Initialgeneration: <br><i>Wenn diese Option aktiviert ist, ist es ab Generation 1 nicht mehr möglich, den Zustand von Zellen einzeln zu ändern. Dies ist dann nur noch anfangs in Generation 0 möglich.</i></p>
+
+		<h4>Aussehen</h4>
+		<p>Gitter Anzeigen: <br><i>Mithilfe dieser Option ist es möglich, das graue Gitter um die Zellen auszublenden.</i></p>
+		<p>Generationenzähler Anzeigen:<br><i>Mit dieser Option lässt sich die Anzeige für die derzeitige Generation ausblenden.</i></p>
+		<p>Größe des Generationenzählers:<br><i>Diese Option bestimmt die Größe des Generationenzählers in Pixeln. (Diese Option ist nur verfügbar, wenn "Generationenzähler Anzeigen" aktiv ist)</i></p>
+
+		<h4>Anwendung</h4>
+		<p>Anzahl Genutzter Threads Für Berechnungen:<br><i>Mit dieser Option lässt sich die Zahl der genutzten Threads zum Berechnen von neuen Generationen einstellen. Die Maximalanzahl entspricht dabei üblicherweise der Anzahl der zur Verfügung stehenden Kerne.</i></p>
+		<p>Im Vollbildmodus Starten:<br><i>Wenn diese Option aktiv ist, startet die Anwendung im Vollbildmodus. Dieser lässt sich jederzeit mit dem Tastenbefehl 'F' wieder verlassen.</i></p>
+		<p>Warnung Beim Verlassen Anzeigen:<br><i>Wenn diese Option inaktiv ist, schließt die Anwendung sofort ohne die Nachfrage, ob das laufende Spiel gespeichert werden soll.</i></p>
+		<p>Standardpfad Für Gespeicherte Spiele:<br><i>Hier lässt sich der Pfad einstellen, an dem mit dem Tastenbefehl 'S' gespeicherte Spiele automatisch gespeichert werden. Wenn das Eingabefeld weiß ist, hat der Benutzer keinen Schreibzugriff auf das gewählte Verzeichnis.</i></p>
+		<p>Verzeichnis Mit Gespeicherten Spielen Anzeigen:<br><i>Mit diesem Button lässt sich der eingestellte Pfad für gespeicherte Spiele im Standard-Dateimanager öffnen.</i></p>
+
+		<h4>Farbe</h4>
+		<p>Farbe Von Toten Zellen:<br><i>Die hier gewählte Farbe bestimmt die Farbe der derzeit toten Zellen, die auch in der nächsten Generation noch tot sein werden.</i></p>
+		<p>Farbe Von Lebenden Zellen:<br><i>Die hier gewählte Farbe bestimmt die Farbe der derzeit lebenden Zellen, die auch in der nächsten Generation noch leben werden.</i></p>
+		<p>Farbe Von Auferstehenden Zellen:<br><i>Die hier gewählte Farbe bestimmt die Farbe von Zellen, die tot sind aber in der nächsten Generation leben werden.</i></p>
+		<p>Farbe Von Sterbenden Zellen:<br><i>Die hier gewählte Farbe bestimmt die Farbe von Zellen, die leben aber in der nächsten Generation tot sein werden.</i></p>
+		<p>Farbe Des Hintergrunds:<br><i>Die hier gewählte Farbe bestimmt die Farbe des Hintergrunds, wenn man sich außerhalb des Feldes befindet.</i></p>
+
+		<a name="preferences-tool"></a>
+		<h4>Weitere</h4>
+		<p>Generationen Pro Schritt:<br><i>Mit dieser Option lassen sich die Generationen einstellen, die pro Schritt berechnet werden. (Diese Option befindet sich in der Werkzeugeansicht)</i></p>
+		<p>Mausaktionen Vertauschen:<br><i>Mit dieser Option lassen sich die Mausaktionen "Beleben" und "Töten" zwischen linker und rechter Maustaste vertauschen. (Diese Option befindet sich in der Werkzeugeansicht)</i></p>
+
+		<a name="shortcuts"></a>
+		<h3 align=center>Tastaturbefehlübersicht:</h3>
+
+		<a name="shortcuts-views"></a>
+		<h4>Ansichten</h4>
+		<p>Derzeitige Ansicht ausblenden: [Esc]<br>
+		Spieleansicht: [G]<br>
+		Einstellungsansicht: [P]<br>
+		Hilfeansicht: [H]<br>
+		Werkzeugeansicht: [T]</p>
+
+		<a name="shortcuts-playing"></a>
+		<h4>Spielen</h4>
+		<p>Neues Spiel: [N]<br>
+		Autogenerierung: [R]<br>
+		Nächster Schritt: [Leertaste]<br>
+		Zelle beleben: [Mausklick](<a href="#preferences-tool">eingestellte Maustaste</a>)<br>
+		Zelle töten: [Mausklick](<a href="#preferences-tool">eingestellte Maustaste</a>)<br>
+		Alle Zellen Töten: [A]<br>
+		Alle Zellen Beleben: [STRG] + [A]</p>
+
+		<a name="shortcuts-navigation"></a>
+		<h4>Navigation</h4>
+		<p>Bewegen: [←/↓/→̣/↑](Pfeiltasten/Mausrad)<br>
+		Schnelles Bewegen: [STRG] + [←/↓/→̣/↑](Pfeiltasten)<br>
+		Zoomen: [STRG] + [-/+]/[↓/↑](Mausrad)<br>
+		Position zurücksetzen: [M]</p>
+
+		<a name="shortcuts-other"></a>
+		<h4>Andere</h4>
+		<p>Speichern: [S]<br>
+		Speichern als...: [STRG] + [S]<br>
+		Öffnen: [O]<br>
+		Vollbild: [F]<br>
+		Spiel beenden: [Q]<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
+	</body>
+</html>

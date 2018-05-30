@@ -1,320 +1,202 @@
-// © Copyright (c) 2017 SqYtCO
+// © Copyright (c) 2018 SqYtCO
 
 #include "cellsystem.h"
-#include "cell.h"
-#ifdef THREADS
-#include <thread>
-#endif
+#include <random>
 
-CellSystem::CellSystem() : std::vector< std::vector<Cell> >()
+Cell_System::Cell_System(const std::size_t& columns, const std::size_t& rows, const Border_Behavior& border_behavior,
+			const std::size_t& live_rules, const std::size_t& reborn_rules, const std::size_t& threads) : Base_System(columns, rows), current_system(0),
+																											border_behavior(border_behavior),
+																											live_rules(live_rules), reborn_rules(reborn_rules)
 {
-	generation = 0;
-	maxX = 0;
-	maxY = 0;
+	// check given num and set num_of_threads
+	set_num_of_threads(threads);
+
+	if(border_behavior == Border_Behavior::Continue_On_Opposite_Side)	// "opposite"-behavior
+	{
+		// create cells for current state
+		system[current_system].resize(columns * rows);
+		// create cells for next state
+		system[current_system ^ 0x01].resize(columns * rows);
+	}
+	else	// "special border"-behavior
+	{
+		// create cells for current state; last cell reserved for border behavior "Surrounded_By_Dead_Cells/Surrounded_By_Living_Cells"
+		system[current_system].resize(columns * rows + 1);
+		// create cells for next state; last cell reserved for border behavior "Surrounded_By_Dead_Cells/Surrounded_By_Living_Cells"
+		system[current_system ^ 0x01].resize(columns * rows + 1);
+
+		// set last cell for special border behavior to alive or dead
+		system[current_system][columns * rows].state = static_cast<Cell_State>(border_behavior == Border_Behavior::Surrounded_By_Living_Cells);
+		system[current_system ^ 0x01][columns * rows].state = static_cast<Cell_State>(border_behavior == Border_Behavior::Surrounded_By_Living_Cells);
+	}
+
+	// set all cells to dead
+	set_all(Dead);
 }
 
-void CellSystem::clear()
+void Cell_System::set_num_of_threads(const std::size_t& threads)
 {
-	for(std::size_t i = 0; i < this->size(); ++i)
-	{
-		(*this)[i].clear();
-	}
-
-	std::vector< std::vector<Cell> >::clear();
-	maxX = 0;
-	maxY = 0;
+	// only set threads if they can increase performance
+	if(num_of_threads < size_y / 2)
+		// at least 1 thread
+		num_of_threads = (threads != 0) ? threads : 1;
+	else
+		num_of_threads = 1;
 }
 
-#ifdef THREADS
-void CellSystem::task(int i, const int& v)
+void Cell_System::calc_cell_opposite_behavior(const std::size_t& x, const std::size_t& y)
 {
-	for(; i <= v; ++i)
+	std::size_t alive_neighbors = 0;
+
+	// state of given cell
+	Cell_State state = system[current_system][y * size_x + x].state;
+
+	for(int a = -1; a < 2; ++a)
+		for(int b = -1; b < 2; ++b)
+			// sum alive neighbors and call algorithm for calculating neighbors of border-cells
+			alive_neighbors += system[current_system][(get_opposite_on_border_y(static_cast<long>(y) + a) * size_x) + get_opposite_on_border_x(static_cast<long>(x) + b)].state;
+
+	alive_neighbors -= state;
+
+	// update state in next system; fastest way to calculate next state with standard rule set
+//	system[current_system ^ 0x01][y * size_x + x].state = static_cast<Cell_State>((alive_neighbors == 3 ) | ((alive_neighbors == 2) & state));
+
+	// if cell is alive, try live_rules
+	if(state)
 	{
-		for(unsigned int b = 0; b <= maxX; ++b)
+		if(live_rules & (1 << alive_neighbors))
+			system[current_system ^ 0x01][y * size_x + x].state = Alive;
+		else
+			system[current_system ^ 0x01][y * size_x + x].state = Dead;
+	}
+	// if cell is dead, try reborn_rules
+	else if(reborn_rules & (1 << alive_neighbors))
+		system[current_system ^ 0x01][y * size_x + x].state = Alive;
+	else
+		system[current_system ^ 0x01][y * size_x + x].state = Dead;
+}
+
+void Cell_System::calc_cell_special_border_behavior(const std::size_t& x, const std::size_t& y)
+{
+	std::size_t alive_neighbors = 0;
+
+	// state of given cell
+	Cell_State state = system[current_system][y * size_x + x].state;
+
+	for(int a = -1; a < 2; ++a)
+		for(int b = -1; b < 2; ++b)
+			// sum alive neighbors and call algorithm for calculating neighbors of border-cells
+			alive_neighbors += system[current_system][get_special_border(x + b, y + a)].state;
+
+	alive_neighbors -= state;
+
+	// update state in next system; fastest way to calculate next state with standard rule set
+//	system[current_system ^ 0x01][y * size_x + x].state = static_cast<Cell_State>((alive_neighbors == 3 ) | ((alive_neighbors == 2) & state));
+
+	// if cell is alive, try live_rules
+	if(state)
+	{
+		if(live_rules & (1 << alive_neighbors))
+			system[current_system ^ 0x01][y * size_x + x].state = Alive;
+		else
+			system[current_system ^ 0x01][y * size_x + x].state = Dead;
+	}
+	// if cell is dead, try reborn_rules
+	else if(reborn_rules & (1 << alive_neighbors))
+		system[current_system ^ 0x01][y * size_x + x].state = Alive;
+	else
+		system[current_system ^ 0x01][y * size_x + x].state = Dead;
+}
+
+void Cell_System::calc_part(const std::size_t& max_x, const std::size_t& min_x, const std::size_t& max_y, const std::size_t& min_y)
+{
+	std::size_t x = max_x, y = max_y;
+
+	// if statement outside of loop to improve performance
+	if(border_behavior == Continue_On_Opposite_Side)
+	{
+		while(y-- > min_y)
 		{
-			nextGenForCell(i, b);
+			while(x-- > min_x)
+				calc_cell_opposite_behavior(x, y);
+
+			// reset x
+			x = max_x;
+		}
+	}
+	else
+	{
+		while(y-- > min_y)
+		{
+			while(x-- > min_x)
+				calc_cell_special_border_behavior(x, y);
+
+			// reset x
+			x = max_x;
 		}
 	}
 }
-#endif
 
-void CellSystem::nextGen()
+void Cell_System::calc_next_generation()
 {
-	for(std::size_t a = 0; a <= maxX; ++a)
+	threads.reserve(num_of_threads);
+	// calc rows per thread
+	std::size_t y_per_job = size_y / num_of_threads;
+	// calc does not work out evenly
+	std::size_t odd_ys = size_y % num_of_threads;
+
+	if(num_of_threads == 1)
+		odd_ys = size_y;
+	else
 	{
-		for(std::size_t b = 0; b <= maxY; ++b)
-		{
-			(*this)[a][b].alive = (*this)[a][b].next;
-		}
+		// start set amount of threads with given y_per_job
+		for(std::size_t i = 0; i < num_of_threads; ++i)
+			threads.emplace_back(std::thread(&Cell_System::calc_part, this, size_x, 0, y_per_job * (i + 1) + odd_ys, y_per_job * i + odd_ys));
 	}
 
-	++generation;
+	calc_part(size_x, 0, odd_ys, 0);
 
-#ifndef THREADS
-	for(std::size_t a = 0; a <= maxX; ++a)
-	{
-		for(std::size_t b = 0; b <= maxY; ++b)
-		{
-			nextGenForCell(a, b);
-		}
-	}
-#else
-	std::vector<std::thread> threads;
-	threads.reserve(std::thread::hardware_concurrency() - 1);
-	std::size_t part = (maxY > 10) ? maxY / (threads.capacity() + 1) : 0;
-	if(part > 0)
-	{
-		while(threads.size() < threads.capacity())
-			threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
-	}
-
-	task(part * threads.size(), maxY);
-
-	for(auto& a : threads)
-		a.join();
-#endif
+	for(std::size_t i = 0; i < threads.size(); ++i)
+		threads[i].join();
+	threads.clear();
 }
 
-void CellSystem::calcNextGen()
+void Cell_System::next_generation()
 {
-	maxX = this->size() - 1;
-	maxY = (*this)[0].size() - 1;
+	// update state to next_state: change system to next generation (precalculated)
+	current_system ^= 0x01;
 
-#ifndef THREADS
-	for(std::size_t a = 0; a <= maxX; ++a)
-	{
-		for(std::size_t b = 0; b <= maxY; ++b)
-		{
-			nextGenForCell(a, b);
-		}
-	}
-#else
-	std::vector<std::thread> threads;
-	threads.reserve(std::thread::hardware_concurrency() - 1);
-	std::size_t part = (maxY > 10) ? maxY / (threads.capacity() + 1) : 0;
-	if(part > 0)
-	{
-		while(threads.size() < threads.capacity())
-			threads.emplace_back(&CellSystem::task, this, part * threads.size(), part * (threads.size() + 1));
-	}
-
-	task(part * threads.size(), maxY);
-
-	for(auto& a : threads)
-		a.join();
-#endif
+	// calculate new next_state
+	calc_next_generation();
 }
 
-void CellSystem::killAll()
+void Cell_System::random_cells(const std::size_t& alive, const std::size_t& dead)
 {
-	for(std::size_t a = 0; a <= maxX; ++a)
-	{
-		for(std::size_t b = 0; b <= maxY; ++b)
-		{
-			(*this)[a][b].alive = false;
-			(*this)[a][b].next = false;
-		}
-	}
+	// initialize random generation; generate values between 0 and ("alive" + "dead") for right ratio
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	std::uniform_int_distribution<std::size_t> dist(0, alive + dead - 1);
 
-	generation = 0;
+	for(std::size_t row = 0; row < size_y; ++row)
+		for(std::size_t column = 0; column < size_x; ++column)
+			// if generated random value is lower than "alive", the cell lifes (ratio: "alive"/"dead")
+			set_cell(column, row, static_cast<Cell_State>(dist(mt) < alive));
+
+	calc_next_generation();
 }
 
-#ifdef ALG3
-bool CellSystem::check(int x, int y)
+void Cell_System::set_cell(const std::size_t& x, const std::size_t& y, const Cell_State& state)
 {
-	if( x < 0 )
-		x = this->size() - ( ( -x ) % this->size() );
-	else if( x >= this->size() )
-		x %= this->size();
-	if( y < 0 )
-		y = (*this)[0].size() - ( ( -y ) % (*this)[0].size() );
-	else if( y >= (*this)[0].size() )
-		y %= (*this)[0].size();
-	return (*this)[x][y].alive
+	system[current_system][y * size_x + x].state = state;
+	system[current_system ^ 0x01][y * size_x + x].state = state;
 }
-#elif defined ALG2
-int CellSystem::countNeighbors(const std::size_t& x, const std::size_t& y)
+
+void Cell_System::set_all(const Cell_State& state)
 {
-	int total = 0;
-	for (int a = -1; a <= 1; a += 1) {
-		for (int b = -1; b <= 1; b += 1) {
+	for(std::size_t row = 0; row < size_y; ++row)
+		for(std::size_t column = 0; column < size_x; ++column)
+			system[current_system][row * size_x + column].state = state;
 
-			int i = (x + b) % (maxX + 1), j = (y + a) % (maxY + 1);
-
-			if(i >= 0 && i <= maxX && j >= 0 && j <= maxY && !(b == 0 && a == 0) && (*this)[i][j].alive) {
-				total += 1;
-			}
-		}
-	}
-	return total;
-}
-#endif
-void CellSystem::nextGenForCell(const std::size_t& x, const std::size_t& y)
-{
-#ifdef ALG2
-	int aliveCellNeighbs = countNeighbors(x, y);
-#elif defined ALG3
-	int aliveCellNeighbs = 0;
-
-	aliveCellNeighbs += check( x - 1, y - 1 );
-	aliveCellNeighbs += check( x    , y - 1 );
-	aliveCellNeighbs += check( x + 1, y - 1 );
-	aliveCellNeighbs += check( x - 1, y     );
-	aliveCellNeighbs += check( x + 1, y     );
-	aliveCellNeighbs += check( x - 1, y + 1 );
-	aliveCellNeighbs += check( x    , y + 1 );
-	aliveCellNeighbs += check( x + 1, y + 1 );
-#elif defined ALG1
-	int aliveCellNeighbs = 0;
-
-	if(x == 0)												// left
-	{
-		if(y == 0)										// left + top
-		{
-			aliveCellNeighbs += (*this)[0][1].alive
-			+ (*this)[1][0].alive
-			+ (*this)[1][1].alive
-
-			+ (*this)[maxX][0].alive
-			+ (*this)[maxX][1].alive
-
-			+ (*this)[maxX][maxY].alive
-
-			+ (*this)[0][maxY].alive
-			+ (*this)[1][maxY].alive;
-		}
-		else if(y == maxY)							// left + bottom
-		{
-			aliveCellNeighbs += (*this)[0][maxY - 1].alive
-			+ (*this)[1][maxY].alive
-			+ (*this)[1][maxY - 1].alive
-
-			+ (*this)[maxX][maxY].alive
-			+ (*this)[maxX][maxY - 1].alive
-
-			+ (*this)[maxX][0].alive
-
-			+ (*this)[0][0].alive
-			+ (*this)[1][0].alive;
-		}
-		else										// left + mid
-		{
-			aliveCellNeighbs += (*this)[0][y - 1].alive
-			+ (*this)[0][y + 1].alive
-			+ (*this)[1][y].alive
-			+ (*this)[1][y - 1].alive
-			+ (*this)[1][y + 1].alive
-
-			+ (*this)[maxX][y].alive
-			+ (*this)[maxX][y - 1].alive
-			+ (*this)[maxX][y + 1].alive;
-		}
-
-
-	}
-	else if(x == maxX)										// right
-	{
-		if(y == 0)									// right + top
-		{
-			aliveCellNeighbs += (*this)[maxX][1].alive
-			+ (*this)[maxX - 1][0].alive
-			+ (*this)[maxX - 1][1].alive
-
-			+ (*this)[0][0].alive
-			+ (*this)[0][1].alive
-
-			+ (*this)[maxX][maxY].alive
-
-			+ (*this)[0][maxY].alive
-			+ (*this)[1][maxY].alive;
-
-		}
-		else if(y == maxY)					// right + bottom
-		{
-			aliveCellNeighbs += (*this)[maxX][maxY - 1].alive
-			+ (*this)[maxX - 1][maxY].alive
-			+ (*this)[maxX - 1][maxY - 1].alive
-
-			+ (*this)[0][maxY].alive
-			+ (*this)[0][maxY - 1].alive
-
-			+ (*this)[0][0].alive
-
-			+ (*this)[maxX][0].alive
-			+ (*this)[maxX - 1][0].alive;
-		}
-		else								// right + mid
-		{
-			aliveCellNeighbs += (*this)[maxX][y - 1].alive
-			+ (*this)[maxX][y + 1].alive
-			+ (*this)[maxX - 1][y].alive
-			+ (*this)[maxX - 1][y - 1].alive
-			+ (*this)[maxX - 1][y + 1].alive
-
-			+ (*this)[0][y].alive
-			+ (*this)[0][y - 1].alive
-			+ (*this)[0][y + 1].alive;
-		}
-
-	}
-	else if(y == 0)								// mid + top
-	{
-		aliveCellNeighbs += (*this)[x][1].alive
-		+ (*this)[x - 1][0].alive
-		+ (*this)[x - 1][1].alive
-		+ (*this)[x + 1][0].alive
-		+ (*this)[x + 1][1].alive
-
-		+ (*this)[x][maxY].alive
-		+ (*this)[x - 1][maxY].alive
-		+ (*this)[x + 1][maxY].alive;
-	}
-	else if(y == maxY)							// mid + bottom
-	{
-		aliveCellNeighbs += (*this)[x][maxY - 1].alive
-		+ (*this)[x - 1][maxY].alive
-		+ (*this)[x - 1][maxY - 1].alive
-		+ (*this)[x + 1][maxY].alive
-		+ (*this)[x + 1][maxY - 1].alive
-
-		+ (*this)[x][0].alive
-		+ (*this)[x - 1][0].alive
-		+ (*this)[x + 1][0].alive;
-	}
-	else										// mid + mid
-	{
-		aliveCellNeighbs += (*this)[x][y - 1].alive
-		+ (*this)[x][y + 1].alive
-		+ (*this)[x - 1][y].alive
-		+ (*this)[x - 1][y - 1].alive
-		+ (*this)[x - 1][y + 1].alive
-		+ (*this)[x + 1][y].alive
-		+ (*this)[x + 1][y - 1].alive
-		+ (*this)[x + 1][y + 1].alive;
-	}
-#endif
-#ifdef ALG2
-	if(aliveCellNeighbs > 3)					// more than 3 = dead
-	{
-		(*this)[x][y].next = false;
-	}
-	else if(aliveCellNeighbs < 2)				// less than 2 = dead
-	{
-		(*this)[x][y].next = false;
-	}
-	else if(aliveCellNeighbs == 3)				// 3 = alive
-	{
-		(*this)[x][y].next = true;
-	}
-	else if(aliveCellNeighbs == 2 && (*this)[x][y].alive)	// if alive, 2 = alive
-	{
-		(*this)[x][y].next = true;
-	}
-	else										// if not alive, 2 = dead
-	{
-		(*this)[x][y].next = false;
-	}
-#elif defined ALG1 || defined ALG3
-	(*this)[x][y].next = ( aliveCellNeighbs== 3 ) | ( ( aliveCellNeighbs== 2 ) & (*this)[x][y].alive );
-#endif
+	// calc next state for all cells
+	calc_next_generation();
 }
