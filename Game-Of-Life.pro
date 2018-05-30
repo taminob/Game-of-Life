@@ -11,7 +11,7 @@ QT       += core gui widgets
 TARGET = game-of-life
 TEMPLATE = app
 
-CONFIG += -c++14 optimize_full
+CONFIG += optimize_full c++14
 LIBS += -lstdc++fs
 
 SOURCES += \
