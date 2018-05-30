@@ -6,6 +6,7 @@
 #include <QOpenGLWidget>
 #include <QTimer>
 #include <thread>
+#include <atomic>
 
 // widget of game view
 // this widget draws the cells and start calculation and generating
