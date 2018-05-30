@@ -1,22 +1,24 @@
 # Game Of Life
-## Changes to v-2.1
 
+## Changes to v-2.1
 - improved performance with OpenGL support
 - highly reduced memory consumption
 - handy and modern user interface
 - multithreading is simplified and improved
 
+
 ## Compilation
 ### Dependencies
 - libstdc++fs
-- >= Qt 5.7
-- >= C++14
+- \>= Qt 5.7
+- \>= C++14
 ### Build
-cd path/to/game-of-life
+cd /path/to/Game-Of-Life
 mkdir build
 qmake ..
 make -j4
 ./game-of-life
+
 
 ## Usage
 ### Write own '*.gol' files:
@@ -42,14 +44,15 @@ A shorter way to write this is:
 ```
 Each row will be filled with dead cells. The longest row determines the width of the game board, so only one row have to have 4 cells. The separator is not necessary.
 
+
 ## Documentation
-### About Base_System:
+### Base_System:
 Base_System is the virtual base class of any implemented algorithm.
 To use another algorithm in this application the provided interface of the class has to be implemented.
 It is also possible to use algorithms which do not allow the pre-calculation of the next generation. The necessary behavior is documented in the Base_System source code.
 Furthermore is it necessary to adjust the Configuration/GraphicConfiguration classes as well as the PreferencesWidget class if there are more or less features which are supported by the other algorithm.
 
-### About Cell_System:
+### Cell_System:
 This is a fast implementation with several features such as multiple border rules and multithreading.
 It uses two std::vector which contain the "Cell"-class to manage the current and next state.
 To create a new system, a new instance is required in which ctor the size has to be given as well as the behavior on the borders and the number of threads used for calculation (optional).
@@ -58,13 +61,13 @@ set_all() (no additional function call required) or to use random_cells() (no ad
 With calling next_generation() it is now possible to update the current state to the next state and calculate afterwards the new next state.
 The new states can be accessed again with get_cell_state() and get_next_cell_state().
 
-### About Core:
+### Core:
 
-### About GraphicCore:
+### GraphicCore:
 If ENABLE_CALC_TIME_MEASUREMENT is defined, the time for calculation of the next generation is measured and outputed on the console.
 To measure the drawing performance, it is possible to define ENABLE_DRAW_TIME_MEASUREMENT to measure the time which is needed to redraw the current scene. The result is outputed on the console.
 
-### About OpenGLWidget:
+### OpenGLWidget:
 At first you have to differentiate between a step (which may also include multiple generations) and autogenerating.
 Autogenerating is an infinite calculation which can be started and stopped by the 'R' key. To increase or decrease the speed of autogenerating use the "Delay" preference.
 Stepping is the calculation of X generations in background a final update of the Game View, triggered by pressing 'Space'. The number of generations per step can be set in the Tool View.
