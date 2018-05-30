@@ -36,6 +36,7 @@ namespace Default_Values
 	constexpr std::size_t DELAY = 15;
 }
 
+// contain and manage all graphic preferences
 class GraphicConfiguration
 {
 	// if all values of options are equal to saved values, "graphic_config_saved" is true; also true after reset

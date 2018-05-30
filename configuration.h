@@ -31,6 +31,7 @@ namespace Default_Values
 	constexpr std::size_t REBORN_RULES = 0x08;		// 3
 }
 
+// contain and manage all non-graphic preferences
 class Configuration
 {
 	// if all values of options are equal to saved values, "config_saved" is true; also true after reset

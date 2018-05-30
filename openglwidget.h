@@ -61,10 +61,10 @@ public:
 
 protected:
 	// receive events; pass all events to parent
-	virtual bool eventFilter(QObject* watched, QEvent* event) override;
+	virtual bool eventFilter(QObject*, QEvent* event) override;
 	virtual void wheelEvent(QWheelEvent* event) override;
 	virtual void mousePressEvent(QMouseEvent* event) override;
-	virtual void mouseReleaseEvent(QMouseEvent* event) override;
+	virtual void mouseReleaseEvent(QMouseEvent*) override;
 	virtual void mouseMoveEvent(QMouseEvent* event) override;
 	virtual void keyPressEvent(QKeyEvent* event) override;
 

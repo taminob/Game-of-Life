@@ -1,5 +1,5 @@
 # © Copyright (c) 2018 SqYtCO
-
+#
 #-------------------------------------------------
 #
 # Project created by QtCreator 2018-05-02T16:25:49
@@ -11,9 +11,7 @@ QT       += core gui widgets
 TARGET = game-of-life
 TEMPLATE = app
 
-DEFINES += QT_DEPRECATED_WARNINGS
-
-CONFIG += -std=c++17
+CONFIG += -c++14 optimize_full
 LIBS += -lstdc++fs
 
 SOURCES += \
@@ -51,4 +49,5 @@ TRANSLATIONS += \
     gol_de.ts
 
 DISTFILES += \
-    README.md
+    README.md \
+    LICENSE

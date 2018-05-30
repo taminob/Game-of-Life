@@ -41,7 +41,7 @@ public:
 
 protected:
 	// receive events; pass all events to parent except mousePressEvent, wheelEvent and 'Esc'-keyPressEvent
-	virtual bool eventFilter(QObject* watched, QEvent* event) override;
+	virtual bool eventFilter(QObject*, QEvent* event) override;
 	// implement shortcut: 'Esc' -> hide_help
 	virtual void keyPressEvent(QKeyEvent* event) override;
 

@@ -34,10 +34,8 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 	init_GUI();
 }
 
-bool PreferencesWidget::eventFilter(QObject* watched, QEvent* event)
+bool PreferencesWidget::eventFilter(QObject*, QEvent* event)
 {
-	Q_UNUSED(watched)
-
 	switch(event->type())
 	{
 		case QEvent::KeyPress:
@@ -650,6 +648,8 @@ void PreferencesWidget::reset_to_default()
 	// update values in preferences view
 	reload();
 
+	emit color_changed();
+
 	// apply reset
 	apply_changes();
 	QMessageBox::information(this, tr("New Game Required"), tr("Some changes may require a new game to get applied."), QMessageBox::Ok);
@@ -706,6 +706,7 @@ void PreferencesWidget::change_dead_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_dead_color(temp);
 		reload_colors();
+		emit color_changed();
 	}
 }
 
@@ -717,6 +718,7 @@ void PreferencesWidget::change_alive_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_alive_color(temp);
 		reload_colors();
+		emit color_changed();
 	}
 }
 
@@ -728,6 +730,7 @@ void PreferencesWidget::change_reviving_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_reviving_color(temp);
 		reload_colors();
+		emit color_changed();
 	}
 }
 
@@ -739,6 +742,7 @@ void PreferencesWidget::change_dying_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_dying_color(temp);
 		reload_colors();
+		emit color_changed();
 	}
 }
 
@@ -750,5 +754,6 @@ void PreferencesWidget::change_background_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_background_color(temp);
 		reload_colors();
+		emit color_changed();
 	}
 }

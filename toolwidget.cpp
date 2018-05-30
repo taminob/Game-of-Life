@@ -21,10 +21,8 @@ ToolWidget::ToolWidget(QWidget* parent) : QFrame(parent)
 	this->setFixedHeight(TOOL_HEIGHT);
 }
 
-bool ToolWidget::eventFilter(QObject* watched, QEvent* event)
+bool ToolWidget::eventFilter(QObject*, QEvent* event)
 {
-	Q_UNUSED(watched)
-
 	switch(event->type())
 	{
 		case QEvent::KeyPress:
@@ -239,6 +237,21 @@ void ToolWidget::update_current_size_label()
 	current_size.setText(tr("Size: ") + QString::number(Core::get_instance()->get_size_x()) + "|" + QString::number(Core::get_instance()->get_size_y()));
 }
 
+void ToolWidget::update_mouse_previews()
+{
+	// update color of left_mouse/right_mouse
+	if(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead())
+	{
+		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
+		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
+	}
+	else
+	{
+		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
+		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
+	}
+}
+
 void ToolWidget::play_or_stop()
 {
 	// if generating is running, stop it and set play-icon
@@ -262,17 +275,7 @@ void ToolWidget::swap_mouse_behavior()
 	// toggle left_alive_and_right_dead
 	GraphicCore::get_instance()->get_config()->set_left_alive_and_right_dead(!GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead());
 
-	// update color of left_mouse/right_mouse
-	if(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead())
-	{
-		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
-		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
-	}
-	else
-	{
-		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
-		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
-	}
+	update_mouse_previews();
 }
 
 void ToolWidget::enable_focus()

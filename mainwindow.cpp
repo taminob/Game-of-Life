@@ -40,6 +40,7 @@ MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(pa
 	// connect signals of views with slots
 	QObject::connect(&preferences_view, &PreferencesWidget::hide_preferences, this, &MainWindow::hide_preference_view);
 	QObject::connect(&preferences_view, &PreferencesWidget::language_changed, this, &MainWindow::translate_application);
+	QObject::connect(&preferences_view, &PreferencesWidget::color_changed, &tool_view, &ToolWidget::update_mouse_previews);
 	QObject::connect(&tool_view, &ToolWidget::hide_tool, this, &MainWindow::hide_tool_view);
 	QObject::connect(&tool_view, &ToolWidget::show_help, this, &MainWindow::show_help_view);
 	QObject::connect(&tool_view, &ToolWidget::show_preferences, this, &MainWindow::show_preference_view);

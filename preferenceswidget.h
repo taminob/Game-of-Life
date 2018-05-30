@@ -20,7 +20,7 @@ class RuleButton;
 
 // widget of preferences view
 // this widget contains all options to modify the application
-// signals: hide_preferences(), language_changed()
+// signals: hide_preferences(), language_changed(), color_changed()
 class PreferencesWidget : public QFrame
 {
 	Q_OBJECT
@@ -76,6 +76,7 @@ public:
 signals:
 	void hide_preferences();	// fired when hide-button is pressed; has to be connected with a slot which hides widget
 	void language_changed();	// fired when any language-button is pressed; has to be connected with a slot which installs translators
+	void color_changed();		// fired on color change; this signals is only for information purposes for other classes
 
 public slots:
 	void apply_changes();		// save changes
@@ -84,7 +85,7 @@ public slots:
 
 protected:
 	// receive events; pass all events to parent except mousePressEvent and 'Esc'-keyPressEvent
-	virtual bool eventFilter(QObject* watched, QEvent* event) override;
+	virtual bool eventFilter(QObject*, QEvent* event) override;
 	// implement shortcut: 'Esc' -> preferences_view
 	virtual void keyPressEvent(QKeyEvent* event) override;
 

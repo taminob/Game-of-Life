@@ -27,10 +27,8 @@ OpenGLWidget::~OpenGLWidget()
 		step_thread->join();
 }
 
-bool OpenGLWidget::eventFilter(QObject* watched, QEvent* event)
+bool OpenGLWidget::eventFilter(QObject*, QEvent* event)
 {
-	Q_UNUSED(watched)
-
 	// handle filtered events
 	switch(event->type())
 	{
@@ -105,10 +103,8 @@ void OpenGLWidget::mousePressEvent(QMouseEvent* event)
 	update();
 }
 
-void OpenGLWidget::mouseReleaseEvent(QMouseEvent* event)
+void OpenGLWidget::mouseReleaseEvent(QMouseEvent*)
 {
-	Q_UNUSED(event)
-
 	mouse_pressed = false;
 
 	// recalculation + update

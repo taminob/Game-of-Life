@@ -19,10 +19,8 @@ HelpWidget::HelpWidget(QWidget* parent) : QFrame(parent)
 	init_GUI();
 }
 
-bool HelpWidget::eventFilter(QObject* watched, QEvent* event)
+bool HelpWidget::eventFilter(QObject*, QEvent* event)
 {
-	Q_UNUSED(watched)
-
 	switch(event->type())
 	{
 		case QEvent::KeyPress:

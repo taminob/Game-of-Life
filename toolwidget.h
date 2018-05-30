@@ -39,6 +39,8 @@ public:
 	void update_play_stop_button();
 	// called when a new system is created to update current_size label
 	void update_current_size_label();
+	// called when colors have been changed
+	void update_mouse_previews();
 
 	// set all texts; if a QTranslator is installed, the installed texts will be loaded
 	void translate();
