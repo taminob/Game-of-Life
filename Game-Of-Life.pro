@@ -11,8 +11,14 @@ QT       += core gui widgets
 TARGET = game-of-life
 TEMPLATE = app
 
-CONFIG += optimize_full c++14
-LIBS += -lstdc++fs
+CONFIG += opengl optimize_full c++14
+
+win32 {
+	LIBS += opengl32.lib
+} else {
+	LIBS += -lstdc++fs
+}
+
 
 SOURCES += \
     main.cpp \
