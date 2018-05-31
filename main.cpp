@@ -10,8 +10,22 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(":/images/gol-icon-90.png"));
 	app.setApplicationDisplayName("Game Of Life");
 
-	// set application style
-	app.setStyle(QStyleFactory::create("Fusion"));
+	// set best available application style
+	if(QStyleFactory::keys().contains("Breeze"))
+	{
+		qDebug("Theme: Breeze");
+		app.setStyle(QStyleFactory::create("Breeze"));
+	}
+	else if(QStyleFactory::keys().contains("Oxygen"))
+	{
+		qDebug("Theme: Oxygen");
+		app.setStyle(QStyleFactory::create("Oxygen"));
+	}
+	else if(QStyleFactory::keys().contains("Fusion"))
+	{
+		qDebug("Theme: Fusion");
+		app.setStyle(QStyleFactory::create("Fusion"));
+	}
 
 	// set all colors
 	QPalette dark_palette;
