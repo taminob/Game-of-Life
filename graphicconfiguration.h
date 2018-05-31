@@ -52,7 +52,7 @@ public:
 
 	// return current save state of graphic configuration
 	const bool& get_saved() { return graphic_config_saved; }
-	// gconfig_path has to be empty or end on a separator; after setting gconfig_path read in config
+	// gconfig_path has to be empty or end on a separator; after setting gconfig_path read config
 	void set_config_path(const std::string& new_config_path) { gconfig_path = new_config_path; read_config(); }
 
 	// set options to default value

@@ -1,0 +1,163 @@
+<!-- © Copyright (c) 2018 SqYtCO -->
+
+<!DOCTYPE html>
+
+<html>
+        <head>
+	        <title>Game Of Life Help</title>
+		<meta charset="UTF-8">
+		<style>
+		        p{ line-height: 120%; }
+		</style>
+	</head>
+	<body>
+	        <h1 align=center>Conway's Game Of Life</h1>
+		<a align=center name="index"></a>
+		<h2 align=center>The Game<br></h2>
+		<a align=center href="#game-of-life">Game Of Life<br></a>
+		<a align=center href="#rules">Rules<br></a>
+		<h2 align=center>The Application<br></h2>
+		<a align=center href="#views">Views<br></a>
+		<a align=center href="#navigation">Navigation<br></a>
+		<a align=center href="#playing">Playing<br></a>
+		<a align=center href="#preferences">Preferences<br></a>
+		<a align=center href="#shortcuts">Shortcut Overview<br></a>
+		<a align=center href="#contact">Contact<br></a>
+		<a align=center href="#source">Source Code<br></a>
+
+                <a name="game-of-life"></a>
+		<h3 align=center>Game Of Life:</h3>
+		<p>Game Of Life is a cellular automaton, devised by the British mathematician John Horton Conway in 1970.<br>
+		The game has a game board of X by Y dead or living cells. The state of each cell depends on its eight neighbors.<br>
+		Each round will be the state of all cells (depending on the used rule set) calculated. A round is called a generation.</p>
+
+                <a name="rules"></a>
+		<h3 align=center>Rules Of Life:</h3>
+		<p>1. Any living cell with less than two living neighbors become lonely and dies caused by underpopulation.<br>
+		2. Any living cell with two or three living neighbors stays alive.<br>
+		3. Any living cell with more than three living neighbors starves and dies caused by overpopulation.<br>
+		4. Any dead cell with exactly three living neighbours gets born caused by optimal conditions.</p>
+
+                <a name="views"></a>
+		<h3 align=center>Views:</h3>
+		<h4>General</h4>
+		<p>The whole application is divided into several views.<br>
+		They can be activated by <a href="#shortcuts-views">shortcuts</a> and be hidden by 'ESC'.</p>
+		<h4>Game View</h4>
+		<p>The Game View is the main view and shown after startup.<br>
+		It contains the field with the cells and the generation counter which displays the current generation. <a href="#navigation">To navigation</a></p>
+
+                <h4>Preferences View</h4>
+		<p>The Preferences View can be shown by the shortcut 'P'. It contains the options to adjust the application.<br>
+		Here are many possibilities from customizing the colors to creating own rules.<br>
+		An explanation of the preferences can be found <a href="#preferences">hier</a>.</p>
+
+                <h4>Help View</h4>
+		<p>The Help View is a extension at the left border of the Game View which can be displayed by the shortcut 'H'.<br>
+		Here are all necessary information for handling with the application.</p>
+
+                <h4>Tools View</h4>
+		<p>The Tools View is a little bar of the Game View on the upper side.<br>
+		It contains tools for saving/opening, generating, navigation and drawing as well as some information like the current size of the field.<br>
+		The view can be activated with 'T' if you are in the Game View. It will be hidden in Help View and Preferences View.</p>
+
+                <a name="navigation"></a>
+		<h3 align=center>Navigation:</h3>
+		<p>The movement on the game board is with several <a href="#shortcuts-navigation">shortcuts</a> possible.
+		There are the possibilities to move slow (arrow keys/mousewheel), to move fast ([CTRL]+arrow keys) and to zoom ([CTRL]+[+/-]/mousewheel).
+		The position can be resetted by the shortcut 'M' or with the button 'Reset Position' which can be found in the Tools View.</p>
+
+                <a name="playing"></a>
+		<h3 align=center>Playing:</h3>
+		<p>There are two options to generate the next generation.<br>
+		The first option is the autogenerating which generates automatically the next generation with the set delay between. The max. speed will be synchronized with the update rate of the screen.<br>
+		This mode can be started and stopped by the shortcut 'R'.<br>
+		The other option is the stepping which allows the calculation of multiple generations in the background at a time. The number of generations per step can be set in the input field in the Tools View.	Because of the missing synchronization it is possible, to generate fast many generations.<br>
+		The stepping can be entered by the shortcut 'Spacebar' which starts the calculation of one step. It can be interrupted by pressing again the 'Spacebar' or by clicking on any cell.</p>
+		<p>The application supports as another feature the possibility to create own rule sets, so you can set how many neighbors a cell requires to survive or to be born.<br>
+		The default rules can be formulated that a cell requires 2 or 3 neighbors to survive and 3 neighbors to be born. In all other cases the cell will die.</p>
+		It is also possible to set the behavior on borders. There are the options that the neighbors of the border cells are on the always other side located or that the bord is surrounded by dead cells or that the board is surrounded by living cells.</p>
+
+                <a name="preferences"></a>
+		<h3 align=center>Preferences:</h3>
+		<h4>Game</h4>
+		<p>Width: <br><i>This Option defines the size of the board on the x-axis.</i></p>
+		<p>Height: <br><i>This Option defines the size of the board on the y-axis.</i></p>
+		<p>Behavior On Borders: <br><i>The selection here determines the neighbors of the cells on the border (see also <a href="#playing">here</a>).</i></p>
+		<p>Fill New Game With Random Cells: <br><i>If this option is active, a new game (shortcut 'N') will be filled with random generated cells.</i></p>
+		<p>Relation Of Random Generated Cells: <br><i>With this option it is possible to determine the relation of random generated cells. (The option is only available if "Fill New Game With Random Cells" is active)</i></p>
+		<p>Autogenerating Delay: <br><i>The here set delay is the time which elapses between two generations while autogenerating (shortcut 'R').</i></p>
+		<p>Number Of Neighbors Which Are Needed To Survive: <br><i>With this option you can set own rule sets. Each button represents one amount of neighbors with which a cell can survive.</i></p>
+		<p>Number Of Neighbors Which Are Needed To Be Born: <br><i>With this option you can set own rule sets. Each button represents one amount of neighbors with which a cell can be born.</i></p>
+		<p>Lock Cells After Initial Generation: <br><i>If this option is active, cells can not be modified from generation 1. It is only possible to modify cells in generation 0.</i></p>
+
+                <h4>Appearance</h4>
+		<p>Show Grid: <br><i>This options allows the possibility to hide the grid around the cells.</i></p>
+		<p>Show Generation Counter:<br><i>With this option it is possible to hide the generation counter.</i></p>
+		<p>Size Of Generation Counter:<br><i>This option determines the size of the generation counter. (The option is only available if "Show Generation Counter" is active)</i></p>
+
+                <h4>Application</h4>
+		<p>Number Of Threads Used For Calculation:<br><i>The option allows to set the number of for calculation used threads. The max. number is usually equala to the number of cores.</i></p>
+		<p>Start In Fullscreen Mode:<br><i>This option enables the start in fullscreen mode. Fullscreen mode can be left by the shortcut 'F'.</i></p>
+		<p>Show Exit Warning:<br><i>If this option is inactive, there will be no request to save the current game when leaving the application.</i></p>
+		<p>Default Path Of Saved Games:<br><i>The default path of games which are saved by pressing 'S' can be set here. If the input field is white, the user doesn't have the permission to write.</i></p>
+		<p>Show Saved Game Directory:<br><i>With this button it is possible to show the directory where saved games are stored by default in the default file manager.</i></p>
+
+                <h4>Color</h4>
+		<p>Color Of Dead Cells:<br><i>The here chosen color determines the color of currently dead cells which will stay dead next generation.</i></p>
+		<p>Color Of Alive Cells:<br><i>The here chosen color determines the color of currently living cells which will stay alive next generation.</i></p>
+		<p>Color Of Reviving Cells:<br><i>The here chosen color determines the color of currently dead cells which will be born next generation.</i></p>
+		<p>Color Of Dying Cells:<br><i>The here chosen color determines the color of currently living cells which will die next generation.</i></p>
+		<p>Color Of Background:<br><i>The here chosen color determines the color of the background outside of the board.</i></p>
+
+                <a name="preferences-tool"></a>
+		<h4>Additional</h4>
+		<p>Generations Per Step:<br><i>This option allows to set the generations which are calculated per step. (The option can be found in tools view)</i></p>
+		<p>Swap Mouse Actions:<br><i>With this option it is possible to swap the "Reviving" and "Killing" action between left and right mouse button. (The option can be found in tools view)</i></p>
+
+                <a name="shortcuts"></a>
+		<h3 align=center>Shortcut Overview:</h3>
+
+                <a name="shortcuts-views"></a>
+		<h4>Views</h4>
+		<p>Hide Current View: [Esc]<br>
+		Preferences View: [P]<br>
+		Help View: [H]<br>
+		Tools View: [T]</p>
+
+                <a name="shortcuts-playing"></a>
+		<h4>Playing</h4>
+		<p>New Game: [N]<br>
+		Autogenerating: [R]<br>
+		Next Step: [Spacebar]<br>
+		Revive Cell: [Mouse click](<a href="#preferences-tool">set mouse button</a>)<br>
+		Kill Cell: [Mouse click](<a href="#preferences-tool">set mouse button</a>)<br>
+		Kill All Cells: [A]<br>
+		Revive All Cells: [CTRL] + [A]</p>
+
+                <a name="shortcuts-navigation"></a>
+		<h4>Navigation</h4>
+		<p>Move: [←/↓/→̣/↑](arrow keys/mousewheel)<br>
+		Fast Move: [CTRL] + [←/↓/→̣/↑](arrow keys)<br>
+		Zoom: [CTRL] + [-/+]/[↓/↑](mousewheel)<br>
+		Reset Position: [M]</p>
+
+                <a name="shortcuts-other"></a>
+		<h4>Other</h4>
+		<p>Save: [S]<br>
+		Save as...: [CTRL] + [S]<br>
+		Open: [O]<br>
+		Fullscreen: [F]<br>
+		Quit Game: [Q]</p>
+
+                <a name="contact"></a>
+		<h3>Contact</h3>
+		<p>Bei Fragen oder Fehlern in der Anwendung stehe ich über <a href='mailto:sqyt.co@gmail.com'>sqyt.co@gmail.com</a> gerne zur Verfügung.</p>
+
+                <a name="source"></a>
+		<h3>Source Code</h3>
+		<p>The source code can be viewed and downloaded <a href='https://github.com/SqYtCO/Game-Of-Life'>here</a>..</p>
+
+                <p><br><br><br><br><br><br><br><br><br></p>
+	</body>
+</html>

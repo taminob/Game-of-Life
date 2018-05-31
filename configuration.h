@@ -47,7 +47,7 @@ public:
 
 	// return current save state of configuration
 	const bool& get_saved() { return config_saved; }
-	// config_path has to be empty or end on a separator; after setting config_path read in config
+	// config_path has to be empty or end on a separator; after setting config_path read config
 	void set_config_path(const std::string& new_config_path) { config_path = new_config_path; read_config(); }
 
 	// set options to default value
