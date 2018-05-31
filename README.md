@@ -17,16 +17,16 @@ This is a fast implementation of Conway's popular Game Of Life which supports ma
 - \>= C++14
 
 ### Build
-#### Requirement
+#### Requirements
 - writeable directory
 - qmake installed and added to PATH
--
+- make (GCC), nmake (MSVC)
 
 #### Build process
 cd /path/to/Game-Of-Life
 mkdir build
 qmake ..
-make -j4
+make -j4 (GCC) or nmake (MSVC)
 
 
 ## Usage
