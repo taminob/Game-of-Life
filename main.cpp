@@ -4,10 +4,6 @@
 #include <QApplication>
 #include <QStyleFactory>
 
-//QT_OPENGL(Qt::AA_UseDesktopOpenGL);
-//QT_OPENGL(Qt::AA_UseOpenGLES);
-//QT_OPENGL(Qt::AA_UseSoftwareOpenGL);
-
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
