@@ -110,6 +110,8 @@ It is also responsible for loading and saving its configurations. The file name 
 GraphicConfiguration requires the QColor class of the Qt-framework.
 
 ### GraphicCore (graphiccore.h):
+This singleton class provides a defined higher level interface to OpenGLWidget. It contains an instance of it which can be accessed by get_opengl().
+It contains also the graphical configurations in the form of an instance of GraphicConfiguration which can be get by a get_config()-call.
 Using the defines ENABLE_CALC_TIME_MEASUREMENT and ENABLE_DRAW_TIME_MEASUREMENT it is possible to measure the calculation and drawing performance and output the result on the execution console in microseconds.
 GraphicCore requires the Qt-framework.
 
@@ -126,17 +128,18 @@ Because the calculation is not slowed down by displaying, stepping can be much f
 The disadvantage of this mode is that there is no smooth movement of cells because of the missing updates of the screen.
 
 ### ToolWidget (toolwidget.h; inherits from QFrame):
-The ToolWidget class
+The ToolWidget class is the widget of the Tool View which provides some buttons for all kind of actions and some configuration options like generations_per_step and the possibility to change the mouse actions.
 
-### HelpWidget (helpwidget.h):
-
+### HelpWidget (helpwidget.h; inherits from QFrame):
+This class is the widget of the Help View. It contains a big HTML viewer where the help text is displayed, a button which jumps to the index-anchor of the html-document and a button which allows to hide the Help View.
 
 ### PreferencesWidget (preferenceswidget.h; inherits from QFrame):
-The PreferencesWidget class is a
-
+The PreferencesWidget class is the place where all configurations are in the GUI accessible.
+It contains GUI elements for displaying and changing preferences and put them together in one view.
 
 #### RuleButton (preferenceswidget.h; inherits from QToolButton):
-
+This small class is a customized button which is used to allow configuring rules.
+It contains a display number and a state which is toggled on a click.
 
 ### StartupDialog (startupdialog.h; inherits from QDialog):
 This dialog is shown after startup if it is not diabled with GraphicConfiguration::show_startup_dialog = false. By default it is shown after startup.
