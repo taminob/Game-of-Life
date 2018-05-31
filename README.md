@@ -1,9 +1,11 @@
 # Game Of Life
+This is a fast implementation of Conway's popular Game Of Life which supports many features like own rule sets and different border behaviors.
+
 
 ## Changes to v-2.1
-- improved performance with OpenGL support
+- increased performance with OpenGL support and an optimized algorithm
 - highly reduced memory consumption
-- handy and modern user interface
+- improved user interface
 - multithreading is simplified and improved
 
 
