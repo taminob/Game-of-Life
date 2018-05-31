@@ -173,6 +173,7 @@ void MainWindow::show()
 	if(GraphicCore::get_instance()->get_config()->get_show_startup_dialog())
 	{
 		StartupDialog dialog;
+		// connect dialog signal
 		QObject::connect(&dialog, &StartupDialog::show_help, this, &MainWindow::show_help_view);
 		dialog.exec();
 	}

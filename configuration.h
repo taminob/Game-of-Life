@@ -18,8 +18,8 @@ enum Border_Behavior
 // values after reset
 namespace Default_Values
 {
-	constexpr std::size_t SIZE_X = 100;
-	constexpr std::size_t SIZE_Y = 100;
+	constexpr std::size_t SIZE_X = 0;
+	constexpr std::size_t SIZE_Y = 0;
 	constexpr std::size_t NUM_OF_THREADS = 4;
 	constexpr std::size_t RELATION_DEAD = 2;
 	constexpr std::size_t RELATION_ALIVE = 1;

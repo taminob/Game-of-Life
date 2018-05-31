@@ -11,12 +11,9 @@
 
 OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), move_x(0), move_y(0), step_thread(nullptr), thread_stop(true), thread_block(false)
 {
-	// init OpenGL
-	initializeGL();
-
 	// connect timer with next_generation-function
 	QObject::connect(&generating_timer, &QTimer::timeout, [this]() { GraphicCore::get_instance()->next_generation(); });
-	qDebug("opengl");
+	QObject::connect(this, &OpenGLWidget::stepping_finished, this, &OpenGLWidget::full_update, Qt::QueuedConnection);
 }
 
 OpenGLWidget::~OpenGLWidget()
@@ -365,6 +362,12 @@ void OpenGLWidget::draw_grid()
 	}
 }
 
+void OpenGLWidget::full_update()
+{
+	GraphicCore::get_instance()->update_generation_counter();
+	update();
+}
+
 void OpenGLWidget::reset_movement()
 {
 	move_x = 0;
@@ -429,6 +432,5 @@ void OpenGLWidget::calc_generations(std::size_t generations)
 	}
 
 	thread_stop = true;
-	GraphicCore::get_instance()->update_generation_counter();
-	update();
+	emit stepping_finished();
 }

@@ -19,7 +19,7 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 														reborn_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
 																				new RuleButton(3, this), new RuleButton(4, this), new RuleButton(5, this),
 																				new RuleButton(6, this), new RuleButton(7, this), new RuleButton(8, this) }}
-{qDebug("pref1");
+{
 	// grey transparent background
 	this->setAutoFillBackground(true);
 	this->setPalette(QPalette(QColor(0x40, 0x40, 0x40, 0xE9)));
@@ -31,7 +31,6 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 
 	// setup gui
 	init_GUI();
-	qDebug("pref");
 }
 
 bool PreferencesWidget::eventFilter(QObject*, QEvent* event)

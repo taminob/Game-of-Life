@@ -41,10 +41,13 @@ class OpenGLWidget : public QOpenGLWidget
 	QTimer generating_timer;			// timer to sync redraw and calculation
 
 public:
-	// init OpenGL and connect generating_timer
+	// init member and connect generating_timer
 	OpenGLWidget(QWidget* parent = nullptr);
 	// join step_thread
 	virtual ~OpenGLWidget();
+
+	// update generation counter and redraw cells
+	void full_update();
 
 	// set move_x and move_y to 0, scale to 1 and update
 	void reset_movement();
@@ -83,6 +86,8 @@ signals:
 	void generating_start_stop();
 	// emitted when a new system was created
 	void new_system_generated();
+	// emitted when step calculation is finished and update is required
+	void stepping_finished();
 };
 
 #endif // OPENGLWIDGET_H
