@@ -26,6 +26,7 @@ StartupDialog::StartupDialog(QWidget* parent) : QDialog(parent)
 
 void StartupDialog::translate()
 {
+	// dialog title
 	this->setWindowTitle(tr("Welcome"));
 
 	// at first startup German welcome will be displayed if system language is German; otherwise English
@@ -35,10 +36,9 @@ void StartupDialog::translate()
 	else
 		html_welcome.setSource(QUrl("qrc:/info/en_welcome.html"));
 
+	// set button and checkbox texts
 	close_button.setText(tr("Close"));
-
 	show_help_button.setText(tr("Show Help"));
-
 	show_on_startup.setText(tr("Show dialog on startup"));
 }
 
