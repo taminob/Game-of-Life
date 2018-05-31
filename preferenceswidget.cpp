@@ -666,6 +666,7 @@ void PreferencesWidget::reset_to_default()
 	reload();
 
 	emit color_changed();
+	emit language_changed();
 
 	// apply reset
 	apply_changes();
