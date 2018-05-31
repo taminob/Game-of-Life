@@ -3,30 +3,50 @@ This is a fast implementation of Conway's popular Game Of Life which supports ma
 
 
 ## Changes to v-2.1
-- increased performance with OpenGL support and an optimized algorithm
+- increased performance with OpenGL support and improved drawing and calculation algorithms
 - highly reduced memory consumption
-- improved user interface
+- optimized user interface
 - multithreading is simplified and improved
 
 
 ## Compilation
 ### Dependencies
-- libstdc++fs
-- \>= Qt 5.7
+- libstdc++fs (GCC)
+- opengl32 (MSVC)
+- \>= Qt 5.9
 - \>= C++14
+
 ### Build
+#### Requirement
+- writeable directory
+- qmake installed and added to PATH
+-
+
+#### Build process
 cd /path/to/Game-Of-Life
 mkdir build
 qmake ..
 make -j4
-./game-of-life
 
 
 ## Usage
+### Program start
+The program can be started in a command line:
+```
+Linux/MacOS:
+./game-of-life
+Windows:
+game-of-life.exe
+```
+or depending on the operating system in the GUI. The start of programs in the GUI of the OS is usually implemented with a double click.
+
+### Getting started
+Please read carefully the help which can be opened by the shortcut 'H'.
+
 ### Write own '*.gol' files:
 The GOL '*.gol' file format has a simple structure:
 - in the first line is the current generation saved
-- each following line is a new row in the cell grid; the single cells are represented by '0' and '1'; there can be used any separator between; it is also possible to use no separator
+- each following line is a new row in the cell grid; the single cells are represented by '0' and '1'; there can be used any separator between, but no separator is required
 Example:
 ```
 11
@@ -61,7 +81,7 @@ It is also possible to use algorithms which do not allow the pre-calculation of 
 Furthermore it is necessary to adjust the Configuration/GraphicConfiguration classes as well as the PreferencesWidget class if there are more or less features which are offered by the other algorithm.
 If the same features are supported, only the member pointer in Core and the instructor calls in core.cpp have to be replaced.
 
-### Cell_System (cellsystem.h):
+### Cell_System (cellsystem.h; inherits from Base_System):
 This is a fast implementation with several features such as multiple border rules, own rule sets and multithreading.
 It uses two std::vector which contain each X by Y instances of the "Cell"-class to represent the current and next state of all cells.
 To update to the next generation only the used system is swapped and the other system contains now the next state. This is calculated by calc_next_generation() which is implicitly called in next_generation().
@@ -75,39 +95,50 @@ The new states can be accessed again with get_cell_state() and get_next_cell_sta
 
 ### Configuration (configuration.h):
 This class stores all non-graphic configurations.
-It is
+It is also responsible for loading and saving its configurations. The file name is ".configuration" and the path can be set with set_config_path(). The default path is the execution path.
 
 ### Core (core.h):
-The singleton class Core allows a higher level usage of Cell_System and is independent of the graphic interface. To get an instance call Core::get_instance().
+The singleton class Core allows a higher level usage of Cell_System and is independent of the graphical interface. To get an instance call Core::get_instance().
 It is also possible to use this Core and build a GUI-less application by adding a simple interface to the user.
 Furthermore you can replace the used Qt-GUI by any other framework which allows the include of C++.
 The class provides the possibility to manage preferences using the Configuration class (get_config()), to get and manipulate the cells, to get the current generation which is upcount with each call of next_generation()
 and to save/load cell patterns.
 
 ### GraphicConfiguration (graphicconfiguration.h):
-This class
+This class stores all graphic configurations which are required to allow a customized graphical interface.
+It is also responsible for loading and saving its configurations. The file name is ".configuration" and the path can be set with set_config_path(). The default path is the execution path.
 
 ### GraphicCore (graphiccore.h):
-If ENABLE_CALC_TIME_MEASUREMENT is defined, the time for calculation of the next generation is measured and outputed on the console.
-To measure the drawing performance, it is possible to define ENABLE_DRAW_TIME_MEASUREMENT to measure the time which is needed to redraw the current scene. The result is outputed on the console.
+Using the defines ENABLE_CALC_TIME_MEASUREMENT and ENABLE_DRAW_TIME_MEASUREMENT it is possible to measure the calculation and drawing performance and output the result on the execution console in microseconds.
 
-### MainWindow (mainwindow.h):
 
-### PreferencesWidget (preferenceswidget.h):
+### MainWindow (mainwindow.h; inherits from QMainWindow):
 
-### OpenGLWidget (openglwidget.h):
-At first you have to differentiate between a step (which may also include multiple generations) and autogenerating.
+
+### OpenGLWidget (openglwidget.h; inherits from QOpenGLWidget):
+This widget class contains the main part of the game view, the game board. It is responsible for the fast and correct OpenGL drawing and manages autogenerating and stepping. The game shortcuts are handled here.
+To achieve high performance only the visible part of the cells is drawn and the dead cells are drawn as one great background rect. The living/dying/reviving cells are drawn on top. This avoids many OpenGL-function calls.
+When generating you have to differentiate between a step (which may also include multiple generations) and autogenerating.
 Autogenerating is an infinite calculation which can be started and stopped by the 'R' key. To increase or decrease the speed of autogenerating use the "Delay" preference.
 Stepping is the calculation of X generations in background a final update of the Game View, triggered by pressing 'Space'. The number of generations per step can be set in the Tool View.
 Because the calculation is not slowed down by displaying, stepping can be much faster. However, to achieve that, you have to set the generations per step (in Tool View) to a high number.
 The disadvantage of this mode is that there is no smooth movement of cells because of the missing updates of the screen.
 
-### ToolWidget (toolwidget.h):
+### ToolWidget (toolwidget.h; inherits from QFrame):
+The ToolWidget class
 
 ### HelpWidget (helpwidget.h):
 
-### PreferencesWidget (preferenceswidget.h):
 
-#### RuleButton (preferenceswidget.h):
+### PreferencesWidget (preferenceswidget.h; inherits from QFrame):
+The PreferencesWidget class is a
 
-### StartupDialog (startupdialog.h):
+
+#### RuleButton (preferenceswidget.h; inherits from QToolButton):
+
+
+### StartupDialog (startupdialog.h; inherits from QDialog):
+This dialog is shown after startup if it is not diabled with GraphicConfiguration::show_startup_dialog = false. By default it is shown after startup.
+The configuration property can be changed by unselecting the checkbox in this dialog.
+The dialog contains a introduction and explains some basic shortcuts.
+To redirect the user to the help view a button is integreted.
