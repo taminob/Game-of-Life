@@ -48,10 +48,10 @@ void StartupDialog::init_GUI()
 	html_welcome.setOpenExternalLinks(true);
 
 	// init show_help button
-	show_help_button.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
+	show_help_button.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
 	// init close button
-	close_button.setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+	close_button.setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
 
 	// add components to layout
 	main_layout.addWidget(&html_welcome, 0, 0, 1, 2);

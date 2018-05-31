@@ -69,7 +69,9 @@ protected:
 	virtual void mouseMoveEvent(QMouseEvent* event) override;
 	virtual void keyPressEvent(QKeyEvent* event) override;
 
-	// setup OpenGL and call draw_cells and draw_grid + time measurement
+	// init OpenGL engine
+	void initializeGL();
+	// call draw_cells and draw_grid + time measurement
 	void paintGL();
 	// draw cells using OpenGL
 	inline void draw_cells();
