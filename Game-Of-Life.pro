@@ -15,7 +15,8 @@ CONFIG += optimize_full c++14
 
 msvc {
 	LIBS += opengl32.lib
-} else {
+}
+gcc {
 	LIBS += -lstdc++fs
 }
 
