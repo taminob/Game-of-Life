@@ -44,6 +44,9 @@ void ToolWidget::keyPressEvent(QKeyEvent* event)
 {
 	if(event->key() == Qt::Key_Escape)
 		emit hide_tool();
+
+	// pass to parent
+	event->ignore();
 }
 
 void ToolWidget::init_GUI()

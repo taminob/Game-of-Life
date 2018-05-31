@@ -52,8 +52,8 @@ class MainWindow : public QMainWindow
 	QTranslator qt_translator;						// translator for qt standard translation (qtbase_XX.qm; XX=language)
 	void translate_application();					// load translations and translate all widgets
 
-	QTimer resize_timer;							// call update_view_size_pos() with delay; started in resizeEvent() (fix of fullscreen size bug)
-	void update_view_size_pos();					// update size and pos of views
+	QTimer resize_timer;							// call update_views_geometry() with delay; started in resizeEvent() (fix of fullscreen size bug)
+	void update_views_geometry();					// update size and pos of views
 
 public:
 	// ctor: open start_file and init all views and animations; connect all signals translate to set language
@@ -63,6 +63,7 @@ public:
 	// show maximized or in fullscreen in dependence of the set preferences; display also StartupDialog
 	void show();
 
+	// minimum width/height of window
 	static constexpr std::size_t MIN_WIDTH = 1072;
 	static constexpr std::size_t MIN_HEIGHT = 603;
 

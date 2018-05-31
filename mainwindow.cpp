@@ -35,7 +35,7 @@ MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(pa
 	// setup resize_timer; this timer fixes a resize bug when switching to fullscreen mode
 	resize_timer.setInterval(10);
 	resize_timer.setSingleShot(true);
-	QObject::connect(&resize_timer, &QTimer::timeout, this, &MainWindow::update_view_size_pos);
+	QObject::connect(&resize_timer, &QTimer::timeout, this, &MainWindow::update_views_geometry);
 
 	// connect signals of views with slots
 	QObject::connect(&preferences_view, &PreferencesWidget::hide_preferences, this, &MainWindow::hide_preference_view);
@@ -124,20 +124,16 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
 	GraphicCore::get_instance()->stop_generating();
 
-	// if any preference is not saved, show question
+	// if any preference is not saved, show question; this question is necessary if the user is in the preferences view and tries to close the window
 	if(!(Core::get_instance()->get_config()->get_saved() && GraphicCore::get_instance()->get_config()->get_saved()))
 	{
 		QMessageBox::StandardButton preferences_save_answer = QMessageBox::question(this, tr("Save Preferences?"), tr("Save changed preferences?"),
 																					QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
 		if(preferences_save_answer == QMessageBox::Discard)
-		{
 			preferences_view.discard_changes();
-		}
 		else if(preferences_save_answer == QMessageBox::Save)
-		{
 			preferences_view.apply_changes();
-		}
 		else
 		{
 			event->ignore();
@@ -238,7 +234,7 @@ void MainWindow::translate_application()
 	help_view.translate();
 }
 
-void MainWindow::update_view_size_pos()
+void MainWindow::update_views_geometry()
 {
 	// update size of views
 	tool_view.resize(this->width(), ToolWidget::TOOL_HEIGHT);
@@ -274,6 +270,7 @@ void MainWindow::update_view_size_pos()
 		tool_view.move(game_view.y(), -tool_view.height());
 	}
 }
+
 void MainWindow::show_game_view()
 {
 	hide_preference_view();
@@ -328,6 +325,20 @@ void MainWindow::show_preference_view()
 
 void MainWindow::hide_preference_view()
 {
+	// if any preference is not saved, show question
+	if(!(Core::get_instance()->get_config()->get_saved() && GraphicCore::get_instance()->get_config()->get_saved()))
+	{
+		QMessageBox::StandardButton preferences_save_answer = QMessageBox::question(this, tr("Save Preferences?"), tr("Save changed preferences?"),
+																					QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+		if(preferences_save_answer == QMessageBox::Discard)
+			preferences_view.discard_changes();
+		else if(preferences_save_answer == QMessageBox::Save)
+			preferences_view.apply_changes();
+		else
+			return;
+	}
+
 	// restore tool view if it is active and help view is not active
 	if((current_view & Tool_View) && !(current_view & Help_View))
 		show_tool_view();

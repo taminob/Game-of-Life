@@ -49,6 +49,9 @@ void HelpWidget::keyPressEvent(QKeyEvent* event)
 {
 	if(event->key() == Qt::Key_Escape)
 		emit hide_help();
+
+	// pass to parent
+	event->ignore();
 }
 
 void HelpWidget::init_GUI()

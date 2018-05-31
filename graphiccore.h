@@ -10,10 +10,10 @@
 #include <QLabel>
 
 // measure time of calculation while autogenerating in microseconds and output the result on the console
-#define ENABLE_CALC_TIME_MEASUREMENT
+// #define ENABLE_CALC_TIME_MEASUREMENT
 
 // measure time of drawing cells in microseconds and output the result on the console
-#define ENABLE_DRAW_TIME_MEASUREMENT
+// #define ENABLE_DRAW_TIME_MEASUREMENT
 
 // singleton class: to get the instance call GraphicCore::get_instance()
 // this core contains all graphic operations and allows some higher level operations

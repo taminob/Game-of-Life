@@ -16,6 +16,7 @@ OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), m
 
 	// connect timer with next_generation-function
 	QObject::connect(&generating_timer, &QTimer::timeout, [this]() { GraphicCore::get_instance()->next_generation(); });
+	qDebug("opengl");
 }
 
 OpenGLWidget::~OpenGLWidget()

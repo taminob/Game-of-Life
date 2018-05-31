@@ -76,7 +76,7 @@ public:
 signals:
 	void hide_preferences();	// fired when hide-button is pressed; has to be connected with a slot which hides widget
 	void language_changed();	// fired when any language-button is pressed; has to be connected with a slot which installs translators
-	void color_changed();		// fired on color change; this signals is only for information purposes for other classes
+	void color_changed();		// fired on color change; this signals is only for information purposes to allow a reaction of other classes
 
 public slots:
 	void apply_changes();		// save changes
@@ -191,6 +191,7 @@ public:
 		this->setText(QString::number(num));
 		this->setAutoRaise(true);
 		this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+		this->setPalette(QPalette(Qt::darkGray));
 	}
 
 	// set state and update down-property

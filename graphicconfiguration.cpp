@@ -2,6 +2,7 @@
 
 #include "graphicconfiguration.h"
 #include <fstream>
+#include <experimental/filesystem>
 
 GraphicConfiguration::GraphicConfiguration() : graphic_config_saved(true)
 {
@@ -98,6 +99,17 @@ bool GraphicConfiguration::read_config()
 
 bool GraphicConfiguration::write_config()
 {
+	try
+	{
+		// check if path exists and create it if not
+		if(!std::experimental::filesystem::exists(gconfig_path))
+			std::experimental::filesystem::create_directories(gconfig_path);
+	}
+	catch(...)	// if write permission is not granted
+	{
+		return false;
+	}
+
 	std::ofstream out(gconfig_path + GCONFIG_FILE);
 
 	// return on error

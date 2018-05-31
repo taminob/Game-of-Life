@@ -7,10 +7,12 @@
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
+	// load application icon
 	app.setWindowIcon(QIcon(":/images/gol-icon-90.png"));
+	// set application name
 	app.setApplicationDisplayName("Game Of Life");
 
-	// set best available application style
+	// set best available application style (Breeze > Oxygen > Fusion > Windows)
 	if(QStyleFactory::keys().contains("Breeze"))
 	{
 		qDebug("Theme: Breeze");
@@ -25,9 +27,16 @@ int main(int argc, char* argv[])
 	{
 		qDebug("Theme: Fusion");
 		app.setStyle(QStyleFactory::create("Fusion"));
+		// in Fusion style buttons are too small
+		app.setStyleSheet("QToolButton { height: 1.5em; }");
+	}
+	else if(QStyleFactory::keys().contains("Windows"))
+	{
+		qDebug("Theme: Windows");
+		app.setStyle(QStyleFactory::create("Windows"));
 	}
 
-	// set all colors
+	// set all (dark) colors
 	QPalette dark_palette;
 	dark_palette.setColor(QPalette::Window, QColor(0x30, 0x30, 0x30));
 	dark_palette.setColor(QPalette::WindowText, Qt::white);
@@ -48,7 +57,9 @@ int main(int argc, char* argv[])
 
 	// if more than 1 argument is given, pass last argument as start_file
 	MainWindow win((argc > 1) ? argv[argc - 1] : nullptr);
+	// display window
 	win.show();
 
+	// application event loop
 	return app.exec();
 }

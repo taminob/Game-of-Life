@@ -17,11 +17,16 @@ class ToolWidget : public QFrame
 {
 	Q_OBJECT
 
+	// container of GUI components
 	QHBoxLayout main_layout;
 
+	// setup GUI and add components to main_layout
 	void init_GUI();
+	// init preferences, help, hide and quit button
 	void init_control_buttons();
+	// init all other buttons
 	void init_buttons();
+	// init labels and spinbox
 	void init_others();
 
 	void play_or_stop();

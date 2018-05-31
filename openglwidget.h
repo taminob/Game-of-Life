@@ -10,7 +10,7 @@
 
 // widget of game view
 // this widget draws the cells and start calculation and generating
-// signals: generating_start_stop(), new_system_generated(); signals are information purposes only
+// signals: generating_start_stop(), new_system_generated(); signals are for information purposes only
 class OpenGLWidget : public QOpenGLWidget
 {
 	Q_OBJECT

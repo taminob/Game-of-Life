@@ -22,6 +22,7 @@ StartupDialog::StartupDialog(QWidget* parent) : QDialog(parent)
 	QObject::connect(&show_help_button, &QToolButton::clicked, [this]() { emit show_help(); });
 	// connect close button
 	QObject::connect(&close_button, &QToolButton::clicked, [this]() { close(); });
+	qDebug("startup");
 }
 
 void StartupDialog::translate()

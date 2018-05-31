@@ -6,12 +6,11 @@
 #include <QApplication>			// QApplication::style()
 #include <QMessageBox>
 #include <QKeyEvent>
-#include <QColorDialog>
-#include <QFileDialog>
+#include <QColorDialog>			// QColorDialog::getColor()
+#include <QFileDialog>			// QFileDialog::getExistingDirectory()
 #include <QDesktopServices>		// QDesktopServices::openUrl()
 #include <QDir>					// QDir::currentPath()
-#include <fstream>
-#include <experimental/filesystem>
+#include <thread>				// std::thread::hardware_concurrency()
 
 PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_required(false),
 														live_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
@@ -20,7 +19,7 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 														reborn_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
 																				new RuleButton(3, this), new RuleButton(4, this), new RuleButton(5, this),
 																				new RuleButton(6, this), new RuleButton(7, this), new RuleButton(8, this) }}
-{
+{qDebug("pref1");
 	// grey transparent background
 	this->setAutoFillBackground(true);
 	this->setPalette(QPalette(QColor(0x40, 0x40, 0x40, 0xE9)));
@@ -32,6 +31,7 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 
 	// setup gui
 	init_GUI();
+	qDebug("pref");
 }
 
 bool PreferencesWidget::eventFilter(QObject*, QEvent* event)
@@ -61,6 +61,9 @@ void PreferencesWidget::keyPressEvent(QKeyEvent* event)
 {
 	if(event->key() == Qt::Key_Escape)
 		emit hide_preferences();
+
+	// pass to parent
+	event->ignore();
 }
 
 void PreferencesWidget::init_GUI()
@@ -153,8 +156,15 @@ void PreferencesWidget::init_game_group()
 	border_behavior_input.addItem("");
 	border_behavior_input.addItem("");
 	border_behavior_input.addItem("");
-	QObject::connect(&border_behavior_input, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-					 [this](int index) { Core::get_instance()->get_config()->set_border_behavior(static_cast<Border_Behavior>(index)); restart_required = true; });
+	QObject::connect(&border_behavior_input, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), [this](int index)
+	{
+		// set only if choice is different from current border behavior
+		if(Core::get_instance()->get_config()->get_border_behavior() != static_cast<Border_Behavior>(index))
+		{
+			Core::get_instance()->get_config()->set_border_behavior(static_cast<Border_Behavior>(index));
+			restart_required = true;
+		}
+	});
 
 	// init delay input
 	delay_between_generations_input.setMinimum(1);
@@ -323,7 +333,14 @@ void PreferencesWidget::init_application_group()
 	});
 
 	// init show save dir; connect to openUrl which shows the directory in default file manager
-	QObject::connect(&show_saved_games_dir, &QToolButton::clicked, [this]() { QDesktopServices::openUrl(QUrl(Core::get_instance()->get_config()->get_save_path().c_str())); });
+	QObject::connect(&show_saved_games_dir, &QToolButton::clicked, [this]()
+	{
+		// complete default relative path to absolute path
+		if(Core::get_instance()->get_config()->get_save_path() == Default_Values::SAVE_PATH)
+			QDesktopServices::openUrl(QUrl(QDir::currentPath() + '/' +  QString(Core::get_instance()->get_config()->get_save_path().c_str())));
+		else
+			QDesktopServices::openUrl(QUrl(Core::get_instance()->get_config()->get_save_path().c_str()));
+	});
 
 	application_layout.addWidget(&num_of_threads_text, 0, 0);
 	application_layout.addWidget(&num_of_threads_input, 0, 1);
@@ -707,6 +724,7 @@ void PreferencesWidget::change_dead_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_dead_color(temp);
 		reload_colors();
+		GraphicCore::get_instance()->update_opengl();
 		emit color_changed();
 	}
 }
@@ -719,6 +737,7 @@ void PreferencesWidget::change_alive_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_alive_color(temp);
 		reload_colors();
+		GraphicCore::get_instance()->update_opengl();
 		emit color_changed();
 	}
 }
@@ -731,6 +750,7 @@ void PreferencesWidget::change_reviving_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_reviving_color(temp);
 		reload_colors();
+		GraphicCore::get_instance()->update_opengl();
 		emit color_changed();
 	}
 }
@@ -743,6 +763,7 @@ void PreferencesWidget::change_dying_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_dying_color(temp);
 		reload_colors();
+		GraphicCore::get_instance()->update_opengl();
 		emit color_changed();
 	}
 }
@@ -755,6 +776,7 @@ void PreferencesWidget::change_background_color()
 	{
 		GraphicCore::get_instance()->get_config()->set_background_color(temp);
 		reload_colors();
+		GraphicCore::get_instance()->update_opengl();
 		emit color_changed();
 	}
 }

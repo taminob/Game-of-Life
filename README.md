@@ -13,20 +13,20 @@ This is a fast implementation of Conway's popular Game Of Life which supports ma
 ### Dependencies
 - libstdc++fs (GCC)
 - opengl32 (MSVC)
-- \>= Qt 5.9
+- \>= Qt 5.9.1
 - \>= C++14
 
 ### Build
-#### Requirement
+#### Requirements
 - writeable directory
 - qmake installed and added to PATH
--
+- make (GCC), nmake (MSVC)
 
 #### Build process
 cd /path/to/Game-Of-Life
 mkdir build
 qmake ..
-make -j4
+make -j4 (GCC) or nmake (MSVC)
 
 
 ## Usage
@@ -107,10 +107,11 @@ and to save/load cell patterns.
 ### GraphicConfiguration (graphicconfiguration.h):
 This class stores all graphic configurations which are required to allow a customized graphical interface.
 It is also responsible for loading and saving its configurations. The file name is ".configuration" and the path can be set with set_config_path(). The default path is the execution path.
+GraphicConfiguration requires the QColor class of the Qt-framework.
 
 ### GraphicCore (graphiccore.h):
 Using the defines ENABLE_CALC_TIME_MEASUREMENT and ENABLE_DRAW_TIME_MEASUREMENT it is possible to measure the calculation and drawing performance and output the result on the execution console in microseconds.
-
+GraphicCore requires the Qt-framework.
 
 ### MainWindow (mainwindow.h; inherits from QMainWindow):
 
