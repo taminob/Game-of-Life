@@ -20,8 +20,8 @@ GraphicCore::GraphicCore()
 {
 	// get correct config path
 	QString config_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-	if(config_path[config_path.size() - 1] != QDir::separator())
-		config_path.append(QDir::separator());
+	if(config_path[config_path.size() - 1] != '/')
+		config_path.append('/');
 
 	// set config paths
 	Core::get_instance()->get_config()->set_config_path(config_path.toStdString());
