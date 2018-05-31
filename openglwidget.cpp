@@ -11,11 +11,8 @@
 
 OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), move_x(0), move_y(0), step_thread(nullptr), thread_stop(true), thread_block(false)
 {
-	// setup OpenGL viewport and mode
-	glViewport(0, 0, width(), height());
-	glMatrixMode(GL_PROJECTION);
-	glShadeModel(GL_FLAT);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	// init OpenGL
+	initializeGL();
 
 	// connect timer with next_generation-function
 	QObject::connect(&generating_timer, &QTimer::timeout, [this]() { GraphicCore::get_instance()->next_generation(); });
@@ -23,6 +20,7 @@ OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), m
 
 OpenGLWidget::~OpenGLWidget()
 {
+	// join thread if existing
 	if(step_thread)
 		step_thread->join();
 }
@@ -224,6 +222,15 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 	}
 
 	update();
+}
+
+void OpenGLWidget::initializeGL()
+{
+	// setup OpenGL viewport and mode
+	glViewport(0, 0, width(), height());
+	glMatrixMode(GL_PROJECTION);
+	glShadeModel(GL_FLAT);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 void OpenGLWidget::paintGL()
