@@ -9,7 +9,7 @@ HelpWidget::HelpWidget(QWidget* parent) : QFrame(parent)
 {
 	// grey transparent background
 	this->setAutoFillBackground(true);
-	this->setPalette(QPalette(QColor(0x80, 0x80, 0x80, 127)));
+	this->setPalette(QPalette(QColor(0x40, 0x40, 0x40, 0xE9)));
 
 	// dark border
 	this->setFrameShadow(QFrame::Raised);
@@ -21,6 +21,7 @@ HelpWidget::HelpWidget(QWidget* parent) : QFrame(parent)
 
 bool HelpWidget::eventFilter(QObject*, QEvent* event)
 {
+	// handle filtered events
 	switch(event->type())
 	{
 		case QEvent::KeyPress:

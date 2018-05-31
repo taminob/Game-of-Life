@@ -9,7 +9,7 @@ ToolWidget::ToolWidget(QWidget* parent) : QFrame(parent)
 {
 	// grey transparent background
 	this->setAutoFillBackground(true);
-	this->setPalette(QPalette(QColor(0x80, 0x80, 0x80, 0x80)));
+	this->setPalette(QPalette(QColor(0x40, 0x40, 0x40, 0xE9)));
 
 	// dark border around widget
 	this->setFrameShadow(QFrame::Raised);
@@ -23,6 +23,7 @@ ToolWidget::ToolWidget(QWidget* parent) : QFrame(parent)
 
 bool ToolWidget::eventFilter(QObject*, QEvent* event)
 {
+	// handle filtered events
 	switch(event->type())
 	{
 		case QEvent::KeyPress:
@@ -79,6 +80,9 @@ void ToolWidget::init_GUI()
 
 	translate();
 
+	main_layout.setMargin(1);
+
+
 	// set layout of toolwidget
 	this->setLayout(&main_layout);
 }
@@ -126,7 +130,6 @@ void ToolWidget::init_buttons()
 	QObject::connect(&play_stop, &QToolButton::clicked, this, &ToolWidget::play_or_stop);
 
 	// init reset_movement; text will be set in translate()
-	reset_movement.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 	QObject::connect(&reset_movement, &QToolButton::clicked, []() { GraphicCore::get_instance()->reset_movement(); } );
 
 	// init button for swapping mouse button behavior in game view
@@ -145,13 +148,13 @@ void ToolWidget::init_others()
 {
 	// init left_mouse_preview; text will be set in translate()
 	left_mouse_preview.setMaximumWidth(3 * height());
-	left_mouse_preview.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+	left_mouse_preview.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
 	left_mouse_preview.setAlignment(Qt::AlignCenter);
 	left_mouse_preview.setAutoFillBackground(true);
 
 	// init right_mouse_preview; text will be set in translate()
 	right_mouse_preview.setMaximumWidth(3 * height());
-	right_mouse_preview.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+	right_mouse_preview.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
 	right_mouse_preview.setAlignment(Qt::AlignCenter);
 	right_mouse_preview.setAutoFillBackground(true);
 	if(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead())
@@ -166,7 +169,7 @@ void ToolWidget::init_others()
 	}
 
 	generations_per_step.setMaximum(MAXIMUM_GENERATIONS_PER_STEP_INPUT);
-	generations_per_step.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+	generations_per_step.setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
 	generations_per_step.setMinimum(1);
 	generations_per_step.setValue(GraphicCore::get_instance()->get_config()->get_generations_per_step());
 	generations_per_step.setCorrectionMode(QSpinBox::CorrectToNearestValue);

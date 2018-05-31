@@ -8,8 +8,8 @@
 #include <QKeyEvent>
 #include <QColorDialog>
 #include <QFileDialog>
-#include <QDesktopServices>		// openUrl()
-#include <QDir>					// QDir::currentPath() + QDir::separator()
+#include <QDesktopServices>		// QDesktopServices::openUrl()
+#include <QDir>					// QDir::currentPath()
 #include <fstream>
 #include <experimental/filesystem>
 
@@ -23,7 +23,7 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 {
 	// grey transparent background
 	this->setAutoFillBackground(true);
-	this->setPalette(QPalette(QColor(0x80, 0x80, 0x80, 0x80)));
+	this->setPalette(QPalette(QColor(0x40, 0x40, 0x40, 0xE9)));
 
 	// dark border around widget
 	this->setFrameShadow(QFrame::Raised);
@@ -36,6 +36,7 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 
 bool PreferencesWidget::eventFilter(QObject*, QEvent* event)
 {
+	// handle filtered events
 	switch(event->type())
 	{
 		case QEvent::KeyPress:
@@ -294,8 +295,8 @@ void PreferencesWidget::init_application_group()
 		QString input_copy = input;
 
 		// path must end with a separator
-		if(input[input.size() - 1] != QDir::separator())
-			input_copy.append(QDir::separator());
+		if(input[input.size() - 1] != '/')
+			input_copy.append('/');
 
 		Core::get_instance()->get_config()->set_save_path(input_copy.toStdString());
 		check_save_path();
@@ -314,8 +315,8 @@ void PreferencesWidget::init_application_group()
 			return;
 
 		// path must end with a separator
-		if(dir[dir.size() - 1] != QDir::separator())
-			dir.append(QDir::separator());
+		if(dir[dir.size() - 1] != '/')
+			dir.append('/');
 
 		Core::get_instance()->get_config()->set_save_path(dir.toStdString());
 		reload_application();
@@ -498,7 +499,7 @@ void PreferencesWidget::reload_application()
 			QDir().mkdir(Core::get_instance()->get_config()->get_save_path().c_str());
 
 		// set relative path
-		save_path_input.setText(QDir::currentPath() + QDir::separator() +  QString(Core::get_instance()->get_config()->get_save_path().c_str()));
+		save_path_input.setText(QDir::currentPath() + '/' +  QString(Core::get_instance()->get_config()->get_save_path().c_str()));
 	}
 	else
 		// set absolute path
