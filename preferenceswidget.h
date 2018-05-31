@@ -71,6 +71,7 @@ public:
 	// set all texts; if a QTranslator is installed, the installed texts will be loaded
 	void translate();
 
+	// compile time constants
 	static constexpr std::size_t PREFERENCES_WIDTH = 400;
 
 signals:
