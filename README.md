@@ -41,7 +41,7 @@ game-of-life.exe
 or depending on the operating system in the GUI. The start of programs in the GUI of the OS is usually implemented with a double click.
 
 ### Getting started
-Please read carefully the help which can be opened by the shortcut 'H'.
+For questions, please use the help, which can be opened by the shortcut 'H'.
 
 ### Write own '*.gol' files:
 The GOL '*.gol' file format has a simple structure:
