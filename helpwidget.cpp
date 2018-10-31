@@ -16,7 +16,7 @@ HelpWidget::HelpWidget(QWidget* parent) : QFrame(parent)
 	this->setFrameShape(QFrame::Panel);
 	this->setLineWidth(2);
 
-	init_GUI();
+	init_gui();
 }
 
 bool HelpWidget::eventFilter(QObject*, QEvent* event)
@@ -54,7 +54,7 @@ void HelpWidget::keyPressEvent(QKeyEvent* event)
 	event->ignore();
 }
 
-void HelpWidget::init_GUI()
+void HelpWidget::init_gui()
 {
 	// init hide button
 	hide.setArrowType(Qt::LeftArrow);
@@ -83,8 +83,8 @@ void HelpWidget::translate()
 	show_index.setToolTip(tr("Show Index"));
 
 	// load help text in the right language
-	if(GraphicCore::get_instance()->get_config()->get_language() == Language::German ||
-			(GraphicCore::get_instance()->get_config()->get_language() == Language::System && QLocale::system().language() == QLocale::German))
+	if(GraphicCore::get_config()->get_language() == Language::German ||
+			(GraphicCore::get_config()->get_language() == Language::System && QLocale::system().language() == QLocale::German))
 		html_help.setSource(QUrl("qrc:/info/de_help.html"));
 	else
 		html_help.setSource(QUrl("qrc:/info/en_help.html"));

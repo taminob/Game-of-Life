@@ -14,7 +14,7 @@ This is a fast implementation of Conway's popular Game Of Life which supports ma
 - libstdc++fs (GCC)
 - opengl32 (MSVC)
 - \>= Qt 5.9.1
-- \>= C++14
+- \>= C++17
 
 ### Build
 #### Requirements
@@ -69,7 +69,7 @@ Each row will be filled with dead cells. The longest row determines the width of
 
 ## Documentation
 ### Cell_State (basesystem.h):
-This enumeration defines the two cell states Cell_State::Alive and Cell_State::Dead.
+This enumeration defines the two cell states Alive and Dead.
 
 ### Cell (cellsystem.h):
 Each instance represents one cell which holds the Cell_State in its only property "state".

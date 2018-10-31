@@ -18,7 +18,7 @@ enum Language
 namespace Default_Values
 {
 	constexpr Language LANGUAGE = System;
-	constexpr std::size_t CELL_SIZE = 20;
+	constexpr std::size_t CELL_SIZE = 50;
 	constexpr bool GRID_ACTIVE = true;
 	constexpr std::size_t GENERATION_COUNTER_SIZE = 40;
 	constexpr bool EXIT_WARNING = true;
@@ -86,9 +86,9 @@ private:
 // set options
 public:
 	inline void set_language(const Language& new_language) { graphic_config_saved = false; language = new_language; }
-	inline void set_cell_size(const std::size_t& new_cell_size) { graphic_config_saved = false; cell_size = new_cell_size; }
+	inline void set_cell_size(std::size_t new_cell_size) { graphic_config_saved = false; cell_size = new_cell_size; }
 	inline void set_grid_active(const bool& new_grid_active) { graphic_config_saved = false; grid_active = new_grid_active; }
-	inline void set_generation_counter_size(const std::size_t& new_generation_counter_size) { graphic_config_saved = false; generation_counter_size = new_generation_counter_size; }
+	inline void set_generation_counter_size(std::size_t new_generation_counter_size) { graphic_config_saved = false; generation_counter_size = new_generation_counter_size; }
 	inline void set_exit_warning(const bool& new_exit_warning) { graphic_config_saved = false; exit_warning = new_exit_warning; }
 	inline void set_dead_color(const QColor& new_dead_color) { graphic_config_saved = false; dead_color = new_dead_color; }
 	inline void set_alive_color(const QColor& new_alive_color) { graphic_config_saved = false; alive_color = new_alive_color; }
@@ -99,16 +99,16 @@ public:
 	inline void set_fullscreen(const bool& new_fullscreen) { graphic_config_saved = false; fullscreen = new_fullscreen; }
 	inline void set_lock_after_first_generating(const bool& new_lock_after_first_generating) { graphic_config_saved = false; lock_after_first_generating = new_lock_after_first_generating; }
 	inline void set_left_alive_and_right_dead(const bool& new_left_alive_and_right_dead) { left_alive_and_right_dead = new_left_alive_and_right_dead; write_config(); }
-	inline void set_generations_per_step(const std::size_t& new_generations_per_step) { generations_per_step = new_generations_per_step; write_config(); }
+	inline void set_generations_per_step(std::size_t new_generations_per_step) { generations_per_step = new_generations_per_step; write_config(); }
 	inline void set_show_startup_dialog(const bool& new_show_startup_dialog) { show_startup_dialog = new_show_startup_dialog; write_config(); }
-	inline void set_delay(const std::size_t& new_delay) { graphic_config_saved = false; delay = new_delay; }
+	inline void set_delay(std::size_t new_delay) { graphic_config_saved = false; delay = new_delay; }
 
 // get options
 public:
 	inline const Language& get_language() const { return language; }
-	inline const std::size_t& get_cell_size() const { return cell_size; }
+	inline std::size_t get_cell_size() const { return cell_size; }
 	inline const bool& get_grid_active() const { return grid_active; }
-	inline const std::size_t& get_generation_counter_size() const { return generation_counter_size; }
+	inline std::size_t get_generation_counter_size() const { return generation_counter_size; }
 	inline const bool& get_exit_warning() const { return exit_warning; }
 	inline const QColor& get_dead_color() const { return dead_color; }
 	inline const QColor& get_alive_color() const { return alive_color; }
@@ -119,9 +119,9 @@ public:
 	inline const bool& get_fullscreen() const { return fullscreen; }
 	inline const bool& get_lock_after_first_generating() const { return lock_after_first_generating; }
 	inline const bool& get_left_alive_and_right_dead() const { return left_alive_and_right_dead; }
-	inline const std::size_t& get_generations_per_step() const { return generations_per_step; }
+	inline std::size_t get_generations_per_step() const { return generations_per_step; }
 	inline const bool& get_show_startup_dialog() const { return show_startup_dialog; }
-	inline const std::size_t& get_delay() const { return delay; }
+	inline std::size_t get_delay() const { return delay; }
 };
 
 #endif // GRAPHICCONFIGURATION_H

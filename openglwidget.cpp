@@ -4,23 +4,28 @@
 #include "core.h"
 #include "graphiccore.h"
 #include <QKeyEvent>
+#include <mutex>
 #ifdef ENABLE_DRAW_TIME_MEASUREMENT
 #include <QDebug>
 #include <chrono>
 #endif
 
-OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), move_x(0), move_y(0), step_thread(nullptr), thread_stop(true), thread_block(false)
+/*#define SCALE_MIN 0.02
+#define SCALE_MAX 1.5*/
+static const double SCALE_MIN  = (1. / GraphicCore::get_config()->get_cell_size()) * 2;
+static const double SCALE_MAX = 10;
+
+OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), cell_size(GraphicCore::get_config()->get_cell_size()), move_x(0), move_y(0)
 {
-	// connect timer with next_generation-function
-	QObject::connect(&generating_timer, &QTimer::timeout, [this]() { GraphicCore::get_instance()->next_generation(); });
-	QObject::connect(this, &OpenGLWidget::stepping_finished, this, &OpenGLWidget::full_update, Qt::QueuedConnection);
+	// if update has to be done from other thread
+	QObject::connect(this, &OpenGLWidget::start_update, this, &OpenGLWidget::full_update);
 }
 
 OpenGLWidget::~OpenGLWidget()
 {
-	// join thread if existing
-	if(step_thread)
-		step_thread->join();
+	GraphicCore::wait_for_calculation();
+	GraphicCore::stop_step();
+	GraphicCore::stop_generating();
 }
 
 bool OpenGLWidget::eventFilter(QObject*, QEvent* event)
@@ -57,6 +62,12 @@ void OpenGLWidget::wheelEvent(QWheelEvent* event)
 	if(event->modifiers() == Qt::ControlModifier)
 	{
 		scale *= 1 + (event->angleDelta().y() / 360. * 0.3 /* = zoom-speed factor */);
+		if(scale < SCALE_MIN)
+			scale = SCALE_MIN;
+		else if(scale > SCALE_MAX)
+			scale = SCALE_MAX;
+
+		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
 	}
 	// mousewheel with no modifier: move
 	else if(event->modifiers() == Qt::NoModifier)
@@ -73,29 +84,34 @@ void OpenGLWidget::mousePressEvent(QMouseEvent* event)
 	mouse_pressed = true;
 
 	// calc pos of cell under mouse pointer
-	std::size_t x = (event->pos().x() - null_pos_x) / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale);
-	std::size_t y = (event->pos().y() - null_pos_y) / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale);
+	std::size_t x = static_cast<std::size_t>((event->pos().x() - null_pos_x) / cell_size);
+	std::size_t y = static_cast<std::size_t>((event->pos().y() - null_pos_y) / cell_size);
 
 	// check boundaries
-	if(x < Core::get_instance()->get_size_x() && y < Core::get_instance()->get_size_y()
+	if(x < Core::get_size_x() && y < Core::get_size_y()
 		// check (event->pos() - null_pos) >= 0 to avoid rounding errors (0 <-> -cell_size)
 			&& (event->pos().x() - null_pos_x) >= 0 && (event->pos().y() - null_pos_y) >= 0
 		// check if cells are locked
-			&& (!GraphicCore::get_instance()->get_config()->get_lock_after_first_generating() || Core::get_instance()->get_generation() == 0))
+			&& (!GraphicCore::get_config()->get_lock_after_first_generating() || Core::get_generation() == 0)
+		// check if cells are greater than 1px
+			&& cell_size > 1)
 	{
 		// halt background calculation
-		stop_step();
+		GraphicCore::stop_step();
 
+		std::lock_guard<decltype(GraphicCore::get_mutex())> system_lock(GraphicCore::get_mutex());
 		if(event->buttons() & Qt::LeftButton)
 			// revive on left click if it is set, otherwise kill
-			Core::get_instance()->set_cell_state(x, y,
-													(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead()) ? Cell_State::Alive : Cell_State::Dead);
+			Core::set_cell_state(x, y,
+													(GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Alive : Dead);
 		else if(event->buttons() & Qt::RightButton)
 			// kill on right click if it is set, otherwise revive
-			Core::get_instance()->set_cell_state(x, y,
-													(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead()) ? Cell_State::Dead : Cell_State::Alive);
+			Core::set_cell_state(x, y,
+													(GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Dead : Alive);
 	}
 
+	previous_pos = event->pos();
+	emit cell_changed();
 	update();
 }
 
@@ -103,35 +119,86 @@ void OpenGLWidget::mouseReleaseEvent(QMouseEvent*)
 {
 	mouse_pressed = false;
 
-	// recalculation + update
-	Core::get_instance()->calc_next_generation();
-	update();
+	GraphicCore::calc_next_generation();
+
+	emit cell_changed();
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
-	if(mouse_pressed)
+	if(mouse_pressed && cell_size >= 1)
 	{
+		int dif_x = previous_pos.x() - event->pos().x();
+		int dif_y = previous_pos.y() - event->pos().y();
+
+		bool dif_x_active = std::abs(dif_x) >= cell_size;
+		bool dif_y_active = std::abs(dif_y) >= cell_size;
+
+		while(dif_x_active || dif_y_active)
+		{
+			dif_x_active = std::abs(dif_x) >= cell_size;
+			dif_y_active = std::abs(dif_y) >= cell_size;
+
+			if(dif_x_active)
+			{
+				if(dif_x > 0)
+					dif_x -= cell_size - 1;
+				else
+					dif_x += cell_size - 1;
+			}
+			if(dif_y_active)
+			{
+				if(dif_y > 0)
+					dif_y -= cell_size - 1;
+				else
+					dif_y += cell_size - 1;
+			}
+
+			QPoint temp(event->pos().x() + dif_x, event->pos().y() + dif_y);
+
+			// calc pos of cell under mouse pointer
+			std::size_t x = static_cast<std::size_t>((temp.x() - null_pos_x) / cell_size);
+			std::size_t y = static_cast<std::size_t>((temp.y() - null_pos_y) / cell_size);
+
+			if(x < Core::get_size_x() && y < Core::get_size_y()
+					&& (temp.x() - null_pos_x) >= 0 && (temp.y() - null_pos_y) >= 0
+					&& (!GraphicCore::get_config()->get_lock_after_first_generating() || Core::get_generation() == 0))
+			{
+				GraphicCore::stop_step();
+
+				std::lock_guard<decltype(GraphicCore::get_mutex())> system_lock(GraphicCore::get_mutex());
+				if(event->buttons() & Qt::LeftButton)
+					// revive on left click if it is set, otherwise kill
+					Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Alive : Dead);
+				else if(event->buttons() & Qt::RightButton)
+					// kill on right click if it is set, otherwise revive
+					Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Dead : Alive);
+			}
+		}
+
 		// calc pos of cell under mouse pointer
-		std::size_t x = (event->pos().x() - null_pos_x) / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale);
-		std::size_t y = (event->pos().y() - null_pos_y) / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale);
+		std::size_t x = static_cast<std::size_t>((event->pos().x() - null_pos_x) / cell_size);
+		std::size_t y = static_cast<std::size_t>((event->pos().y() - null_pos_y) / cell_size);
 
 		// check boundaries
-		if(x < Core::get_instance()->get_size_x() && y < Core::get_instance()->get_size_y()
+		if(x < Core::get_size_x() && y < Core::get_size_y()
 			// check (event->pos() - null_pos) >= 0 to avoid rounding errors (0 <-> -cell_size)
 				&& (event->pos().x() - null_pos_x) >= 0 && (event->pos().y() - null_pos_y) >= 0
 			// check if cells are locked
-				&& (!GraphicCore::get_instance()->get_config()->get_lock_after_first_generating() || Core::get_instance()->get_generation() == 0))
+				&& (!GraphicCore::get_config()->get_lock_after_first_generating() || Core::get_generation() == 0))
 		{
-			stop_step();
+			GraphicCore::stop_step();
 
+			std::lock_guard<decltype(GraphicCore::get_mutex())> system_lock(GraphicCore::get_mutex());
 			if(event->buttons() & Qt::LeftButton)
 				// revive on left click if it is set, otherwise kill
-				Core::get_instance()->set_cell_state(x, y, (GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead()) ? Cell_State::Alive : Cell_State::Dead);
+				Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Alive : Dead);
 			else if(event->buttons() & Qt::RightButton)
 				// kill on right click if it is set, otherwise revive
-				Core::get_instance()->set_cell_state(x, y, (GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead()) ? Cell_State::Dead : Cell_State::Alive);
+				Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Dead : Alive);
 
+			previous_pos = event->pos();
+			emit cell_changed();
 			update();
 		}
 	}
@@ -143,40 +210,50 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 	// fast move: CTRL + [up/down/left/right] arrow
 	if(event->key() == Qt::Key_Up)
 	{
-		move_y += 10;
+		move_y += GraphicCore::get_config()->get_cell_size();
 		if(event->modifiers() == Qt::ControlModifier)
-			move_y += 100;
+			move_y += GraphicCore::get_config()->get_cell_size() * 10;
 	}
 	else if(event->key() == Qt::Key_Down)
 	{
-		move_y -= 10;
+		move_y -= GraphicCore::get_config()->get_cell_size();
 		if(event->modifiers() == Qt::ControlModifier)
-			move_y -= 100;
+			move_y -= GraphicCore::get_config()->get_cell_size() * 10;
 	}
 	else if(event->key() == Qt::Key_Left)
 	{
-		move_x += 10;
+		move_x += GraphicCore::get_config()->get_cell_size();
 		if(event->modifiers() == Qt::ControlModifier)
-			move_x += 100;
+			move_x += GraphicCore::get_config()->get_cell_size() * 10;
 	}
 	else if(event->key() == Qt::Key_Right)
 	{
-		move_x -= 10;
+		move_x -= GraphicCore::get_config()->get_cell_size();
 		if(event->modifiers() == Qt::ControlModifier)
-			move_x -= 100;
+			move_x -= GraphicCore::get_config()->get_cell_size() * 10;
 	}
 	// zoom: CTRL + [+/-]
 	else if((event->modifiers() & Qt::CTRL) && event->key() == Qt::Key_Plus)
+	{
 		scale *= 1.1;
+		if(scale > SCALE_MAX)
+			scale = SCALE_MAX;
+		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
+	}
 	else if((event->modifiers() & Qt::CTRL) && event->key() == Qt::Key_Minus)
+	{
 		scale *= 0.9;
+		if(scale < SCALE_MIN)
+			scale = SCALE_MIN;
+		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
+	}
 	// next generation: space
 	else if(event->key() == Qt::Key_Space)
 	{
-		if(thread_stop)
-			generate_step();
+		if(GraphicCore::step_running())
+			GraphicCore::stop_step();
 		else
-			stop_step();
+			GraphicCore::step();
 		// avoid double repainting
 		return;
 	}
@@ -184,14 +261,13 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 	else if(event->key() == Qt::Key_R)
 	{
 		// if autogenerating is running: stop
-		if(generating_timer.isActive())
-			stop_generating();
+		if(GraphicCore::generating_running())
+			GraphicCore::stop_generating();
 		// if autogenerating is stopped: start
 		else
 		{
-			stop_step();
-
-			start_generating();
+			GraphicCore::stop_step();
+			GraphicCore::start_generating();
 			// avoid double repainting
 			return;
 		}
@@ -200,24 +276,26 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 	// set all cells alive: CTRL + a
 	else if(event->key() == Qt::Key_A)
 	{
-		stop_generating();
+		GraphicCore::stop_generating();
 
 		if(event->modifiers() == Qt::NoModifier)
-			GraphicCore::get_instance()->reset_cells(Cell_State::Dead);
+			GraphicCore::reset_cells(Dead);
 		else if(event->modifiers() == Qt::ControlModifier)
-			GraphicCore::get_instance()->reset_cells(Cell_State::Alive);
+			GraphicCore::reset_cells(Alive);
 	}
 	// new random cells: n
 	else if(event->key() == Qt::Key_N)
 	{
-		GraphicCore::get_instance()->new_system();
-		emit new_system_generated();
+		GraphicCore::new_system();
+		emit new_system_created();
 	}
 	// reset position: m
 	else if(event->key() == Qt::Key_M)
 	{
 		reset_movement();
 	}
+	else
+		return;
 
 	update();
 }
@@ -233,6 +311,8 @@ void OpenGLWidget::initializeGL()
 
 void OpenGLWidget::paintGL()
 {
+	std::lock_guard<decltype(GraphicCore::get_mutex())> system_lock(GraphicCore::get_mutex());
+
 #ifdef ENABLE_DRAW_TIME_MEASUREMENT
 	// begin of time measuring
 	auto begin = std::chrono::high_resolution_clock::now();
@@ -244,21 +324,32 @@ void OpenGLWidget::paintGL()
 	// set 0/0 to top-left-corner
 	glOrtho(0, width(), height(), 0, -1, 1);
 
-	// set null_pos central (moved by move_x/move_y (also scaled)) and scaled by scale-factor
-	null_pos_x = move_x * scale + (width() / 2) - (Core::get_instance()->get_size_x() * GraphicCore::get_instance()->get_config()->get_cell_size() / 2) * scale;
-	null_pos_y = move_y * scale + (height() / 2) - (Core::get_instance()->get_size_y() * GraphicCore::get_instance()->get_config()->get_cell_size() / 2) * scale;
+	// set null_pos central (moved by move_x/move_y and scaled by scale-factor)
+	null_pos_x = move_x + (width() / 2) - (Core::get_size_x() / 2) * cell_size;
+	null_pos_y = move_y + (height() / 2) - (Core::get_size_y() / 2) * cell_size;
 
-	// move view to correct pos
-	glTranslated(null_pos_x, null_pos_y, 0);
-
-	// increse or decrease size by scale-factor (set in wheelEvent); has to be done after glTranslated in order to get right position
-	glScaled(scale, scale, scale);
+	// expand if borders are visible
+	while(Core::get_config()->get_border_behavior() == Border_Behavior::Borderless &&
+			// check right border
+			((null_pos_x + (static_cast<long long>(Core::get_size_x() * cell_size) - width())) <= 0 ||
+			// check lower border
+			 (null_pos_y + (static_cast<long long>(Core::get_size_y() * cell_size) - height())) <= 0 ||
+			// check left and upper borders
+			 (null_pos_x) > 0 || (null_pos_y) > 0))
+	{
+		if(!Core::expand())
+				break;
+		null_pos_x = move_x + (width() / 2) - (Core::get_size_x() / 2) * cell_size;
+		null_pos_y = move_y + (height() / 2) - (Core::get_size_y() / 2) * cell_size;
+		emit new_system_created();
+	}
 
 	// set background (+ dead cell) color
-	glClearColor(GraphicCore::get_instance()->get_config()->get_background_color().red() / 255., GraphicCore::get_instance()->get_config()->get_background_color().green() / 255., GraphicCore::get_instance()->get_config()->get_background_color().blue() / 255., 1);
+	glClearColor(GraphicCore::get_config()->get_background_color().red() / 255.,
+				 GraphicCore::get_config()->get_background_color().green() / 255.,
+				 GraphicCore::get_config()->get_background_color().blue() / 255., 1);
 
 	draw_cells();
-
 	draw_grid();
 
 #ifdef ENABLE_DRAW_TIME_MEASUREMENT
@@ -271,91 +362,123 @@ void OpenGLWidget::paintGL()
 void OpenGLWidget::draw_cells()
 {
 	// calc visible cells
-	std::size_t x_begin = -(null_pos_x) / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale);
-	std::size_t y_begin = -(null_pos_y) / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale);
-	std::size_t x_end = x_begin + width() / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale) + 3;
-	std::size_t y_end = y_begin + height() / (GraphicCore::get_instance()->get_config()->get_cell_size() * scale) + 3;
+	std::size_t x_begin = -(null_pos_x) / cell_size;
+	std::size_t y_begin = -(null_pos_y) / cell_size;
+	std::size_t x_end = x_begin + width() / cell_size + 3;
+	std::size_t y_end = y_begin + height() / cell_size + 3;
 
 	// check boundaries
-	if(x_begin > Core::get_instance()->get_size_x())
+	if(x_begin > Core::get_size_x())
 		x_begin = 0;
-	if(y_begin > Core::get_instance()->get_size_y())
+	if(y_begin > Core::get_size_y())
 		y_begin = 0;
-	if(x_end <= x_begin || x_end > Core::get_instance()->get_size_x())
-		x_end = Core::get_instance()->get_size_x();
-	if(y_end <= y_begin || y_end > Core::get_instance()->get_size_y())
-		y_end = Core::get_instance()->get_size_y();
+	if(x_end <= x_begin || x_end > Core::get_size_x())
+		x_end = Core::get_size_x();
+	if(y_end <= y_begin || y_end > Core::get_size_y())
+		y_end = Core::get_size_y();
 
 	// draw dead cells as background (performance improvement)
-	glColor3ub(GraphicCore::get_instance()->get_config()->get_dead_color().red(),
-			   GraphicCore::get_instance()->get_config()->get_dead_color().green(),
-			   GraphicCore::get_instance()->get_config()->get_dead_color().blue());
-	glRecti(x_begin * GraphicCore::get_instance()->get_config()->get_cell_size(), y_begin * GraphicCore::get_instance()->get_config()->get_cell_size(),
-			x_end * GraphicCore::get_instance()->get_config()->get_cell_size(), y_end * GraphicCore::get_instance()->get_config()->get_cell_size());
+	glColor3ub(GraphicCore::get_config()->get_dead_color().red(),
+			   GraphicCore::get_config()->get_dead_color().green(),
+			   GraphicCore::get_config()->get_dead_color().blue());
 
-	std::size_t x1 = 0, y1 = 0, x2, y2;
+	std::size_t graphic_size_x = Core::get_size_x() * cell_size;
+	std::size_t graphic_size_y = Core::get_size_y() * cell_size;
+
+	// if field is out of sight, don't draw any cell
+	if(null_pos_x > width() + static_cast<long>(graphic_size_x) || null_pos_x < (-1 * static_cast<long>(graphic_size_x)) ||
+		null_pos_y > height() + static_cast<long>(graphic_size_y) || null_pos_y < (-1 * static_cast<long>(graphic_size_y)))
+		return;
+
+	long real_null_pos_x = (null_pos_x < 0) ? (null_pos_x % static_cast<long>(cell_size)) : (null_pos_x > width()) ? width() : null_pos_x;
+	long real_null_pos_y = (null_pos_y < 0) ? (null_pos_y % static_cast<long>(cell_size)) : (null_pos_y > height()) ? height() : null_pos_y;
+
+	if(static_cast<long>(graphic_size_x) + null_pos_x < width())
+	{
+		if(static_cast<long>(graphic_size_y) + null_pos_y < height())
+			glRecti(real_null_pos_x, real_null_pos_y, null_pos_x + graphic_size_x, null_pos_y + graphic_size_y);
+		else
+			glRecti(real_null_pos_x, real_null_pos_y, null_pos_x + graphic_size_x, height());
+	}
+	else
+	{
+		if(static_cast<long>(graphic_size_y) + null_pos_y < height())
+			glRecti(real_null_pos_x, real_null_pos_y, width(), null_pos_y + graphic_size_y);
+		else
+			glRecti(real_null_pos_x, real_null_pos_y, width(), height());
+	}
+
+	long x1 = real_null_pos_x, y1 = real_null_pos_y, x2, y2;
 	// draw line by line visible cells
 	for(std::size_t a = y_begin; a < y_end; ++a)
 	{
 		// y-coord of right lower corner
-		y2 = (a + 1) * GraphicCore::get_instance()->get_config()->get_cell_size();
+		y2 = (a - y_begin + 1) * cell_size + real_null_pos_y;
 
 		for(std::size_t b = x_begin; b < x_end; ++b)
 		{
-			x2 = (b + 1) * GraphicCore::get_instance()->get_config()->get_cell_size();
+			x2 = (b - x_begin + 1) * cell_size + real_null_pos_x;
 
 			// alive cells
-			if(Core::get_instance()->get_cell_state(b, a))
+			if(Core::get_cell_state(b, a))
 			{
-				if(Core::get_instance()->get_next_cell_state(b, a))
+				// if autogenerating is running, use only alive color
+				if(GraphicCore::generating_running() || Core::get_next_cell_state(b, a))
 					// alive cell color
-					glColor3ub(GraphicCore::get_instance()->get_config()->get_alive_color().red(), GraphicCore::get_instance()->get_config()->get_alive_color().green(), GraphicCore::get_instance()->get_config()->get_alive_color().blue());
+					glColor3ub(GraphicCore::get_config()->get_alive_color().red(),
+							   GraphicCore::get_config()->get_alive_color().green(), GraphicCore::get_config()->get_alive_color().blue());
 				else
 					// dying cell color
-					glColor3ub(GraphicCore::get_instance()->get_config()->get_dying_color().red(), GraphicCore::get_instance()->get_config()->get_dying_color().green(), GraphicCore::get_instance()->get_config()->get_dying_color().blue());
+					glColor3ub(GraphicCore::get_config()->get_dying_color().red(),
+							   GraphicCore::get_config()->get_dying_color().green(), GraphicCore::get_config()->get_dying_color().blue());
 
 				glRecti(x1, y1, x2, y2);
 			}
-			// dead but in next generation reviving cells
-			else if(Core::get_instance()->get_next_cell_state(b, a))
+			// dead but in next generation reviving cells; use only if autogenerating is not running
+			else if(!GraphicCore::generating_running() && Core::get_next_cell_state(b, a))
 			{
 				// reviving cell color
-				glColor3ub(GraphicCore::get_instance()->get_config()->get_reviving_color().red(), GraphicCore::get_instance()->get_config()->get_reviving_color().green(), GraphicCore::get_instance()->get_config()->get_reviving_color().blue());
+				glColor3ub(GraphicCore::get_config()->get_reviving_color().red(),
+						   GraphicCore::get_config()->get_reviving_color().green(), GraphicCore::get_config()->get_reviving_color().blue());
 				glRecti(x1, y1, x2, y2);
 			}
 
 			x1 = x2;
 		}
 
-		//
 		y1 = y2;
 		// start each row
-		x1 = 0;
+		x1 = real_null_pos_x;
 	}
 }
 
 void OpenGLWidget::draw_grid()
 {
-	if(GraphicCore::get_instance()->get_config()->get_grid_active())
+	if(GraphicCore::get_config()->get_grid_active())
 	{
-		glColor3f(0.5, 0.5, 0.5);	// fixed line color
-		glLineWidth(0.5);			// fixed line width
-		std::size_t max_line_coord_x = Core::get_instance()->get_size_x() * GraphicCore::get_instance()->get_config()->get_cell_size();
-		std::size_t max_line_coord_y = Core::get_instance()->get_size_y() * GraphicCore::get_instance()->get_config()->get_cell_size();
-		for(std::size_t line_coord = 0; line_coord <= max_line_coord_x || line_coord <= max_line_coord_y; line_coord += GraphicCore::get_instance()->get_config()->get_cell_size())
+		// actual null position
+		long real_null_pos_x = (null_pos_x < 0) ? (null_pos_x % static_cast<long>(cell_size)) : (null_pos_x > width()) ? width() : null_pos_x;
+		long real_null_pos_y = (null_pos_y < 0) ? (null_pos_y % static_cast<long>(cell_size)) : (null_pos_y > height()) ? height() : null_pos_y;
+		long x_end = width() + 3 * cell_size + real_null_pos_x;
+		long y_end = height() + 3 * cell_size + real_null_pos_y;
+
+		glColor3f(0.5, 0.5, 0.5);			// fixed line color
+		glLineWidth(1.0);					// fixed line width
+
+		for(long line_coord_x = real_null_pos_x, line_coord_y = real_null_pos_y; line_coord_x <= x_end || line_coord_y <= y_end; line_coord_x += cell_size, line_coord_y += cell_size)
 		{
-			if(line_coord <= max_line_coord_x)
+			if(line_coord_x <= x_end)
 			{
 				glBegin(GL_LINES);
-				glVertex2i(line_coord, 0);
-				glVertex2i(line_coord, max_line_coord_y);
+				glVertex2i(line_coord_x, real_null_pos_y);
+				glVertex2i(line_coord_x, y_end);
 				glEnd();
 			}
-			if(line_coord <= max_line_coord_y)
+			if(line_coord_y <= y_end)
 			{
 				glBegin(GL_LINES);
-				glVertex2i(0, line_coord);
-				glVertex2i(max_line_coord_x, line_coord);
+				glVertex2i(real_null_pos_x, line_coord_y);
+				glVertex2i(x_end, line_coord_y);
 				glEnd();
 			}
 		}
@@ -364,7 +487,7 @@ void OpenGLWidget::draw_grid()
 
 void OpenGLWidget::full_update()
 {
-	GraphicCore::get_instance()->update_generation_counter();
+	GraphicCore::update_generation_counter();
 	update();
 }
 
@@ -373,64 +496,7 @@ void OpenGLWidget::reset_movement()
 	move_x = 0;
 	move_y = 0;
 	scale = 1;
+	cell_size = GraphicCore::get_config()->get_cell_size();
 
 	update();
-}
-
-void OpenGLWidget::generate_step()
-{
-	if(thread_stop && !thread_block)
-	{
-		thread_stop = false;
-		step_thread = new std::thread(&OpenGLWidget::calc_generations,
-															   this, GraphicCore::get_instance()->get_config()->get_generations_per_step());
-	}
-}
-
-void OpenGLWidget::stop_step()
-{
-	thread_stop = true;
-	if(step_thread)
-	{
-		step_thread->join();
-		delete step_thread;
-		step_thread = nullptr;
-	}
-}
-
-bool OpenGLWidget::get_generating_running()
-{
-	return generating_timer.isActive();
-}
-
-void OpenGLWidget::start_generating()
-{
-	stop_step();
-	thread_block = true;
-	// start repeated calc after set delay
-	generating_timer.setSingleShot(false);
-	generating_timer.setInterval(GraphicCore::get_instance()->get_config()->get_delay());
-	generating_timer.start();
-
-	emit generating_start_stop();
-}
-
-void OpenGLWidget::stop_generating()
-{
-	generating_timer.stop();
-	thread_block = false;
-
-	emit generating_start_stop();
-}
-
-void OpenGLWidget::calc_generations(std::size_t generations)
-{
-	while(generations--)
-	{
-		if(!thread_stop)
-			Core::get_instance()->next_generation();
-	}
-
-	thread_stop = true;
-	emit stepping_finished();
 }

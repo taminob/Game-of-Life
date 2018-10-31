@@ -13,10 +13,10 @@
 #include <thread>				// std::thread::hardware_concurrency()
 
 PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_required(false),
-														live_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
+														survival_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
 																				new RuleButton(3, this), new RuleButton(4, this), new RuleButton(5, this),
 																				new RuleButton(6, this), new RuleButton(7, this), new RuleButton(8, this) }},
-														reborn_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
+														rebirth_rules_input{{ new RuleButton(0, this), new RuleButton(1, this), new RuleButton(2, this),
 																				new RuleButton(3, this), new RuleButton(4, this), new RuleButton(5, this),
 																				new RuleButton(6, this), new RuleButton(7, this), new RuleButton(8, this) }}
 {
@@ -30,7 +30,7 @@ PreferencesWidget::PreferencesWidget(QWidget* parent) : QFrame(parent), restart_
 	this->setLineWidth(2);
 
 	// setup gui
-	init_GUI();
+	init_gui();
 }
 
 bool PreferencesWidget::eventFilter(QObject*, QEvent* event)
@@ -65,7 +65,7 @@ void PreferencesWidget::keyPressEvent(QKeyEvent* event)
 	event->ignore();
 }
 
-void PreferencesWidget::init_GUI()
+void PreferencesWidget::init_gui()
 {
 	init_color_group();
 	init_game_group();
@@ -142,39 +142,41 @@ void PreferencesWidget::init_game_group()
 	size_x_input.setMaximum(99999);
 	size_x_input.setCorrectionMode(QSpinBox::CorrectToNearestValue);
 	QObject::connect(&size_x_input, &QSpinBox::editingFinished,
-					 [this]() { Core::get_instance()->get_config()->set_size_x(size_x_input.value()); restart_required = true; });
+					 [this]() { Core::get_config()->set_size_x(size_x_input.value()); restart_required = true; });
 
 	// init input of y/height
 	size_y_input.setMinimum(1);
 	size_y_input.setMaximum(99999);
 	size_y_input.setCorrectionMode(QSpinBox::CorrectToNearestValue);
 	QObject::connect(&size_y_input, &QSpinBox::editingFinished,
-					 [this]() { Core::get_instance()->get_config()->set_size_y(size_y_input.value()); restart_required = true; });
+					 [this]() { Core::get_config()->set_size_y(size_y_input.value()); restart_required = true; });
 
 	// create empty items and connect border behavior input; text will be set in translate()
+	border_behavior_input.addItem("");
 	border_behavior_input.addItem("");
 	border_behavior_input.addItem("");
 	border_behavior_input.addItem("");
 	QObject::connect(&border_behavior_input, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), [this](int index)
 	{
 		// set only if choice is different from current border behavior
-		if(Core::get_instance()->get_config()->get_border_behavior() != static_cast<Border_Behavior>(index))
+		if(Core::get_config()->get_border_behavior() != static_cast<Border_Behavior>(index))
 		{
-			Core::get_instance()->get_config()->set_border_behavior(static_cast<Border_Behavior>(index));
+			Core::get_config()->set_border_behavior(static_cast<Border_Behavior>(index));
 			restart_required = true;
 		}
+		enable_borderless_settings(static_cast<Border_Behavior>(index) == Border_Behavior::Borderless);
 	});
 
 	// init delay input
 	delay_between_generations_input.setMinimum(1);
 	delay_between_generations_input.setMaximum(10000);
 	QObject::connect(&delay_between_generations_input, &QSpinBox::editingFinished,
-					 [this]() { GraphicCore::get_instance()->get_config()->set_delay(delay_between_generations_input.value()); });
+					 [this]() { GraphicCore::get_config()->set_delay(delay_between_generations_input.value()); });
 
 	// connect random start checkbox
 	QObject::connect(&random_start, &QCheckBox::clicked, [this](int state)
 	{
-		Core::get_instance()->get_config()->set_start_random(state);
+		Core::get_config()->set_start_random(state);
 
 		if(state)
 		{
@@ -203,10 +205,10 @@ void PreferencesWidget::init_game_group()
 	// init relation input
 	relation_alive_input.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 	QObject::connect(&relation_alive_input, &QSpinBox::editingFinished,
-					 [this]() { Core::get_instance()->get_config()->set_relation_alive(relation_alive_input.value()); restart_required = true; });
+					 [this]() { Core::get_config()->set_relation_alive(relation_alive_input.value()); restart_required = true; });
 	relation_dead_input.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 	QObject::connect(&relation_dead_input, &QSpinBox::editingFinished,
-					 [this]() { Core::get_instance()->get_config()->set_relation_dead(relation_dead_input.value()); restart_required = true; });
+					 [this]() { Core::get_config()->set_relation_dead(relation_dead_input.value()); restart_required = true; });
 
 	// create and init layout for random relation preferences
 	QGridLayout* relation_layout = new QGridLayout;
@@ -220,37 +222,37 @@ void PreferencesWidget::init_game_group()
 	// connect rulebuttons
 	for(std::size_t i = 0; i < 9; ++i)
 	{
-		QObject::connect(live_rules_input[i], &RuleButton::clicked, [this, i]()
+		QObject::connect(survival_rules_input[i], &RuleButton::clicked, [this, i]()
 		{
 			// update state
-			live_rules_input[i]->toggle_state();
-			// toggle live_rule bit without changing other bits
-			Core::get_instance()->get_config()->set_live_rules(Core::get_instance()->get_config()->get_live_rules() ^ (1 << i));
+			survival_rules_input[i]->toggle_state();
+			// toggle survival_rule bit without changing other bits
+			Core::get_config()->set_survival_rules(Core::get_config()->get_survival_rules() ^ (1 << i));
 
 			restart_required = true;
 		});
-		QObject::connect(reborn_rules_input[i], &RuleButton::clicked, [this, i]()
+		QObject::connect(rebirth_rules_input[i], &RuleButton::clicked, [this, i]()
 		{
 			// update state
-			reborn_rules_input[i]->toggle_state();
-			// toggle reborn_rule bit without changing other bits
-			Core::get_instance()->get_config()->set_reborn_rules(Core::get_instance()->get_config()->get_reborn_rules() ^ (1 << i));
+			rebirth_rules_input[i]->toggle_state();
+			// toggle rebirth_rule bit without changing other bits
+			Core::get_config()->set_rebirth_rules(Core::get_config()->get_rebirth_rules() ^ (1 << i));
 
 			restart_required = true;
 		});
 	}
 	// create layout and add rulebuttons
-	QHBoxLayout* live_rules_layout = new QHBoxLayout;
-	QHBoxLayout* reborn_rules_layout = new QHBoxLayout;
+	QHBoxLayout* survival_rules_layout = new QHBoxLayout;
+	QHBoxLayout* rebirth_rules_layout = new QHBoxLayout;
 	for(std::size_t i = 0; i < 9; ++i)
 	{
-		live_rules_layout->addWidget(live_rules_input[i]);
-		reborn_rules_layout->addWidget(reborn_rules_input[i]);
+		survival_rules_layout->addWidget(survival_rules_input[i]);
+		rebirth_rules_layout->addWidget(rebirth_rules_input[i]);
 	}
 
 	// connect lock cells checkbox
 	QObject::connect(&lock_cells_after_generation_zero_check, &QCheckBox::clicked,
-					 [this](bool state) { GraphicCore::get_instance()->get_config()->set_lock_after_first_generating(state); });
+					 [this](bool state) { GraphicCore::get_config()->set_lock_after_first_generating(state); });
 
 	// add components to group layout
 	game_layout.addWidget(&size_x_text, 0, 0);
@@ -266,10 +268,10 @@ void PreferencesWidget::init_game_group()
 	game_layout.addWidget(&delay_between_generations_text, 5, 0, 1, 3, Qt::AlignBottom);
 	game_layout.addWidget(&delay_between_generations_input, 6, 0, 1, 2);
 	game_layout.addWidget(&delay_between_generations_unit, 6, 2, 1, 1);
-	game_layout.addWidget(&live_rules_text, 7, 0, 1, 3);
-	game_layout.addLayout(live_rules_layout, 8, 0, 1, 3);
-	game_layout.addWidget(&reborn_rules_text, 9, 0, 1, 3);
-	game_layout.addLayout(reborn_rules_layout, 10, 0, 1, 3);
+	game_layout.addWidget(&survival_rules_text, 7, 0, 1, 3);
+	game_layout.addLayout(survival_rules_layout, 8, 0, 1, 3);
+	game_layout.addWidget(&rebirth_rules_text, 9, 0, 1, 3);
+	game_layout.addLayout(rebirth_rules_layout, 10, 0, 1, 3);
 	game_layout.addWidget(&lock_cells_after_generation_zero_check, 11, 0, 1, 3, Qt::AlignVCenter);
 
 	// set group layout
@@ -282,15 +284,15 @@ void PreferencesWidget::init_application_group()
 	num_of_threads_input.setMinimum(1);
 	num_of_threads_input.setMaximum(std::thread::hardware_concurrency());
 	QObject::connect(&num_of_threads_input, &QSpinBox::editingFinished,
-					 [this]() { Core::get_instance()->get_config()->set_num_of_threads(num_of_threads_input.value()); restart_required = true; });
+					 [this]() { Core::get_config()->set_num_of_threads(num_of_threads_input.value()); restart_required = true; });
 
 	// connect fullscreen checkbox
 	QObject::connect(&start_fullscreen, &QCheckBox::clicked,
-					 [this](bool state) { GraphicCore::get_instance()->get_config()->set_fullscreen(state); });
+					 [this](bool state) { GraphicCore::get_config()->set_fullscreen(state); });
 
 	// connect exit warning checkbox
 	QObject::connect(&show_exit_warning_check, &QCheckBox::clicked,
-					 [this](bool state) { GraphicCore::get_instance()->get_config()->set_exit_warning(state); });
+					 [this](bool state) { GraphicCore::get_config()->set_exit_warning(state); });
 
 
 	// connect save path input
@@ -307,7 +309,7 @@ void PreferencesWidget::init_application_group()
 		if(input[input.size() - 1] != '/')
 			input_copy.append('/');
 
-		Core::get_instance()->get_config()->set_save_path(input_copy.toStdString());
+		Core::get_config()->set_save_path(input_copy.toStdString());
 		check_save_path();
 	});
 	// reload set path after editing
@@ -317,7 +319,7 @@ void PreferencesWidget::init_application_group()
 	save_path_browse.setIcon(QApplication::style()->standardIcon(QStyle::SP_DirIcon));
 	QObject::connect(&save_path_browse, &QToolButton::clicked, [this]()
 	{
-		QString dir = QFileDialog::getExistingDirectory(this, tr("Choose a directory..."), QString(Core::get_instance()->get_config()->get_save_path().c_str()));
+		QString dir = QFileDialog::getExistingDirectory(this, tr("Choose a directory..."), QString(Core::get_config()->get_save_path().c_str()));
 
 		// if dialog is closed without OK
 		if(dir.isEmpty())
@@ -327,7 +329,7 @@ void PreferencesWidget::init_application_group()
 		if(dir[dir.size() - 1] != '/')
 			dir.append('/');
 
-		Core::get_instance()->get_config()->set_save_path(dir.toStdString());
+		Core::get_config()->set_save_path(dir.toStdString());
 		reload_application();
 	});
 
@@ -335,10 +337,10 @@ void PreferencesWidget::init_application_group()
 	QObject::connect(&show_saved_games_dir, &QToolButton::clicked, [this]()
 	{
 		// complete default relative path to absolute path
-		if(Core::get_instance()->get_config()->get_save_path() == Default_Values::SAVE_PATH)
-			QDesktopServices::openUrl(QUrl(QDir::currentPath() + '/' +  QString(Core::get_instance()->get_config()->get_save_path().c_str())));
+		if(Core::get_config()->get_save_path() == Default_Values::SAVE_PATH)
+			QDesktopServices::openUrl(QUrl(QDir::currentPath() + '/' +  QString(Core::get_config()->get_save_path().c_str())));
 		else
-			QDesktopServices::openUrl(QUrl(Core::get_instance()->get_config()->get_save_path().c_str()));
+			QDesktopServices::openUrl(QUrl(Core::get_config()->get_save_path().c_str()));
 	});
 
 	application_layout.addWidget(&num_of_threads_text, 0, 0);
@@ -357,17 +359,17 @@ void PreferencesWidget::init_appearance_group()
 {
 	// connect grid active checkbox
 	QObject::connect(&show_grid_check, &QCheckBox::clicked,
-					 [this](bool state) { GraphicCore::get_instance()->get_config()->set_grid_active(state); GraphicCore::get_instance()->update_opengl(); });
+					 [this](bool state) { GraphicCore::get_config()->set_grid_active(state); GraphicCore::update_opengl(); });
 
 	// connect show generation counter checkbox
 	QObject::connect(&show_generation_counter_check, &QCheckBox::clicked, [this](bool state)
 	{
-		GraphicCore::get_instance()->get_config()->set_hide_generation_counter(!state);
+		GraphicCore::get_config()->set_hide_generation_counter(!state);
 		if(!state)
 			generation_counter_size_input.setEnabled(false);
 		else
 			generation_counter_size_input.setEnabled(true);
-		GraphicCore::get_instance()->update_generation_counter();
+		GraphicCore::update_generation_counter();
 	});
 
 	// init generation counter size input
@@ -375,8 +377,8 @@ void PreferencesWidget::init_appearance_group()
 	generation_counter_size_input.setMaximum(999);
 	QObject::connect(&generation_counter_size_input, &QSpinBox::editingFinished, [this]()
 	{
-		GraphicCore::get_instance()->get_config()->set_generation_counter_size(generation_counter_size_input.value());
-		GraphicCore::get_instance()->update_generation_counter();
+		GraphicCore::get_config()->set_generation_counter_size(generation_counter_size_input.value());
+		GraphicCore::update_generation_counter();
 	});
 
 	// add components to group layout
@@ -424,7 +426,7 @@ void PreferencesWidget::init_language_buttons()
 	english.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	QObject::connect(&english, &QToolButton::clicked, [this]()
 	{
-		GraphicCore::get_instance()->get_config()->set_language(Language::English);
+		GraphicCore::get_config()->set_language(Language::English);
 		emit language_changed();
 	});
 
@@ -433,7 +435,7 @@ void PreferencesWidget::init_language_buttons()
 	german.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	QObject::connect(&german, &QToolButton::clicked, [this]()
 	{
-		GraphicCore::get_instance()->get_config()->set_language(Language::German);
+		GraphicCore::get_config()->set_language(Language::German);
 		emit language_changed();
 	});
 
@@ -453,25 +455,26 @@ void PreferencesWidget::reload()
 void PreferencesWidget::reload_colors()
 {
 	QPalette temp;
-	temp.setColor(QPalette::Background, GraphicCore::get_instance()->get_config()->get_dead_color());
+	temp.setColor(QPalette::Background, GraphicCore::get_config()->get_dead_color());
 	dead_color_preview.setPalette(temp);
-	temp.setColor(QPalette::Background, GraphicCore::get_instance()->get_config()->get_alive_color());
+	temp.setColor(QPalette::Background, GraphicCore::get_config()->get_alive_color());
 	alive_color_preview.setPalette(temp);
-	temp.setColor(QPalette::Background, GraphicCore::get_instance()->get_config()->get_reviving_color());
+	temp.setColor(QPalette::Background, GraphicCore::get_config()->get_reviving_color());
 	reviving_color_preview.setPalette(temp);
-	temp.setColor(QPalette::Background, GraphicCore::get_instance()->get_config()->get_dying_color());
+	temp.setColor(QPalette::Background, GraphicCore::get_config()->get_dying_color());
 	dying_color_preview.setPalette(temp);
-	temp.setColor(QPalette::Background, GraphicCore::get_instance()->get_config()->get_background_color());
+	temp.setColor(QPalette::Background, GraphicCore::get_config()->get_background_color());
 	background_color_preview.setPalette(temp);
 }
 
 void PreferencesWidget::reload_game()
 {
-	size_x_input.setValue(Core::get_instance()->get_config()->get_size_x());
-	size_y_input.setValue(Core::get_instance()->get_config()->get_size_y());
-	border_behavior_input.setCurrentIndex(static_cast<int>(Core::get_instance()->get_config()->get_border_behavior()));
-	random_start.setChecked(Core::get_instance()->get_config()->get_start_random());
-	if(Core::get_instance()->get_config()->get_start_random())
+	size_x_input.setValue(Core::get_config()->get_size_x());
+	size_y_input.setValue(Core::get_config()->get_size_y());
+	border_behavior_input.setCurrentIndex(static_cast<int>(Core::get_config()->get_border_behavior()));
+	enable_borderless_settings(Core::get_config()->get_border_behavior() == Border_Behavior::Borderless);
+	random_start.setChecked(Core::get_config()->get_start_random());
+	if(Core::get_config()->get_start_random() && Core::get_config()->get_border_behavior() != Border_Behavior::Borderless)
 	{
 		relation_alive_input.setEnabled(true);
 		relation_dead_input.setEnabled(true);
@@ -481,45 +484,45 @@ void PreferencesWidget::reload_game()
 		relation_alive_input.setEnabled(false);
 		relation_dead_input.setEnabled(false);
 	}
-	relation_alive_input.setValue(Core::get_instance()->get_config()->get_relation_alive());
-	relation_dead_input.setValue(Core::get_instance()->get_config()->get_relation_dead());
+	relation_alive_input.setValue(Core::get_config()->get_relation_alive());
+	relation_dead_input.setValue(Core::get_config()->get_relation_dead());
 	for(std::size_t i = 0; i < 9; ++i)
 	{
-		live_rules_input[i]->set_state(Core::get_instance()->get_config()->get_live_rules() & (1 << i));
-		reborn_rules_input[i]->set_state(Core::get_instance()->get_config()->get_reborn_rules() & (1 << i));
+		survival_rules_input[i]->set_state(Core::get_config()->get_survival_rules() & (1 << i));
+		rebirth_rules_input[i]->set_state(Core::get_config()->get_rebirth_rules() & (1 << i));
 	}
-	delay_between_generations_input.setValue(GraphicCore::get_instance()->get_config()->get_delay());
-	lock_cells_after_generation_zero_check.setChecked(GraphicCore::get_instance()->get_config()->get_lock_after_first_generating());
+	delay_between_generations_input.setValue(GraphicCore::get_config()->get_delay());
+	lock_cells_after_generation_zero_check.setChecked(GraphicCore::get_config()->get_lock_after_first_generating());
 }
 
 void PreferencesWidget::reload_appearance()
 {
-	show_grid_check.setChecked(GraphicCore::get_instance()->get_config()->get_grid_active());
-	show_generation_counter_check.setChecked(!GraphicCore::get_instance()->get_config()->get_hide_generation_counter());
-	if(GraphicCore::get_instance()->get_config()->get_hide_generation_counter())
+	show_grid_check.setChecked(GraphicCore::get_config()->get_grid_active());
+	show_generation_counter_check.setChecked(!GraphicCore::get_config()->get_hide_generation_counter());
+	if(GraphicCore::get_config()->get_hide_generation_counter())
 		generation_counter_size_input.setEnabled(false);
 	else
 		generation_counter_size_input.setEnabled(true);
-	generation_counter_size_input.setValue(GraphicCore::get_instance()->get_config()->get_generation_counter_size());
+	generation_counter_size_input.setValue(GraphicCore::get_config()->get_generation_counter_size());
 }
 
 void PreferencesWidget::reload_application()
 {
-	show_exit_warning_check.setChecked(GraphicCore::get_instance()->get_config()->get_exit_warning());
-	start_fullscreen.setChecked(GraphicCore::get_instance()->get_config()->get_fullscreen());
-	num_of_threads_input.setValue(Core::get_instance()->get_config()->get_num_of_threads());
+	show_exit_warning_check.setChecked(GraphicCore::get_config()->get_exit_warning());
+	start_fullscreen.setChecked(GraphicCore::get_config()->get_fullscreen());
+	num_of_threads_input.setValue(Core::get_config()->get_num_of_threads());
 	// only default path is relative
-	if(Core::get_instance()->get_config()->get_save_path() == Default_Values::SAVE_PATH)
+	if(Core::get_config()->get_save_path() == Default_Values::SAVE_PATH)
 	{
-		if(!QDir(Core::get_instance()->get_config()->get_save_path().c_str()).exists())
-			QDir().mkdir(Core::get_instance()->get_config()->get_save_path().c_str());
+		if(!QDir(Core::get_config()->get_save_path().c_str()).exists())
+			QDir().mkdir(Core::get_config()->get_save_path().c_str());
 
 		// set relative path
-		save_path_input.setText(QDir::currentPath() + '/' +  QString(Core::get_instance()->get_config()->get_save_path().c_str()));
+		save_path_input.setText(QDir::currentPath() + '/' +  QString(Core::get_config()->get_save_path().c_str()));
 	}
 	else
 		// set absolute path
-		save_path_input.setText(Core::get_instance()->get_config()->get_save_path().c_str());
+		save_path_input.setText(Core::get_config()->get_save_path().c_str());
 
 	// check if save path is valid
 	check_save_path();
@@ -584,17 +587,18 @@ void PreferencesWidget::translate()
 	size_y_text.setText(tr("Height:"));
 	size_y_unit.setText(tr("Cells"));
 	border_behavior_text.setText(tr("Behavior On Borders"));
-	border_behavior_input.setItemText(0, tr("Continue On Opposite Side"));
-	border_behavior_input.setItemText(1, tr("Surround Board With Dead Cells"));
-	border_behavior_input.setItemText(2, tr("Surround Board With Living Cells"));
+	border_behavior_input.setItemText(0, tr("No Borders [Hashlife]"));
+	border_behavior_input.setItemText(1, tr("Continue On Opposite Side"));
+	border_behavior_input.setItemText(2, tr("Surround Board With Dead Cells"));
+	border_behavior_input.setItemText(3, tr("Surround Board With Living Cells"));
 	delay_between_generations_text.setText(tr("Autogenererating Delay"));
 	delay_between_generations_unit.setText(tr("ms"));
 	random_start.setText(tr("Fill New Game With Random Cells"));
 	relation_text.setText(tr("Relation Of Random Generated Cells"));
 	relation_alive_text.setText(tr("Alive"));
 	relation_dead_text.setText(tr("Dead"));
-	live_rules_text.setText(tr("Number Of Neighbors Which Are Needed To Survive"));
-	reborn_rules_text.setText(tr("Number Of Neighbors Which Are Needed To Be Born"));
+	survival_rules_text.setText(tr("Number Of Neighbors Which Are Needed To Survive"));
+	rebirth_rules_text.setText(tr("Number Of Neighbors Which Are Needed To Be Born"));
 	lock_cells_after_generation_zero_check.setText(tr("Lock Cells After Initial Generation"));
 	// tooltips
 	size_x_text.setToolTip(tr("Width:"));
@@ -611,8 +615,8 @@ void PreferencesWidget::translate()
 	relation_text.setToolTip(tr("Relation Of Random Generated Cells"));
 	relation_alive_text.setToolTip(tr("Alive"));
 	relation_dead_text.setToolTip(tr("Dead"));
-	live_rules_text.setToolTip(tr("Number Of Neighbors Which Are Needed To Survive"));
-	reborn_rules_text.setToolTip(tr("Number Of Neighbors Which Are Needed To Be Born"));
+	survival_rules_text.setToolTip(tr("Number Of Neighbors Which Are Needed To Survive"));
+	rebirth_rules_text.setToolTip(tr("Number Of Neighbors Which Are Needed To Be Born"));
 	lock_cells_after_generation_zero_check.setToolTip(tr("Lock Cells After Initial Generation"));
 
 	// application: texts
@@ -633,23 +637,23 @@ void PreferencesWidget::translate()
 void PreferencesWidget::apply_changes()
 {
 	// if writing config fails
-	if(!(Core::get_instance()->get_config()->write_config() && GraphicCore::get_instance()->get_config()->write_config()))
+	if(!(Core::get_config()->write_config() && GraphicCore::get_config()->write_config()))
 		QMessageBox::warning(this, tr("Write Error"), tr("Writing Configuration Failed!\nPlease Check Your Permissions."));
 
-	GraphicCore::get_instance()->update_opengl();
-	GraphicCore::get_instance()->update_generation_counter();
+	GraphicCore::update_opengl();
+	GraphicCore::update_generation_counter();
 }
 
 void PreferencesWidget::discard_changes()
 {
 	// read in saved preferences again
-	Core::get_instance()->get_config()->read_config();
-	GraphicCore::get_instance()->get_config()->read_config();
+	Core::get_config()->read_config();
+	GraphicCore::get_config()->read_config();
 
 	// update GUI
 	reload();
-	GraphicCore::get_instance()->update_opengl();
-	GraphicCore::get_instance()->update_generation_counter();
+	GraphicCore::update_opengl();
+	GraphicCore::update_generation_counter();
 }
 
 void PreferencesWidget::reset_to_default()
@@ -660,8 +664,8 @@ void PreferencesWidget::reset_to_default()
 		return;
 
 	// set config to default
-	Core::get_instance()->get_config()->reset_config();
-	GraphicCore::get_instance()->get_config()->reset_config();
+	Core::get_config()->reset_config();
+	GraphicCore::get_config()->reset_config();
 	// update values in preferences view
 	reload();
 
@@ -678,7 +682,7 @@ void PreferencesWidget::check_save_path()
 	// init save_path_default_palette
 	static QPalette save_path_default_palette = save_path_input.palette();
 	// check if write access is granted
-	QFileInfo fileinfo(Core::get_instance()->get_config()->get_save_path().c_str());
+	QFileInfo fileinfo(Core::get_config()->get_save_path().c_str());
 	// if dir is writable
 	if(fileinfo.isWritable() && fileinfo.isDir())
 		// set color to default
@@ -686,6 +690,15 @@ void PreferencesWidget::check_save_path()
 	else
 		// if write permission is granted, change color of input
 		save_path_input.setPalette(QPalette(Qt::red));
+}
+
+void PreferencesWidget::enable_borderless_settings(bool enable)
+{
+	size_x_input.setDisabled(enable);
+	size_y_input.setDisabled(enable);
+	random_start.setDisabled(enable);
+	relation_alive_input.setDisabled(enable);
+	relation_dead_input.setDisabled(enable);
 }
 
 void PreferencesWidget::enable_focus()
@@ -718,65 +731,65 @@ void PreferencesWidget::disable_focus()
 
 void PreferencesWidget::change_dead_color()
 {
-	QColor temp = QColorDialog::getColor(GraphicCore::get_instance()->get_config()->get_dead_color(), this, tr("Choose Color..."));
+	QColor temp = QColorDialog::getColor(GraphicCore::get_config()->get_dead_color(), this, tr("Choose Color..."));
 
 	if(temp.isValid())
 	{
-		GraphicCore::get_instance()->get_config()->set_dead_color(temp);
+		GraphicCore::get_config()->set_dead_color(temp);
 		reload_colors();
-		GraphicCore::get_instance()->update_opengl();
+		GraphicCore::update_opengl();
 		emit color_changed();
 	}
 }
 
 void PreferencesWidget::change_alive_color()
 {
-	QColor temp = QColorDialog::getColor(GraphicCore::get_instance()->get_config()->get_alive_color(), this, tr("Choose Color..."));
+	QColor temp = QColorDialog::getColor(GraphicCore::get_config()->get_alive_color(), this, tr("Choose Color..."));
 
 	if(temp.isValid())
 	{
-		GraphicCore::get_instance()->get_config()->set_alive_color(temp);
+		GraphicCore::get_config()->set_alive_color(temp);
 		reload_colors();
-		GraphicCore::get_instance()->update_opengl();
+		GraphicCore::update_opengl();
 		emit color_changed();
 	}
 }
 
 void PreferencesWidget::change_reviving_color()
 {
-	QColor temp = QColorDialog::getColor(GraphicCore::get_instance()->get_config()->get_reviving_color(), this, tr("Choose Color..."));
+	QColor temp = QColorDialog::getColor(GraphicCore::get_config()->get_reviving_color(), this, tr("Choose Color..."));
 
 	if(temp.isValid())
 	{
-		GraphicCore::get_instance()->get_config()->set_reviving_color(temp);
+		GraphicCore::get_config()->set_reviving_color(temp);
 		reload_colors();
-		GraphicCore::get_instance()->update_opengl();
+		GraphicCore::update_opengl();
 		emit color_changed();
 	}
 }
 
 void PreferencesWidget::change_dying_color()
 {
-	QColor temp = QColorDialog::getColor(GraphicCore::get_instance()->get_config()->get_dying_color(), this, tr("Choose Color..."));
+	QColor temp = QColorDialog::getColor(GraphicCore::get_config()->get_dying_color(), this, tr("Choose Color..."));
 
 	if(temp.isValid())
 	{
-		GraphicCore::get_instance()->get_config()->set_dying_color(temp);
+		GraphicCore::get_config()->set_dying_color(temp);
 		reload_colors();
-		GraphicCore::get_instance()->update_opengl();
+		GraphicCore::update_opengl();
 		emit color_changed();
 	}
 }
 
 void PreferencesWidget::change_background_color()
 {
-	QColor temp = QColorDialog::getColor(GraphicCore::get_instance()->get_config()->get_background_color(), this, tr("Choose Color..."));
+	QColor temp = QColorDialog::getColor(GraphicCore::get_config()->get_background_color(), this, tr("Choose Color..."));
 
 	if(temp.isValid())
 	{
-		GraphicCore::get_instance()->get_config()->set_background_color(temp);
+		GraphicCore::get_config()->set_background_color(temp);
 		reload_colors();
-		GraphicCore::get_instance()->update_opengl();
+		GraphicCore::update_opengl();
 		emit color_changed();
 	}
 }

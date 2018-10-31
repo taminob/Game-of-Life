@@ -3,24 +3,24 @@
 #include "mainwindow.h"
 #include "graphiccore.h"
 #include "startupdialog.h"
-#include "mainwindow.h"
+#include "openglwidget.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QKeyEvent>
 
 MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(parent),
-											preferences_view(this), preferences_animation(&preferences_view, "pos"),
+											preferences_view((GraphicCore::init_gui(&opengl, &gen_counter), this)), preferences_animation(&preferences_view, "pos"),
 											tool_view(this), tool_animation(&tool_view, "pos"),
 											help_view(this), help_animation(&help_view, "pos")
 {
 	if(start_file != nullptr)
 	{
-		Core::get_instance()->load(start_file);
+		Core::load(start_file);
 		tool_view.update_current_size_label();
 	}
 
 	// setup GUI and set current active view
-	init_GUI();
+	init_gui();
 	current_view = Game_View;
 
 	// set minimum size
@@ -30,7 +30,7 @@ MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(pa
 	this->setFocusPolicy(Qt::WheelFocus);
 
 	// enable events in opengl-widget
-	this->installEventFilter(GraphicCore::get_instance()->get_opengl_widget());
+	this->installEventFilter(&opengl);
 
 	// setup resize_timer; this timer fixes a resize bug when switching to fullscreen mode
 	resize_timer.setInterval(10);
@@ -52,8 +52,9 @@ MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(pa
 			showFullScreen();
 	});
 	QObject::connect(&help_view, &HelpWidget::hide_help, this, &MainWindow::hide_help_view);
-	QObject::connect(GraphicCore::get_instance()->get_opengl_widget(), &OpenGLWidget::generating_start_stop, &tool_view, &ToolWidget::update_play_stop_button);
-	QObject::connect(GraphicCore::get_instance()->get_opengl_widget(), &OpenGLWidget::new_system_generated, &tool_view, &ToolWidget::update_current_size_label);
+	QObject::connect(&opengl, &OpenGLWidget::generating_start_stop, &tool_view, &ToolWidget::update_play_stop_button);
+	QObject::connect(&opengl, &OpenGLWidget::new_system_created, &tool_view, &ToolWidget::update_current_size_label);
+	QObject::connect(&opengl, &OpenGLWidget::cell_changed, &tool_view, &ToolWidget::update_current_size_label);
 
 	translate_application();
 }
@@ -67,7 +68,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			hide_preference_view();
 		else
 		{
-			GraphicCore::get_instance()->stop_generating();
+			GraphicCore::stop_generating();
 			show_preference_view();
 		}
 	}
@@ -78,7 +79,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			hide_help_view();
 		else
 		{
-			GraphicCore::get_instance()->stop_generating();
+			GraphicCore::stop_generating();
 			show_help_view();
 		}
 	}
@@ -93,16 +94,16 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	// open only if neither preferences nor help view are active
 	else if(event->key() == Qt::Key_O && !(current_view & (Preferences_View | Help_View)))
 	{
-		GraphicCore::get_instance()->read_save();
+		GraphicCore::read_save();
 		tool_view.update_current_size_label();
 	}
 	// save only if neither preferences nor help view are active
 	else if(event->key() == Qt::Key_S && !(current_view & (Preferences_View | Help_View)))
 	{
 		if(event->modifiers() & Qt::ControlModifier)
-			GraphicCore::get_instance()->write_save_as();
+			GraphicCore::write_save_as();
 		else
-			GraphicCore::get_instance()->write_save();
+			GraphicCore::write_save();
 	}
 	else if(event->key() == Qt::Key_F)
 	{
@@ -122,10 +123,10 @@ void MainWindow::resizeEvent(QResizeEvent*)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	GraphicCore::get_instance()->stop_generating();
+	GraphicCore::stop_generating();
 
 	// if any preference is not saved, show question; this question is necessary if the user is in the preferences view and tries to close the window
-	if(!(Core::get_instance()->get_config()->get_saved() && GraphicCore::get_instance()->get_config()->get_saved()))
+	if(!(Core::get_config()->get_saved() && GraphicCore::get_config()->get_saved()))
 	{
 		QMessageBox::StandardButton preferences_save_answer = QMessageBox::question(this, tr("Save Preferences?"), tr("Save changed preferences?"),
 																					QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
@@ -141,7 +142,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		}
 	}
 
-	if(GraphicCore::get_instance()->get_config()->get_exit_warning())
+	if(GraphicCore::get_config()->get_exit_warning())
 	{
 		QMessageBox::StandardButton quit_answer = QMessageBox::question(this, tr("Save Game?"), tr("Save current game?"),
 																		QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
@@ -152,7 +153,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		}
 		else if(quit_answer == QMessageBox::Save)
 		{
-			GraphicCore::get_instance()->write_save();
+			GraphicCore::write_save();
 			event->accept();
 		}
 		else
@@ -165,12 +166,12 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::show()
 {
 	// read fullscreen preference and start in set mode
-	if(GraphicCore::get_instance()->get_config()->get_fullscreen())
+	if(GraphicCore::get_config()->get_fullscreen())
 		this->showFullScreen();
 	else
 		this->showMaximized();
 
-	if(GraphicCore::get_instance()->get_config()->get_show_startup_dialog())
+	if(GraphicCore::get_config()->get_show_startup_dialog())
 	{
 		StartupDialog dialog;
 		// connect dialog signal
@@ -181,14 +182,14 @@ void MainWindow::show()
 	resize_timer.start();
 }
 
-void MainWindow::init_GUI()
+void MainWindow::init_gui()
 {
 	// remove white borders
 	game_layout.setMargin(0);
 
 	// init game view (main view)
-	game_layout.addWidget(GraphicCore::get_instance()->get_opengl_widget(), 0, 0, 2, 2);
-	game_layout.addWidget(GraphicCore::get_instance()->get_generation_counter(), 1, 1);
+	game_layout.addWidget(&opengl, 0, 0, 2, 2);
+	game_layout.addWidget(&gen_counter, 1, 1);
 	game_view.setLayout(&game_layout);
 
 	// hide preferences view
@@ -211,8 +212,8 @@ void MainWindow::init_GUI()
 
 void MainWindow::translate_application()
 {
-	if(GraphicCore::get_instance()->get_config()->get_language() == Language::German ||
-			(GraphicCore::get_instance()->get_config()->get_language() == Language::System && QLocale::system().language() == QLocale::German))
+	if(GraphicCore::get_config()->get_language() == Language::German ||
+			(GraphicCore::get_config()->get_language() == Language::System && QLocale::system().language() == QLocale::German))
 	{
 		if(!translator.load(":/translations/gol_de"))
 			qDebug("No DE translation found!");
@@ -319,7 +320,7 @@ void MainWindow::show_preference_view()
 	// enable focus in preferences view
 	preferences_view.enable_focus();
 	// enable events in preferences view; disable events in game view (opengl)
-	this->removeEventFilter(GraphicCore::get_instance()->get_opengl_widget());
+	this->removeEventFilter(&opengl);
 	this->installEventFilter(&preferences_view);
 	current_view |= Preferences_View;
 }
@@ -327,7 +328,7 @@ void MainWindow::show_preference_view()
 void MainWindow::hide_preference_view()
 {
 	// if any preference is not saved, show question
-	if(!(Core::get_instance()->get_config()->get_saved() && GraphicCore::get_instance()->get_config()->get_saved()))
+	if(!(Core::get_config()->get_saved() && GraphicCore::get_config()->get_saved()))
 	{
 		QMessageBox::StandardButton preferences_save_answer = QMessageBox::question(this, tr("Save Preferences?"), tr("Save changed preferences?"),
 																					QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
@@ -355,7 +356,7 @@ void MainWindow::hide_preference_view()
 	this->setFocus();
 	// disable events in preferences view; enable events in game view (opengl)
 	this->removeEventFilter(&preferences_view);
-	this->installEventFilter(GraphicCore::get_instance()->get_opengl_widget());
+	this->installEventFilter(&opengl);
 	// clear preferences view bit
 	current_view &= ~Preferences_View;
 }

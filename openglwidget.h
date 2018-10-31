@@ -10,7 +10,7 @@
 
 // widget of game view
 // this widget draws the cells and start calculation and generating
-// signals: generating_start_stop(), new_system_generated(); signals are for information purposes only
+// signals: generating_start_stop(), new_system_created(); signals are for information purposes only
 class OpenGLWidget : public QOpenGLWidget
 {
 	Q_OBJECT
@@ -20,48 +20,31 @@ class OpenGLWidget : public QOpenGLWidget
 
 	// zoom state (1=no zoom; 1.1=zoom in; 0.9=zoom out)
 	double scale;
+	std::size_t cell_size;
 
 	// move state in px
-	int move_x;
-	int move_y;
+	long move_x;
+	long move_y;
 
 	// pos of 0/0-cell (to move drawn cells and determine clicked cell)
-	int null_pos_x;
-	int null_pos_y;
+	long long null_pos_x;
+	long long null_pos_y;
 
-	// stepping
-	std::thread* step_thread;			// thread to calculate step
-	std::atomic_bool thread_stop;		// variable to interrupt thread
-	bool thread_block;					// block thread starting (while autogenerating)
+	// save previous mouse pos to calc clicked cells between two mouse move events
+	QPoint previous_pos;
 
-	// calculation function which is connected to step_thread
-	void calc_generations(std::size_t generations);
-
-	// autogenerating
-	QTimer generating_timer;			// timer to sync redraw and calculation
+	std::unique_ptr<std::thread> calc_thread;
 
 public:
 	// init member and connect generating_timer
 	OpenGLWidget(QWidget* parent = nullptr);
-	// join step_thread
-	virtual ~OpenGLWidget();
+	virtual ~OpenGLWidget() override;
 
 	// update generation counter and redraw cells
 	void full_update();
 
 	// set move_x and move_y to 0, scale to 1 and update
 	void reset_movement();
-
-	// generate generations set in "generations_per_step"
-	void generate_step();
-	// stop step-generating
-	void stop_step();
-	// true if autogenerating is running otherwise false
-	bool get_generating_running();
-	// start autogenerating
-	void start_generating();
-	// stop autogenerating
-	void stop_generating();
 
 protected:
 	// receive events; pass all events to parent
@@ -73,21 +56,24 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
 
 	// init OpenGL engine
-	void initializeGL();
+	virtual void initializeGL() override;
 	// call draw_cells and draw_grid + time measurement
-	void paintGL();
+	virtual void paintGL() override;
 	// draw cells using OpenGL
-	inline void draw_cells();
+	void draw_cells();
 	// draw (if enabled) grid using OpenGL
-	inline void draw_grid();
+	void draw_grid();
 
 signals:
 	// emitted when generating is started or stopped
 	void generating_start_stop();
 	// emitted when a new system was created
-	void new_system_generated();
-	// emitted when step calculation is finished and update is required
-	void stepping_finished();
+	void new_system_created();
+	// emiited when cells were changed
+	void cell_changed();
+
+	// emission starts update
+	void start_update();
 };
 
 #endif // OPENGLWIDGET_H

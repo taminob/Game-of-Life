@@ -3,7 +3,6 @@
 #ifndef TOOLWIDGET_H
 #define TOOLWIDGET_H
 
-#include "graphiccore.h"
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -21,7 +20,7 @@ class ToolWidget : public QFrame
 	QHBoxLayout main_layout;
 
 	// setup GUI and add components to main_layout
-	void init_GUI();
+	void init_gui();
 	// init preferences, help, hide and quit button
 	void init_control_buttons();
 	// init all other buttons
@@ -35,10 +34,11 @@ class ToolWidget : public QFrame
 public:
 	// setup widget
 	ToolWidget(QWidget* parent = nullptr);
+	virtual ~ToolWidget() override = default;
 
 	// compile time constants
 	static constexpr std::size_t TOOL_HEIGHT = 35;
-	static constexpr std::size_t MAXIMUM_GENERATIONS_PER_STEP_INPUT = 10000;
+	static constexpr std::size_t MAXIMUM_GENERATIONS_PER_STEP_INPUT = 100000;
 
 	// called when autogenerating is started/stopped to update play_stop button
 	void update_play_stop_button();

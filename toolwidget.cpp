@@ -16,7 +16,7 @@ ToolWidget::ToolWidget(QWidget* parent) : QFrame(parent)
 	this->setFrameShape(QFrame::Panel);
 	this->setLineWidth(2);
 
-	init_GUI();
+	init_gui();
 
 	this->setFixedHeight(TOOL_HEIGHT);
 }
@@ -49,7 +49,7 @@ void ToolWidget::keyPressEvent(QKeyEvent* event)
 	event->ignore();
 }
 
-void ToolWidget::init_GUI()
+void ToolWidget::init_gui()
 {
 	init_control_buttons();
 	init_buttons();
@@ -111,21 +111,21 @@ void ToolWidget::init_control_buttons()
 void ToolWidget::init_buttons()
 {
 	// connect save button; text will be set in translate()
-	QObject::connect(&save, &QToolButton::clicked, []() { GraphicCore::get_instance()->write_save(); });
+	QObject::connect(&save, &QToolButton::clicked, []() { GraphicCore::write_save(); });
 
 	// connect open button; text will be set in translate()
-	QObject::connect(&open, &QToolButton::clicked, []() { GraphicCore::get_instance()->read_save(); });
+	QObject::connect(&open, &QToolButton::clicked, []() { GraphicCore::read_save(); });
 
 	// init new button
-	QObject::connect(&new_game, &QToolButton::clicked, [this]() { GraphicCore::get_instance()->new_system(); update_current_size_label(); });
+	QObject::connect(&new_game, &QToolButton::clicked, [this]() { GraphicCore::new_system(); update_current_size_label(); });
 
 	// init clear button: on click all cells will be dead; on click + CTRL all cells will be alive
 	QObject::connect(&clear_all, &QToolButton::clicked, [this]()
 	{
 		if(QApplication::keyboardModifiers() == Qt::ControlModifier)
-			GraphicCore::get_instance()->reset_cells(Cell_State::Alive);
+			GraphicCore::reset_cells(Alive);
 		else
-			GraphicCore::get_instance()->reset_cells(Cell_State::Dead);
+			GraphicCore::reset_cells(Dead);
 	});
 
 	// init play/stop button
@@ -133,7 +133,7 @@ void ToolWidget::init_buttons()
 	QObject::connect(&play_stop, &QToolButton::clicked, this, &ToolWidget::play_or_stop);
 
 	// init reset_movement; text will be set in translate()
-	QObject::connect(&reset_movement, &QToolButton::clicked, []() { GraphicCore::get_instance()->reset_movement(); } );
+	QObject::connect(&reset_movement, &QToolButton::clicked, []() { GraphicCore::reset_movement(); } );
 
 	// init button for swapping mouse button behavior in game view
 	swap_mouse.setIcon(QIcon(":/images/exchange-90.png"));
@@ -141,7 +141,7 @@ void ToolWidget::init_buttons()
 
 	// init button for going one step forward
 	step.setIcon(QIcon(":/images/play-to-90.png"));
-	QObject::connect(&step, &QToolButton::clicked, [this]() { GraphicCore::get_instance()->get_opengl_widget()->generate_step(); });
+	QObject::connect(&step, &QToolButton::clicked, [this]() { GraphicCore::step(); });
 
 	fullscreen.setIcon(QIcon(":/images/fullscreen-90.png"));
 	QObject::connect(&fullscreen, &QToolButton::clicked, [this]() { emit fullscreen_changed(); });
@@ -160,26 +160,26 @@ void ToolWidget::init_others()
 	right_mouse_preview.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
 	right_mouse_preview.setAlignment(Qt::AlignCenter);
 	right_mouse_preview.setAutoFillBackground(true);
-	if(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead())
+	if(GraphicCore::get_config()->get_left_alive_and_right_dead())
 	{
-		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
-		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
+		left_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_alive_color()));
+		right_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_dead_color()));
 	}
 	else
 	{
-		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
-		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
+		left_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_dead_color()));
+		right_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_alive_color()));
 	}
 
 	generations_per_step.setMaximum(MAXIMUM_GENERATIONS_PER_STEP_INPUT);
 	generations_per_step.setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
 	generations_per_step.setMinimum(1);
-	generations_per_step.setValue(GraphicCore::get_instance()->get_config()->get_generations_per_step());
+	generations_per_step.setValue(GraphicCore::get_config()->get_generations_per_step());
 	generations_per_step.setCorrectionMode(QSpinBox::CorrectToNearestValue);
 	generations_per_step.setMaximumWidth(2.5 * height());
 	QObject::connect(&generations_per_step, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int)
 	{
-		GraphicCore::get_instance()->get_config()->set_generations_per_step(generations_per_step.value());
+		GraphicCore::get_config()->set_generations_per_step(generations_per_step.value());
 	});
 	// after editing set focus to parent
 	QObject::connect(&generations_per_step, &QSpinBox::editingFinished, [this]() { static_cast<QWidget*>(this->parent())->setFocus(); });
@@ -225,7 +225,7 @@ void ToolWidget::translate()
 void ToolWidget::update_play_stop_button()
 {
 	// if generating is running, set stop-icon
-	if(GraphicCore::get_instance()->get_generating_running())
+	if(GraphicCore::generating_running())
 	{
 		play_stop.setIcon(QIcon(":/images/stop-90.png"));
 		play_stop.setToolTip(tr("Stop (R)"));
@@ -240,37 +240,37 @@ void ToolWidget::update_play_stop_button()
 
 void ToolWidget::update_current_size_label()
 {
-	current_size.setText(tr("Size: ") + QString::number(Core::get_instance()->get_size_x()) + "|" + QString::number(Core::get_instance()->get_size_y()));
+	current_size.setText(tr("Size: ") + QString::number(Core::get_size_x()) + "|" + QString::number(Core::get_size_y()));
 }
 
 void ToolWidget::update_mouse_previews()
 {
 	// update color of left_mouse/right_mouse
-	if(GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead())
+	if(GraphicCore::get_config()->get_left_alive_and_right_dead())
 	{
-		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
-		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
+		left_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_alive_color()));
+		right_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_dead_color()));
 	}
 	else
 	{
-		left_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_dead_color()));
-		right_mouse_preview.setPalette(QPalette(GraphicCore::get_instance()->get_config()->get_alive_color()));
+		left_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_dead_color()));
+		right_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_alive_color()));
 	}
 }
 
 void ToolWidget::play_or_stop()
 {
 	// if generating is running, stop it and set play-icon
-	if(GraphicCore::get_instance()->get_generating_running())
+	if(GraphicCore::generating_running())
 	{
-		GraphicCore::get_instance()->stop_generating();
+		GraphicCore::stop_generating();
 		play_stop.setIcon(QIcon(":/images/play-90.png"));
 		play_stop.setToolTip(tr("Play (R)"));
 	}
 	// if generation is stopped, start it and set stop-icon
 	else
 	{
-		GraphicCore::get_instance()->start_generating();
+		GraphicCore::start_generating();
 		play_stop.setIcon(QIcon(":/images/stop-90.png"));
 		play_stop.setToolTip(tr("Stop (R)"));
 	}
@@ -279,7 +279,7 @@ void ToolWidget::play_or_stop()
 void ToolWidget::swap_mouse_behavior()
 {
 	// toggle left_alive_and_right_dead
-	GraphicCore::get_instance()->get_config()->set_left_alive_and_right_dead(!GraphicCore::get_instance()->get_config()->get_left_alive_and_right_dead());
+	GraphicCore::get_config()->set_left_alive_and_right_dead(!GraphicCore::get_config()->get_left_alive_and_right_dead());
 
 	update_mouse_previews();
 }

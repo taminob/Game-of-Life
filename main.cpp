@@ -1,6 +1,7 @@
 // © Copyright (c) 2018 SqYtCO
 
 #include "mainwindow.h"
+#include "graphiccore.h"
 #include <QApplication>
 #include <QStyleFactory>
 
@@ -11,6 +12,8 @@ int main(int argc, char* argv[])
 	app.setWindowIcon(QIcon(":/images/gol-icon-90.png"));
 	// set application name
 	app.setApplicationDisplayName("Game Of Life");
+
+	GraphicCore::init();
 
 	// set best available application style (Breeze > Oxygen > Fusion > Windows)
 	if(QStyleFactory::keys().contains("Breeze"))

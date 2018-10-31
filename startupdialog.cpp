@@ -12,12 +12,12 @@ StartupDialog::StartupDialog(QWidget* parent) : QDialog(parent)
 	this->setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 
 	// setup GUI
-	init_GUI();
+	init_gui();
 
 	// load startup dialog preference
-	show_on_startup.setChecked(GraphicCore::get_instance()->get_config()->get_show_startup_dialog());
+	show_on_startup.setChecked(GraphicCore::get_config()->get_show_startup_dialog());
 	// connect checkbox
-	QObject::connect(&show_on_startup, &QCheckBox::stateChanged, [this](bool state) { GraphicCore::get_instance()->get_config()->set_show_startup_dialog(state); } );
+	QObject::connect(&show_on_startup, &QCheckBox::stateChanged, [this](bool state) { GraphicCore::get_config()->set_show_startup_dialog(state); } );
 	// connect show help button
 	QObject::connect(&show_help_button, &QToolButton::clicked, [this]() { emit show_help(); });
 	// connect close button
@@ -30,8 +30,8 @@ void StartupDialog::translate()
 	this->setWindowTitle(tr("Welcome"));
 
 	// at first startup German welcome will be displayed if system language is German; otherwise English
-	if(GraphicCore::get_instance()->get_config()->get_language() == Language::German ||
-			(GraphicCore::get_instance()->get_config()->get_language() == Language::System && QLocale::system().language() == QLocale::German))
+	if(GraphicCore::get_config()->get_language() == Language::German ||
+			(GraphicCore::get_config()->get_language() == Language::System && QLocale::system().language() == QLocale::German))
 		html_welcome.setSource(QUrl("qrc:/info/de_welcome.html"));
 	else
 		html_welcome.setSource(QUrl("qrc:/info/en_welcome.html"));
@@ -42,7 +42,7 @@ void StartupDialog::translate()
 	show_on_startup.setText(tr("Show dialog on startup"));
 }
 
-void StartupDialog::init_GUI()
+void StartupDialog::init_gui()
 {
 	// allow internet and mail links
 	html_welcome.setOpenExternalLinks(true);

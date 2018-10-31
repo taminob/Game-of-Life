@@ -26,10 +26,11 @@ class HelpWidget : public QFrame
 	// jump to anchor "index"
 	QToolButton show_index;
 
-	void init_GUI();
+	void init_gui();
 
 public:
 	HelpWidget(QWidget* parent = nullptr);
+	virtual ~HelpWidget() override = default;
 
 	// set all texts; if a QTranslator is installed, the installed texts will be loaded
 	void translate();

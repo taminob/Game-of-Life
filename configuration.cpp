@@ -23,8 +23,8 @@ void Configuration::reset_config()
 	border_behavior = Default_Values::BORDER_BEHAVIOR;
 	save_path = Default_Values::SAVE_PATH;
 	start_random = Default_Values::START_RANDOM;
-	live_rules = Default_Values::LIVE_RULES;
-	reborn_rules = Default_Values::REBORN_RULES;
+	survival_rules = Default_Values::SURVIVAL_RULES;
+	rebirth_rules = Default_Values::REBORN_RULES;
 }
 
 bool Configuration::read_config()
@@ -61,10 +61,10 @@ bool Configuration::read_config()
 			save_path = value;
 		else if(property == "start_random")
 			start_random = std::stoul(value);
-		else if(property == "live_rules")
-			live_rules = std::stoul(value);
-		else if(property == "reborn_rules")
-			reborn_rules = std::stoul(value);
+		else if(property == "survival_rules")
+			survival_rules = std::stoul(value);
+		else if(property == "rebirth_rules")
+			rebirth_rules = std::stoul(value);
 	}
 
 	config_saved = true;
@@ -100,8 +100,8 @@ bool Configuration::write_config()
 		<< "border_behavior=" << static_cast<int>(border_behavior) << '\n'
 		<< "save_path=" << save_path << '\n'
 		<< "start_random=" << start_random << '\n'
-		<< "live_rules=" << live_rules << '\n'
-		<< "reborn_rules=" << reborn_rules;
+		<< "survival_rules=" << survival_rules << '\n'
+		<< "rebirth_rules=" << rebirth_rules;
 
 	// return on error
 	if(!out)

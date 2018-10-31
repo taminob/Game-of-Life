@@ -1,27 +1,39 @@
 // © Copyright (c) 2018 SqYtCO
 
 #include "core.h"
-#include <fstream>
-#include <experimental/filesystem>
-#include <iomanip>					// std::put_time
+#include "cellsystem.h"
+#include "hashlifesystem.h"
 #include <chrono>
 #include <sstream>
+#include <fstream>
+#include <filesystem>
+#include <iomanip>					// std::put_time
 
-Core* Core::get_instance()
+Configuration Core::config;
+std::unique_ptr<Base_System> Core::system_;
+std::size_t Core::generation;
+
+std::size_t Core::next_generation(std::size_t generations)
 {
-	static Core core;
+	HashLife_System* temp = dynamic_cast<HashLife_System*>(system_.get());
+	if(temp)
+	{
+		generation += temp->next_generation(generations);
+		return generations;
+	}
 
-	return &core;
+	system_->next_generation();
+	++generation;
+	return 1;
 }
 
-Core::Core() : cells(nullptr), generation(0)
+void Core::calc_next_generation(std::size_t generations)
 {
-	new_system();
-}
-
-Core::~Core()
-{
-	delete cells;
+	HashLife_System* temp = dynamic_cast<HashLife_System*>(system_.get());
+	if(temp)
+		temp->calc_next_generation(generations);
+	else
+		system_->calc_next_generation();
 }
 
 bool Core::save(std::string file)
@@ -31,8 +43,8 @@ bool Core::save(std::string file)
 		try
 		{
 			// check if path exists and create it if not
-			if(!std::experimental::filesystem::exists(config.get_save_path()))
-				std::experimental::filesystem::create_directories(config.get_save_path());
+			if(!std::filesystem::exists(config.get_save_path()))
+				std::filesystem::create_directories(config.get_save_path());
 		}
 		catch(...)	// if write permission is not granted
 		{
@@ -77,7 +89,7 @@ bool Core::save(std::string file)
 	{
 		for(std::size_t column = 0; column < config.get_size_x(); ++column)
 		{
-			out << static_cast<int>(cells->get_cell_state(column, row)) << ' ';
+			out << static_cast<int>(system_->get_cell_state(column, row)) << ' ';
 		}
 
 		out << '\n';
@@ -144,8 +156,7 @@ bool Core::load(const std::string& file)
 	in.open(file);
 
 	// create new Cell_System
-	delete cells;
-	cells = new Cell_System(size_x_max, size_y, config.get_border_behavior(), config.get_live_rules(), config.get_reborn_rules(), config.get_num_of_threads());
+	system_.reset(new Cell_System(size_x_max, size_y, config.get_border_behavior(), config.get_survival_rules(), config.get_rebirth_rules(), config.get_num_of_threads()));
 
 	// read in saved generation
 	std::size_t saved_generation;
@@ -165,7 +176,7 @@ bool Core::load(const std::string& file)
 
 			// set cell to read state
 			if(temp_c == '1' || temp_c == '0')
-				cells->set_cell(column++, row, static_cast<Cell_State>(temp_c - '0'));
+				system_->set_cell(column++, row, static_cast<Cell_State>(temp_c - '0'));
 		}
 
 		// count up rows
@@ -178,7 +189,7 @@ bool Core::load(const std::string& file)
 	// set current generation to read generation
 	generation = saved_generation;
 	// calc next generation
-	cells->calc_next_generation();
+	system_->calc_next_generation();
 
 	// return true on success
 	return true;
@@ -186,24 +197,32 @@ bool Core::load(const std::string& file)
 
 void Core::new_system()
 {
-	if(cells)
-		delete cells;
+	if(config.get_border_behavior() == Border_Behavior::Borderless)
+		system_.reset(new HashLife_System(config.get_survival_rules(), config.get_rebirth_rules()));
+	else
+		system_.reset(new Cell_System(config.get_size_x(), config.get_size_y(), config.get_border_behavior(),
+								config.get_survival_rules(), config.get_rebirth_rules(), config.get_num_of_threads()));
 
-	cells = new Cell_System(config.get_size_x(), config.get_size_y(), config.get_border_behavior(),
-							config.get_live_rules(), config.get_reborn_rules(), config.get_num_of_threads());
 	if(config.get_start_random())
-		cells->random_cells(config.get_relation_alive(), config.get_relation_dead());
+		system_->random_cells(config.get_relation_alive(), config.get_relation_dead());
 	generation = 0;
 }
 
-const std::size_t& Core::next_generation()
+std::size_t Core::get_num_of_alive_cells()
 {
-	cells->next_generation();
-
-	return ++generation;
+	auto temp = dynamic_cast<HashLife_System*>(system_.get());
+	if(temp)
+		return temp->get_num_of_alive_cells();
+	else
+		return 0;
 }
 
-void Core::calc_next_generation()
+bool Core::expand()
 {
-	cells->calc_next_generation();
+	auto temp = dynamic_cast<HashLife_System*>(system_.get());
+	if(temp)
+		temp->resize(temp->get_size_x() * 2);
+	else
+		return false;
+	return true;
 }

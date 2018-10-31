@@ -6,12 +6,12 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT += core gui widgets
 
 TARGET = game-of-life
 TEMPLATE = app
 
-CONFIG += optimize_full c++14
+CONFIG += optimize_full c++1z
 
 msvc {
 	LIBS += opengl32.lib
@@ -33,7 +33,10 @@ SOURCES += \
     preferenceswidget.cpp \
     toolwidget.cpp \
     helpwidget.cpp \
-    startupdialog.cpp
+    startupdialog.cpp \
+    hashlifesystem.cpp \
+    hashlifemacrocell.cpp \
+    hashlifetable.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -47,7 +50,10 @@ HEADERS += \
     preferenceswidget.h \
     toolwidget.h \
     helpwidget.h \
-    startupdialog.h
+    startupdialog.h \
+    hashlifesystem.h \
+    hashlifemacrocell.h \
+    hashlifetable.h
 
 RESOURCES += \
     resources.qrc
@@ -57,4 +63,5 @@ TRANSLATIONS += \
 
 DISTFILES += \
     README.md \
-    LICENSE
+    LICENSE \
+    TODO

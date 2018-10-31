@@ -3,7 +3,6 @@
 #ifndef PREFERENCESWIDGET_H
 #define PREFERENCESWIDGET_H
 
-#include "graphiccore.h"
 #include <QFrame>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -29,7 +28,7 @@ class PreferencesWidget : public QFrame
 	QGridLayout main_layout;
 
 	// call init functions and add groups to main layout
-	void init_GUI();
+	void init_gui();
 	// init appearance group box and connect signals with slots
 	void init_appearance_group();
 	// init color group box and connect signals with slots
@@ -55,10 +54,13 @@ class PreferencesWidget : public QFrame
 	// check if path is writable and set accordingly the style of save_path_input
 	void check_save_path();
 
+	// enable/disable settings which are only available for borderless/non-borderless games
+	void enable_borderless_settings(bool enable);
+
 public:
 	// setup GUI and components and load values
 	PreferencesWidget(QWidget* parent = nullptr);
-	virtual ~PreferencesWidget() = default;
+	virtual ~PreferencesWidget() override = default;
 
 	// enable the focus of all children and the widget
 	void enable_focus();
@@ -159,10 +161,10 @@ private:
 	QLabel delay_between_generations_text;
 	QSpinBox delay_between_generations_input;
 	QLabel delay_between_generations_unit;
-	QLabel live_rules_text;
-	std::array<RuleButton*, 9> live_rules_input;
-	QLabel reborn_rules_text;
-	std::array<RuleButton*, 9> reborn_rules_input;
+	QLabel survival_rules_text;
+	std::array<RuleButton*, 9> survival_rules_input;
+	QLabel rebirth_rules_text;
+	std::array<RuleButton*, 9> rebirth_rules_input;
 	QCheckBox lock_cells_after_generation_zero_check;
 
 	// application preferences
@@ -187,7 +189,7 @@ class RuleButton : public QToolButton
 
 public:
 	// setup appearance of button
-	RuleButton(const std::size_t& num, QWidget* parent = nullptr) : QToolButton(parent), state(false)
+	RuleButton(std::size_t num, QWidget* parent = nullptr) : QToolButton(parent), state(false)
 	{
 		this->setText(QString::number(num));
 		this->setAutoRaise(true);

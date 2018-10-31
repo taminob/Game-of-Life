@@ -1,0 +1,4 @@
+- add option to set pencil width (to set cells) in toolbar
+- add faster hashlife drawing algorithm (macrocell based)
+- add border behaviors to hashlife
+- fix set_cell() population count (cell already alive)

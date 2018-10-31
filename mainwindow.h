@@ -6,10 +6,12 @@
 #include "preferenceswidget.h"
 #include "toolwidget.h"
 #include "helpwidget.h"
+#include "openglwidget.h"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QPropertyAnimation>
 #include <QTranslator>
+#include <QTimer>
 
 // container and manager of all views
 // manage signals, events and focus; animate view chanegs
@@ -28,6 +30,8 @@ class MainWindow : public QMainWindow
 
 	QWidget game_view;								// main view; central widget; shortcut: 'G'
 	QGridLayout game_layout;						// layout of game_view
+	OpenGLWidget opengl;							// game widget; the cells are drawn on this widget using OpenGL
+	QLabel gen_counter;								// show current generation in game_view
 	PreferencesWidget preferences_view;				// preferences; sliding in on the right side; shortcut: 'P'
 	QPropertyAnimation preferences_animation;		// move-animation of preferences_view
 	ToolWidget tool_view;							// tools; sliding in on the upper side; shortcut: 'T'
@@ -46,7 +50,7 @@ class MainWindow : public QMainWindow
 	void show_help_view();							// animate slide in of help view; opengl is still able to receive events; set Help_View bit
 	void hide_help_view();							// animate slide out of help view; clear Help_View bit
 
-	void init_GUI();								// setup GUI; hide all views except game_view
+	void init_gui();								// setup GUI; hide all views except game_view
 
 	QTranslator translator;							// translator for custom translation file (gol_XX.qm; XX=language)
 	QTranslator qt_translator;						// translator for qt standard translation (qtbase_XX.qm; XX=language)
@@ -58,7 +62,7 @@ class MainWindow : public QMainWindow
 public:
 	// ctor: open start_file and init all views and animations; connect all signals translate to set language
 	MainWindow(const char* start_file = nullptr, QWidget* parent = nullptr);
-	virtual ~MainWindow() = default;
+	virtual ~MainWindow() override = default;
 
 	// show maximized or in fullscreen in dependence of the set preferences; display also StartupDialog
 	void show();

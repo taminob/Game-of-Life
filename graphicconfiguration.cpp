@@ -11,7 +11,6 @@ GraphicConfiguration::GraphicConfiguration() : graphic_config_saved(true)
 		reset_config();
 }
 
-
 void GraphicConfiguration::GraphicConfiguration::reset_config()
 {
 	language = Default_Values::LANGUAGE;

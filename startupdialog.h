@@ -28,11 +28,12 @@ class StartupDialog : public QDialog
 	QToolButton close_button;
 
 	// setup GUI
-	void init_GUI();
+	void init_gui();
 
 public:
 	// setup window and connect signals
 	StartupDialog(QWidget* parent = nullptr);
+	virtual ~StartupDialog() override = default;
 
 	// set all texts; if a QTranslator is installed, the installed texts will be loaded
 	void translate();
