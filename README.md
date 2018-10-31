@@ -2,11 +2,9 @@
 This is a fast implementation of Conway's popular Game Of Life which supports many features like own rule sets and different border behaviors.
 
 
-## Changes to v-2.1
-- increased performance with OpenGL support and improved drawing and calculation algorithms
-- highly reduced memory consumption
-- optimized user interface
-- multithreading is simplified and improved
+## Changes to v-3.0
+- HashLife implementation added to simulate infinite fields
+- cell drawing improvements
 
 
 ## Compilation
@@ -98,10 +96,10 @@ This class stores all non-graphic configurations.
 It is also responsible for loading and saving its configurations. The file name is ".configuration" and the path can be set with set_config_path(). The default path is the execution path.
 
 ### Core (core.h):
-The singleton class Core allows a higher level usage of Cell_System and is independent of the graphical interface. To get an instance call Core::get_instance().
-It is also possible to use this Core and build a GUI-less application by adding a simple interface to the user.
+The singleton class Core allows a higher level usage of Cell_System and is independent of the graphical interface.
+It is also possible to use this Core and build a GUI-less application by providing another kind of user interface.
 Furthermore you can replace the used Qt-GUI by any other framework which allows the include of C++.
-The class provides the possibility to manage preferences using the Configuration class (get_config()), to get and manipulate the cells, to get the current generation which is upcount with each call of next_generation()
+The class provides the possibility to manage preferences using the Configuration class (get_config()), to get and manipulate cells, to get the current generation which is upcount with each call of next_generation()
 and to save/load cell patterns.
 
 ### GraphicConfiguration (graphicconfiguration.h):
@@ -110,7 +108,7 @@ It is also responsible for loading and saving its configurations. The file name 
 GraphicConfiguration requires the QColor class of the Qt-framework.
 
 ### GraphicCore (graphiccore.h):
-This singleton class provides a defined higher level interface to OpenGLWidget. It contains an instance of it which can be accessed by get_opengl().
+This singleton class provides a defined higher level interface to OpenGLWidget. It has to be initialized by GraphicCore::init() and the graphic members OpenGLWidget* and QLabel* has to set by using GraphicCore::init_gui(). GraphicCore does not take over the ownership.
 It contains also the graphical configurations in the form of an instance of GraphicConfiguration which can be get by a get_config()-call.
 Using the defines ENABLE_CALC_TIME_MEASUREMENT and ENABLE_DRAW_TIME_MEASUREMENT it is possible to measure the calculation and drawing performance and output the result on the execution console in microseconds.
 GraphicCore requires the Qt-framework.
