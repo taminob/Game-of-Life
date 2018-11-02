@@ -13,6 +13,7 @@
 #include <QToolButton>
 #include <QLabel>
 #include <QLineEdit>
+#include <array>
 
 // see definition below
 class RuleButton;
