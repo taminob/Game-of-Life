@@ -1,13 +1,9 @@
-- add option to set pencil width (to set cells) in toolbar
-- add faster hashlife drawing algorithm (macrocell based)
-- add border behaviors to hashlife
+- remove mouse_swap feature (unnecessary)
 - fix set_cell() population count (cell already alive)
 - add HashLife support in Core::save() and Core::load()
+- add option to set pencil width (to set cells) in toolbar
+- add border behaviors to hashlife
+- add faster hashlife drawing algorithm (macrocell based)
 - improve clear_results() in HashLife_Table
-- remove mouse_swap feature (unnecessary)
-<<<<<<< HEAD
 - update help_text
-
-=======
 - simplify user interface
->>>>>>> 85d82db539f8826843b9bd98b455903c9a7c8cb9
