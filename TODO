@@ -5,3 +5,4 @@
 - add HashLife support in Core::save() and Core::load()
 - improve clear_results() in HashLife_Table
 - remove mouse_swap feature (unnecessary)
+- simplify user interface
