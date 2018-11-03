@@ -120,7 +120,7 @@ void ToolWidget::init_buttons()
 	QObject::connect(&new_game, &QToolButton::clicked, [this]() { GraphicCore::new_system(); update_current_size_label(); });
 
 	// init clear button: on click all cells will be dead; on click + CTRL all cells will be alive
-	QObject::connect(&clear_all, &QToolButton::clicked, [this]()
+	QObject::connect(&clear_all, &QToolButton::clicked, []()
 	{
 		if(QApplication::keyboardModifiers() == Qt::ControlModifier)
 			GraphicCore::reset_cells(Alive);
@@ -141,7 +141,7 @@ void ToolWidget::init_buttons()
 
 	// init button for going one step forward
 	step.setIcon(QIcon(":/images/play-to-90.png"));
-	QObject::connect(&step, &QToolButton::clicked, [this]() { GraphicCore::step(); });
+	QObject::connect(&step, &QToolButton::clicked, []() { GraphicCore::step(); });
 
 	fullscreen.setIcon(QIcon(":/images/fullscreen-90.png"));
 	QObject::connect(&fullscreen, &QToolButton::clicked, [this]() { emit fullscreen_changed(); });
@@ -174,12 +174,12 @@ void ToolWidget::init_others()
 	generations_per_step.setMaximum(MAXIMUM_GENERATIONS_PER_STEP_INPUT);
 	generations_per_step.setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
 	generations_per_step.setMinimum(1);
-	generations_per_step.setValue(GraphicCore::get_config()->get_generations_per_step());
+	generations_per_step.setValue(static_cast<int>(GraphicCore::get_config()->get_generations_per_step()));
 	generations_per_step.setCorrectionMode(QSpinBox::CorrectToNearestValue);
-	generations_per_step.setMaximumWidth(2.5 * height());
+	generations_per_step.setMaximumWidth(static_cast<int>(2.5 * height()));
 	QObject::connect(&generations_per_step, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int)
 	{
-		GraphicCore::get_config()->set_generations_per_step(generations_per_step.value());
+		GraphicCore::get_config()->set_generations_per_step(static_cast<std::size_t>(generations_per_step.value()));
 	});
 	// after editing set focus to parent
 	QObject::connect(&generations_per_step, &QSpinBox::editingFinished, [this]() { static_cast<QWidget*>(this->parent())->setFocus(); });
