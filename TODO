@@ -3,3 +3,4 @@
 - add border behaviors to hashlife
 - fix set_cell() population count (cell already alive)
 - add HashLife support in Core::save() and Core::load()
+- improve clear_results() in HashLife_Table
