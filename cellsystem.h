@@ -58,11 +58,11 @@ class Cell_System : public Base_System
 	inline std::size_t get_special_border(long x, long y)
 	{
 		// leave grid -> return pos to defined state
-		if(x == -1 || x == static_cast<long>(size_x) || y == -1 || y == static_cast<long>(size_y))
+		if(x < 0 || x >= static_cast<long>(size_x) || y < 0 || y >= static_cast<long>(size_y))
 			return size_y * size_x;
 
 		// if grid is not left, return normal pos
-		return y * size_x + x;
+		return static_cast<std::size_t>(y) * size_x + static_cast<std::size_t>(x);
 	}
 
 	// calculate next states of all cells between max_x/max_y and min_x/min_y; used for calculation with multiple threads

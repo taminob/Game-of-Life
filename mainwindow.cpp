@@ -9,7 +9,8 @@
 #include <QKeyEvent>
 
 MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(parent),
-											preferences_view((GraphicCore::init_gui(&opengl, &gen_counter), this)), preferences_animation(&preferences_view, "pos"),
+											// init GraphicCore GUI elements before using them in view ctors
+											preferences_view((static_cast<void>(GraphicCore::init_gui(&opengl, &gen_counter)), this)), preferences_animation(&preferences_view, "pos"),
 											tool_view(this), tool_animation(&tool_view, "pos"),
 											help_view(this), help_animation(&help_view, "pos")
 {
@@ -289,7 +290,7 @@ void MainWindow::show_preference_view()
 	{
 		tool_animation.setStartValue(tool_view.pos());
 		tool_animation.setEndValue(QPoint(game_view.x(), -tool_view.height()));
-		tool_animation.setDuration(ANIMATION_TIME);
+		tool_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 		tool_animation.stop();
 		tool_animation.start();
 
@@ -304,7 +305,7 @@ void MainWindow::show_preference_view()
 	{
 		preferences_animation.setStartValue(preferences_view.pos());
 		preferences_animation.setEndValue(QPoint(help_view.width(), game_view.y()));
-		preferences_animation.setDuration(ANIMATION_TIME);
+		preferences_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 		preferences_animation.stop();
 		preferences_animation.start();
 	}
@@ -312,7 +313,7 @@ void MainWindow::show_preference_view()
 	{
 		preferences_animation.setStartValue(preferences_view.pos());
 		preferences_animation.setEndValue(QPoint(width() - preferences_view.width(), game_view.y()));
-		preferences_animation.setDuration(ANIMATION_TIME);
+		preferences_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 		preferences_animation.stop();
 		preferences_animation.start();
 	}
@@ -347,7 +348,7 @@ void MainWindow::hide_preference_view()
 
 	preferences_animation.setStartValue(preferences_view.pos());
 	preferences_animation.setEndValue(QPoint(width(), game_view.y()));
-	preferences_animation.setDuration(ANIMATION_TIME);
+	preferences_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 	preferences_animation.stop();
 	preferences_animation.start();
 
@@ -366,7 +367,7 @@ void MainWindow::show_tool_view()
 	tool_view.show();
 	tool_animation.setStartValue(tool_view.pos());
 	tool_animation.setEndValue(QPoint(game_view.x(), game_view.y()));
-	tool_animation.setDuration(ANIMATION_TIME);
+	tool_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 	tool_animation.stop();
 	tool_animation.start();
 
@@ -382,7 +383,7 @@ void MainWindow::hide_tool_view()
 {
 	tool_animation.setStartValue(tool_view.pos());
 	tool_animation.setEndValue(QPoint(game_view.x(), -tool_view.height()));
-	tool_animation.setDuration(ANIMATION_TIME);
+	tool_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 	tool_animation.stop();
 	tool_animation.start();
 
@@ -405,7 +406,7 @@ void MainWindow::show_help_view()
 	{
 		tool_animation.setStartValue(tool_view.pos());
 		tool_animation.setEndValue(QPoint(game_view.x(), -tool_view.height()));
-		tool_animation.setDuration(ANIMATION_TIME);
+		tool_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 		tool_animation.stop();
 		tool_animation.start();
 
@@ -421,14 +422,14 @@ void MainWindow::show_help_view()
 		// reduce preferences view
 		preferences_animation.setStartValue(preferences_view.pos());
 		preferences_animation.setEndValue(QPoint(help_view.width(), game_view.y()));
-		preferences_animation.setDuration(ANIMATION_TIME);
+		preferences_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 		preferences_animation.stop();
 		preferences_animation.start();
 	}
 
 	help_animation.setStartValue(help_view.pos());
 	help_animation.setEndValue(QPoint(game_view.x(), game_view.y()));
-	help_animation.setDuration(ANIMATION_TIME);
+	help_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 	help_animation.stop();
 	help_animation.start();
 
@@ -447,7 +448,7 @@ void MainWindow::hide_help_view()
 		// extend preferences view
 		preferences_animation.setStartValue(preferences_view.pos());
 		preferences_animation.setEndValue(QPoint(width() - preferences_view.width(), game_view.y()));
-		preferences_animation.setDuration(ANIMATION_TIME);
+		preferences_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 		preferences_animation.stop();
 		preferences_animation.start();
 	}
@@ -457,7 +458,7 @@ void MainWindow::hide_help_view()
 
 	help_animation.setStartValue(help_view.pos());
 	help_animation.setEndValue(QPoint(-help_view.width(), game_view.y()));
-	help_animation.setDuration(ANIMATION_TIME);
+	help_animation.setDuration(static_cast<int>(ANIMATION_TIME));
 	help_animation.stop();
 	help_animation.start();
 

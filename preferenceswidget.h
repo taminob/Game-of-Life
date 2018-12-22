@@ -190,13 +190,7 @@ class RuleButton : public QToolButton
 
 public:
 	// setup appearance of button
-	RuleButton(std::size_t num, QWidget* parent = nullptr) : QToolButton(parent), state(false)
-	{
-		this->setText(QString::number(num));
-		this->setAutoRaise(true);
-		this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-		this->setPalette(QPalette(Qt::darkGray));
-	}
+	RuleButton(std::size_t num, QWidget* parent = nullptr);
 
 	// set state and update down-property
 	void set_state(const bool& new_state)

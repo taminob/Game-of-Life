@@ -56,9 +56,9 @@ void Cell_System::calc_cell_opposite_behavior(std::size_t x, std::size_t y)
 	for(int a = -1; a < 2; ++a)
 		for(int b = -1; b < 2; ++b)
 			// sum alive neighbors and call algorithm for calculating neighbors of border-cells
-			alive_neighbors += system[current_system][(get_opposite_on_border_y(static_cast<long>(y) + a) * size_x) + get_opposite_on_border_x(static_cast<long>(x) + b)];
+			alive_neighbors += static_cast<std::size_t>(system[current_system][(get_opposite_on_border_y(static_cast<long>(y) + a) * size_x) + get_opposite_on_border_x(static_cast<long>(x) + b)]);
 
-	alive_neighbors -= state;
+	alive_neighbors -= static_cast<std::size_t>(state);
 
 	// update state in next system; fastest way to calculate next state with standard rule set
 //	system[current_system ^ 0x01][y * size_x + x] = static_cast<Cell_State>((alive_neighbors == 3 ) | ((alive_neighbors == 2) & state));
@@ -88,9 +88,9 @@ void Cell_System::calc_cell_special_border_behavior(std::size_t x, std::size_t y
 	for(int a = -1; a < 2; ++a)
 		for(int b = -1; b < 2; ++b)
 			// sum alive neighbors and call algorithm for calculating neighbors of border-cells
-			alive_neighbors += system[current_system][get_special_border(x + b, y + a)];
+			alive_neighbors += static_cast<std::size_t>(system[current_system][get_special_border(static_cast<long>(x) + b, static_cast<long>(y) + a)]);
 
-	alive_neighbors -= state;
+	alive_neighbors -= static_cast<std::size_t>(state);
 
 	// update state in next system; fastest way to calculate next state with standard rule set
 //	system[current_system ^ 0x01][y * size_x + x] = static_cast<Cell_State>((alive_neighbors == 3 ) | ((alive_neighbors == 2) & state));

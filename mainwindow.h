@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-	enum View
+	enum View : std::size_t
 	{
 		Game_View = 1,				// 0b0001
 		Tool_View = 2,				// 0b0010 (Tool_View requires Game_View)

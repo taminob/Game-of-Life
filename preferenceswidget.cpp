@@ -793,3 +793,11 @@ void PreferencesWidget::change_background_color()
 		emit color_changed();
 	}
 }
+
+RuleButton::RuleButton(std::size_t num, QWidget* parent) : QToolButton(parent), state(false)
+{
+	this->setText(QString::number(num));
+	this->setAutoRaise(true);
+	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+	this->setPalette(QPalette(Qt::darkGray));
+}
