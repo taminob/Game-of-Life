@@ -11,7 +11,7 @@ QT += core gui widgets
 TARGET = game-of-life
 TEMPLATE = app
 
-CONFIG += optimize_full c++1z
+CONFIG += optimize_full c++1z Wall
 
 msvc {
 	LIBS += opengl32.lib
