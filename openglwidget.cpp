@@ -232,15 +232,15 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 		if(event->modifiers() == Qt::ControlModifier)
 			move_x -= GraphicCore::get_config()->get_cell_size() * 10;
 	}
-	// zoom: CTRL + [+/-]
-	else if((event->modifiers() & Qt::CTRL) && event->key() == Qt::Key_Plus)
+	// zoom: [+/-]
+	else if(event->key() == Qt::Key_Plus)
 	{
 		scale *= 1.1;
 		if(scale > SCALE_MAX)
 			scale = SCALE_MAX;
 		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
 	}
-	else if((event->modifiers() & Qt::CTRL) && event->key() == Qt::Key_Minus)
+	else if(event->key() == Qt::Key_Minus)
 	{
 		scale *= 0.9;
 		if(scale < SCALE_MIN)
