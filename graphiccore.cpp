@@ -68,8 +68,11 @@ void GraphicCore::new_system()
 {
 	stop_step();
 	stop_generating();
+	wait_for_calculation();
+
 	// generate new system and fill with random cells if it is set
 	Core::new_system();
+
 	update_generation_counter();
 	update_opengl();
 }
@@ -217,6 +220,9 @@ void GraphicCore::stop_generating()
 
 void GraphicCore::calc_next_generation()
 {
+	if(generating_running())
+		return;
+
 	wait_for_calculation();
 
 	calc_thread.reset(new std::thread([]()
