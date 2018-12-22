@@ -52,14 +52,16 @@ void HashLife_Table::clear()
 {
 	for(std::size_t i = 0; i < data_pos.size(); ++i)
 		if(!is_empty_slot(data_pos[i]))
+		{
 			delete data[i].second;
+			data_pos[i] = 0xFF;
+		}
 
 	empty_cells.resize(3);
 	alive_cell = new Macrocell(reinterpret_cast<Macrocell*>(0x01), nullptr, nullptr, nullptr);
 	dead_cell = new Macrocell(nullptr, nullptr, nullptr, nullptr);
 	precalced_gens_exp = 0;
-	data_pos.clear();
-	data_pos.resize(262144, 0xFF);
+	data_pos.resize(262144);
 	data.resize(262144);
 	num_of_elements = 0;
 
@@ -82,7 +84,8 @@ void HashLife_Table::clear_results(std::size_t level)
 		// skip empty slots
 		if(!is_empty_slot(data_pos[i]))
 			// clear all results (alternative: calc level of each cell using Macrocell::level() -> expensive)
-			clear_result(data[i].second, empty_cells.size(), level);
+//			clear_result(data[i].second, empty_cells.size(), level);
+			clear_result(data[i].second, data[i].second->level(), level);
 	}
 }
 
@@ -264,13 +267,13 @@ Macrocell* HashLife_Table::calc_gen(std::size_t bitmask)
 	if(bitmask == 0)
 		return dead_cell;
 	int self = (bitmask >> 5) & 1;
-	bitmask &= 0x757 ; // mask out bits we don't care about
+	bitmask &= 0x757;					// clear unimportant bits
 
 	std::size_t alive_neighbors = 0;
 	while(bitmask)
 	{
 		++alive_neighbors;
-		bitmask &= bitmask - 1 ; // clear least significant bit
+		bitmask &= bitmask - 1;			// clear least significant bit
 	}
 
 	// if cell is alive, try survival_rules
@@ -291,7 +294,7 @@ Macrocell* HashLife_Table::calc_gen(std::size_t bitmask)
 Macrocell* HashLife_Table::get_second_level_result(Macrocell* second_level)
 {
 	// get all bits of macrocell
-	std::size_t allbits = 0 ;
+	std::size_t allbits = 0;
 	for(std::size_t y = 0; y < 4; ++y)
 		for(std::size_t x = 0; x < 4; ++x)
 			allbits = (allbits << 1) | second_level->get_state(x, y, 2);
