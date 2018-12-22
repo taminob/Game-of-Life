@@ -3,7 +3,7 @@
 #include <algorithm>
 
 // return exponent of next power of two (if num is no power of two; otherwise exponent of num)
-static std::size_t exp_of_next_pow_of_two(std::size_t num)
+static inline std::size_t exp_of_next_pow_of_two(std::size_t num)
 {
 	std::size_t exp = 0;
 	--num;
@@ -12,7 +12,8 @@ static std::size_t exp_of_next_pow_of_two(std::size_t num)
 	return exp;
 }
 
-static std::size_t next_pow_of_two(std::size_t num)
+// return next power of two
+[[maybe_unused]] static inline std::size_t next_pow_of_two(std::size_t num)
 {
 	--num;
 	num |= (num >> 1);
