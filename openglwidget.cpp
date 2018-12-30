@@ -10,12 +10,7 @@
 #include <chrono>
 #endif
 
-/*#define SCALE_MIN 0.02
-#define SCALE_MAX 1.5*/
-static const double SCALE_MIN  = (1. / GraphicCore::get_config()->get_cell_size()) * 2;
-static const double SCALE_MAX = 10;
-
-OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), scale(1), cell_size(GraphicCore::get_config()->get_cell_size()), move_x(0), move_y(0)
+OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent), cell_size(GraphicCore::get_config()->get_cell_size()), move_x(0), move_y(0)
 {
 	// if update has to be done from other thread
 	QObject::connect(this, &OpenGLWidget::start_update, this, &OpenGLWidget::full_update);
@@ -55,19 +50,17 @@ bool OpenGLWidget::eventFilter(QObject*, QEvent* event)
 	// pass event to parent
 	return false;
 }
-
+#include <cmath>
 void OpenGLWidget::wheelEvent(QWheelEvent* event)
 {
 	// mousewheel with CTRL: zoom in/out
 	if(event->modifiers() == Qt::ControlModifier)
 	{
-		scale *= 1 + (event->angleDelta().y() / 360. * 0.3 /* = zoom-speed factor */);
-		if(scale < SCALE_MIN)
-			scale = SCALE_MIN;
-		else if(scale > SCALE_MAX)
-			scale = SCALE_MAX;
-
-		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
+		cell_size *= (1 + (event->angleDelta().y() / 360. * 0.3 /* = zoom-speed factor */));
+		if(cell_size == 0)
+			cell_size = 1;
+		else if(cell_size > 8 * GraphicCore::get_config()->get_cell_size())
+			cell_size = 8 * GraphicCore::get_config()->get_cell_size();
 	}
 	// mousewheel with no modifier: move
 	else if(event->modifiers() == Qt::NoModifier)
@@ -103,11 +96,11 @@ void OpenGLWidget::mousePressEvent(QMouseEvent* event)
 		if(event->buttons() & Qt::LeftButton)
 			// revive on left click if it is set, otherwise kill
 			Core::set_cell_state(x, y,
-													(GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Alive : Dead);
+													(GraphicCore::get_config()->get_left_button_alive_right_dead()) ? Alive : Dead);
 		else if(event->buttons() & Qt::RightButton)
 			// kill on right click if it is set, otherwise revive
 			Core::set_cell_state(x, y,
-													(GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Dead : Alive);
+													(GraphicCore::get_config()->get_left_button_alive_right_dead()) ? Dead : Alive);
 	}
 
 	previous_pos = event->pos();
@@ -169,10 +162,10 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 				std::lock_guard<decltype(GraphicCore::get_mutex())> system_lock(GraphicCore::get_mutex());
 				if(event->buttons() & Qt::LeftButton)
 					// revive on left click if it is set, otherwise kill
-					Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Alive : Dead);
+					Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_button_alive_right_dead()) ? Alive : Dead);
 				else if(event->buttons() & Qt::RightButton)
 					// kill on right click if it is set, otherwise revive
-					Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Dead : Alive);
+					Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_button_alive_right_dead()) ? Dead : Alive);
 			}
 		}
 
@@ -192,10 +185,10 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 			std::lock_guard<decltype(GraphicCore::get_mutex())> system_lock(GraphicCore::get_mutex());
 			if(event->buttons() & Qt::LeftButton)
 				// revive on left click if it is set, otherwise kill
-				Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Alive : Dead);
+				Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_button_alive_right_dead()) ? Alive : Dead);
 			else if(event->buttons() & Qt::RightButton)
 				// kill on right click if it is set, otherwise revive
-				Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_alive_and_right_dead()) ? Dead : Alive);
+				Core::set_cell_state(x, y, (GraphicCore::get_config()->get_left_button_alive_right_dead()) ? Dead : Alive);
 
 			previous_pos = event->pos();
 			emit cell_changed();
@@ -235,17 +228,17 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 	// zoom: [+/-]
 	else if(event->key() == Qt::Key_Plus)
 	{
-		scale *= 1.1;
-		if(scale > SCALE_MAX)
-			scale = SCALE_MAX;
-		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
+		if(cell_size <= 10)
+			++cell_size;
+		else if(cell_size < 8 * GraphicCore::get_config()->get_cell_size())
+			cell_size *= 1.25;
 	}
 	else if(event->key() == Qt::Key_Minus)
 	{
-		scale *= 0.9;
-		if(scale < SCALE_MIN)
-			scale = SCALE_MIN;
-		cell_size = GraphicCore::get_config()->get_cell_size() * scale;
+		if(cell_size <= 10 && cell_size > 1)
+			--cell_size;
+		else if(cell_size > 1)
+			cell_size *= 0.8;
 	}
 	// next generation: space
 	else if(event->key() == Qt::Key_Space)
@@ -495,7 +488,6 @@ void OpenGLWidget::reset_movement()
 {
 	move_x = 0;
 	move_y = 0;
-	scale = 1;
 	cell_size = GraphicCore::get_config()->get_cell_size();
 
 	update();

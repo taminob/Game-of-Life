@@ -19,7 +19,7 @@ class OpenGLWidget : public QOpenGLWidget
 	bool mouse_pressed;
 
 	// zoom state (1=no zoom; 1.1=zoom in; 0.9=zoom out)
-	double scale;
+	// cell size in px
 	std::size_t cell_size;
 
 	// move state in px
