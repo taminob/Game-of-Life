@@ -160,7 +160,7 @@ void ToolWidget::init_others()
 	right_mouse_preview.setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
 	right_mouse_preview.setAlignment(Qt::AlignCenter);
 	right_mouse_preview.setAutoFillBackground(true);
-	if(GraphicCore::get_config()->get_left_alive_and_right_dead())
+	if(GraphicCore::get_config()->get_left_button_alive_right_dead())
 	{
 		left_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_alive_color()));
 		right_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_dead_color()));
@@ -246,7 +246,7 @@ void ToolWidget::update_current_size_label()
 void ToolWidget::update_mouse_previews()
 {
 	// update color of left_mouse/right_mouse
-	if(GraphicCore::get_config()->get_left_alive_and_right_dead())
+	if(GraphicCore::get_config()->get_left_button_alive_right_dead())
 	{
 		left_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_alive_color()));
 		right_mouse_preview.setPalette(QPalette(GraphicCore::get_config()->get_dead_color()));
@@ -278,8 +278,8 @@ void ToolWidget::play_or_stop()
 
 void ToolWidget::swap_mouse_behavior()
 {
-	// toggle left_alive_and_right_dead
-	GraphicCore::get_config()->set_left_alive_and_right_dead(!GraphicCore::get_config()->get_left_alive_and_right_dead());
+	// toggle left_button_alive_right_dead
+	GraphicCore::get_config()->set_left_button_alive_right_dead(!GraphicCore::get_config()->get_left_button_alive_right_dead());
 
 	update_mouse_previews();
 }

@@ -77,7 +77,7 @@ private:
 	bool hide_generation_counter;			// if true, no generation timer is shown
 	bool fullscreen;						// if true, the window will start in fullscreen mode
 	bool lock_after_first_generating;		// if true, it is impossible to change cells after initial generation
-	bool left_alive_and_right_dead;			// if true, the left mouse button makes cells alive and the right mouse button makes cells dead; if false, the behavior is inverted;
+	bool left_button_alive_right_dead;			// if true, the left mouse button makes cells alive and the right mouse button makes cells dead; if false, the behavior is inverted;
 											//		config will be saved automatically after changing
 	std::size_t generations_per_step;		// generations per step; if >1 some generations will calculated but not displayed; config will be saved automatically after changing
 	bool show_startup_dialog;				// if true, a startup dialog is shown; config will be saved automatically after changing
@@ -98,7 +98,7 @@ public:
 	inline void set_hide_generation_counter(const bool& new_hide_generation_counter) { graphic_config_saved = false; hide_generation_counter = new_hide_generation_counter; }
 	inline void set_fullscreen(const bool& new_fullscreen) { graphic_config_saved = false; fullscreen = new_fullscreen; }
 	inline void set_lock_after_first_generating(const bool& new_lock_after_first_generating) { graphic_config_saved = false; lock_after_first_generating = new_lock_after_first_generating; }
-	inline void set_left_alive_and_right_dead(const bool& new_left_alive_and_right_dead) { left_alive_and_right_dead = new_left_alive_and_right_dead; write_config(); }
+	inline void set_left_button_alive_right_dead(const bool& new_left_button_alive_right_dead) { left_button_alive_right_dead = new_left_button_alive_right_dead; write_config(); }
 	inline void set_generations_per_step(std::size_t new_generations_per_step) { generations_per_step = new_generations_per_step; write_config(); }
 	inline void set_show_startup_dialog(const bool& new_show_startup_dialog) { show_startup_dialog = new_show_startup_dialog; write_config(); }
 	inline void set_delay(std::size_t new_delay) { graphic_config_saved = false; delay = new_delay; }
@@ -118,7 +118,7 @@ public:
 	inline const bool& get_hide_generation_counter() const { return hide_generation_counter; }
 	inline const bool& get_fullscreen() const { return fullscreen; }
 	inline const bool& get_lock_after_first_generating() const { return lock_after_first_generating; }
-	inline const bool& get_left_alive_and_right_dead() const { return left_alive_and_right_dead; }
+	inline const bool& get_left_button_alive_right_dead() const { return left_button_alive_right_dead; }
 	inline std::size_t get_generations_per_step() const { return generations_per_step; }
 	inline const bool& get_show_startup_dialog() const { return show_startup_dialog; }
 	inline std::size_t get_delay() const { return delay; }

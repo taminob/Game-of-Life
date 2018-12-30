@@ -26,7 +26,7 @@ void GraphicConfiguration::GraphicConfiguration::reset_config()
 	fullscreen = Default_Values::FULLSCREEN;
 	hide_generation_counter = Default_Values::HIDE_GENERATION_COUNTER;
 	lock_after_first_generating = Default_Values::LOCK_AFTER_FIRST_GENERATING;
-	left_alive_and_right_dead = Default_Values::LEFT_ALIVE_AND_RIGHT_DEAD;
+	left_button_alive_right_dead = Default_Values::LEFT_ALIVE_AND_RIGHT_DEAD;
 	generations_per_step = Default_Values::GENERATIONS_PER_STEP;
 	show_startup_dialog = Default_Values::SHOW_STARTUP_DIALOG;
 	delay = Default_Values::DELAY;
@@ -76,8 +76,8 @@ bool GraphicConfiguration::read_config()
 			hide_generation_counter = std::stoul(value);
 		else if(property == "lock_after_first_generating")
 			lock_after_first_generating = std::stoul(value);
-		else if(property == "left_alive_and_right_dead")
-			left_alive_and_right_dead = std::stoul(value);
+		else if(property == "left_button_alive_right_dead")
+			left_button_alive_right_dead = std::stoul(value);
 		else if(property == "generations_per_step")
 			generations_per_step = std::stoul(value);
 		else if(property == "show_startup_dialog")
@@ -128,7 +128,7 @@ bool GraphicConfiguration::write_config()
 	<< "fullscreen=" << fullscreen << '\n'
 	<< "hide_generation_counter=" << hide_generation_counter << '\n'
 	<< "lock_after_first_generating=" << lock_after_first_generating << '\n'
-	<< "left_alive_and_right_dead=" << left_alive_and_right_dead << '\n'
+	<< "left_button_alive_right_dead=" << left_button_alive_right_dead << '\n'
 	<< "generations_per_step=" << generations_per_step << '\n'
 	<< "show_startup_dialog=" << show_startup_dialog << '\n'
 	<< "delay=" << delay;
