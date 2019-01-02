@@ -96,8 +96,8 @@ void GraphicCore::update_opengl()
 
 void GraphicCore::read_save()
 {
-	QString selected_filter("Game Of Life(*.gol)");
-	Core::load(QFileDialog::getOpenFileName(nullptr, QFileDialog::tr("Select a file to open..."), Core::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game Of Life(*.gol)"), &selected_filter).toStdString());
+	QString selected_filter("Game of Life(*.gol)");
+	Core::load(QFileDialog::getOpenFileName(nullptr, QFileDialog::tr("Select a file to open..."), Core::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game of Life(*.gol)"), &selected_filter).toStdString());
 	update_opengl();
 	update_generation_counter();
 }
@@ -105,8 +105,8 @@ void GraphicCore::read_save()
 void GraphicCore::write_save_as()
 {
 	// ask for file name
-	QString selected_filter("Game Of Life(*.gol)");
-	QString file_name = QFileDialog::getSaveFileName(nullptr, QFileDialog::tr("Choose a file name to save..."), Core::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game Of Life(*.gol)"), &selected_filter);
+	QString selected_filter("Game of Life(*.gol)");
+	QString file_name = QFileDialog::getSaveFileName(nullptr, QFileDialog::tr("Choose a file name to save..."), Core::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game of Life(*.gol)"), &selected_filter);
 
 	// return if no file name was entered
 	if(file_name.isEmpty())

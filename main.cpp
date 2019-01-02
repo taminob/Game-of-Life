@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 	// load application icon
 	app.setWindowIcon(QIcon(":/images/gol-icon-90.png"));
 	// set application name
-	app.setApplicationDisplayName("Game Of Life");
+	app.setApplicationDisplayName("Game of Life");
 
 	GraphicCore::init();
 
