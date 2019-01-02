@@ -1,5 +1,5 @@
-# Game Of Life
-This is a fast implementation of Conway's popular Game Of Life which supports many features like own rule sets and different border behaviors.
+# Game of Life
+This is a fast implementation of Conway's popular Game of Life which supports many features like own rule sets and different border behaviors.
 
 
 ## Changes to v-3.0
@@ -21,7 +21,7 @@ This is a fast implementation of Conway's popular Game Of Life which supports ma
 - make (GCC), nmake (MSVC)
 
 #### Build process
-cd /path/to/Game-Of-Life
+cd /path/to/game-of-life
 mkdir build
 qmake ..
 make -j4 (GCC) or nmake (MSVC)
