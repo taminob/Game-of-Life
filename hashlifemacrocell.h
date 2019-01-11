@@ -51,7 +51,7 @@ struct Macrocell
 		if(level == 0)
 			return population;
 
-		std::size_t half = 0x01 << (--level);
+		std::size_t half = 0x01ull << (--level);
 		if(x < half)
 		{
 			if(y < half)

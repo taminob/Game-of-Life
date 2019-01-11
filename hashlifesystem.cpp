@@ -13,7 +13,11 @@ static inline std::size_t exp_of_next_pow_of_two(std::size_t num)
 }
 
 // return next power of two
+#if __cplusplus >= 201703L
 [[maybe_unused]] static inline std::size_t next_pow_of_two(std::size_t num)
+#else
+static inline std::size_t next_pow_of_two(std::size_t num)
+#endif
 {
 	--num;
 	num |= (num >> 1);
@@ -69,7 +73,7 @@ void HashLife_System::resize(std::size_t size)
 		return;
 	std::size_t prev_level = level;
 	level = exp_of_next_pow_of_two(size) + 1;
-	size_x = 0x01 << (level - 1);
+	size_x = 0x01ull << (level - 1);
 	size_y = size_x;
 
 	Macrocell::hash_table.resize(level);

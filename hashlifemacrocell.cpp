@@ -34,7 +34,7 @@ Macrocell* Macrocell::set_state(std::size_t x, std::size_t y, std::size_t level,
 		return this;
 
 	Macrocell* cell = new Macrocell(nw, ne, se, sw);
-	std::size_t size = 0x01 << (--level);
+	std::size_t size = 0x01ull << (--level);
 
 	if(x < size)
 	{

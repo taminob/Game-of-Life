@@ -96,7 +96,7 @@ public:
 	inline Macrocell* get_alive() const { return alive_cell; }
 	inline Macrocell* get_dead() const { return dead_cell; }
 	inline std::size_t get_precalced_exp() const{ return precalced_gens_exp; }
-	inline std::size_t get_precalced() const{ return 0x01ul << precalced_gens_exp; }
+	inline std::size_t get_precalced() const{ return 0x01ull << precalced_gens_exp; }
 };
 
 #endif // HASHLIFETABLE_H
