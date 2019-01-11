@@ -1,3 +1,5 @@
+// © Copyright (c) 2018 SqYtCO
+
 #ifndef HASHLIFEMACROCELL_H
 #define HASHLIFEMACROCELL_H
 
@@ -27,7 +29,7 @@ struct Macrocell
 
 	inline std::size_t hash() const
 	{
-		return ::hash(nw, ne, se, sw);
+		return HashLife_Table::hash(nw, ne, se, sw);
 	}
 
 	std::size_t level() const

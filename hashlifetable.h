@@ -1,8 +1,9 @@
+// © Copyright (c) 2018 SqYtCO
+
 #ifndef HASHLIFETABLE_H
 #define HASHLIFETABLE_H
 
-#include <array>
-#include <unordered_map>
+#include <cstdint>
 #include <vector>
 
 struct Macrocell;
@@ -23,16 +24,6 @@ inline void hash_combine(std::size_t& seed, const Macrocell* v)
 	// Completely arbitrary number, to prevent 0's
 	// from hashing to 0.
 	seed += 0xe6546b64;
-}
-
-inline std::size_t hash(Macrocell* nw, Macrocell* ne, Macrocell* se, Macrocell* sw)
-{
-	std::size_t return_value = 0;
-	hash_combine(return_value, nw);
-	hash_combine(return_value, ne);
-	hash_combine(return_value, se);
-	hash_combine(return_value, sw);
-	return return_value;
 }
 
 class HashLife_Table
@@ -64,6 +55,9 @@ class HashLife_Table
 public:
 	HashLife_Table();
 	~HashLife_Table();
+
+	static inline std::size_t hash(const Macrocell* macrocell);
+	static inline std::size_t hash(const Macrocell* nw, const Macrocell* ne, const Macrocell* se, const Macrocell* sw);
 
 	void resize(std::size_t new_size);
 	void clear();

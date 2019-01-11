@@ -1,6 +1,8 @@
+// © Copyright (c) 2018 SqYtCO
+
 #include "hashlifemacrocell.h"
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 HashLife_Table Macrocell::hash_table;
 

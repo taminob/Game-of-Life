@@ -1,3 +1,5 @@
+// © Copyright (c) 2018 SqYtCO
+
 #ifndef HASHLIFESYSTEM_H
 #define HASHLIFESYSTEM_H
 

@@ -1,6 +1,8 @@
+// © Copyright (c) 2018 SqYtCO
+
 #include "hashlifesystem.h"
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 
 // return exponent of next power of two (if num is no power of two; otherwise exponent of num)
 static inline std::size_t exp_of_next_pow_of_two(std::size_t num)

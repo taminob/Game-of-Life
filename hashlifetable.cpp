@@ -1,25 +1,7 @@
+// © Copyright (c) 2018 SqYtCO
+
 #include "hashlifetable.h"
 #include "hashlifemacrocell.h"
-
-inline std::size_t hash_pointers(const Macrocell* value)
-{
-	std::size_t return_value = 0;
-	hash_combine(return_value, value->nw);
-	hash_combine(return_value, value->ne);
-	hash_combine(return_value, value->se);
-	hash_combine(return_value, value->sw);
-	return return_value;
-}
-
-inline std::size_t hash_pointers(const Macrocell* value0, const Macrocell* value1, const Macrocell* value2, const Macrocell* value3)
-{
-	std::size_t return_value = 0;
-	hash_combine(return_value, value0);
-	hash_combine(return_value, value1);
-	hash_combine(return_value, value2);
-	hash_combine(return_value, value3);
-	return return_value;
-}
 
 HashLife_Table::HashLife_Table() : empty_cells(3),
 	  alive_cell(new Macrocell(reinterpret_cast<Macrocell*>(0x01), nullptr, nullptr, nullptr)),
@@ -35,6 +17,26 @@ HashLife_Table::~HashLife_Table()
 	for(std::size_t i = 0; i < data_pos.size(); ++i)
 		if(!is_empty_slot(data_pos[i]))
 			delete data[i].second;
+}
+
+std::size_t HashLife_Table::hash(const Macrocell* macrocell)
+{
+	std::size_t return_value = 0;
+	hash_combine(return_value, macrocell->nw);
+	hash_combine(return_value, macrocell->ne);
+	hash_combine(return_value, macrocell->se);
+	hash_combine(return_value, macrocell->sw);
+	return return_value;
+}
+
+std::size_t HashLife_Table::hash(const Macrocell* nw, const Macrocell* ne, const Macrocell* se, const Macrocell* sw)
+{
+	std::size_t return_value = 0;
+	hash_combine(return_value, nw);
+	hash_combine(return_value, ne);
+	hash_combine(return_value, se);
+	hash_combine(return_value, sw);
+	return return_value;
 }
 
 void HashLife_Table::resize(std::size_t new_size)
@@ -107,7 +109,7 @@ Macrocell* HashLife_Table::operator[](const Macrocell* key) const
 
 Macrocell* HashLife_Table::get(const Macrocell* key0, const Macrocell* key1, const Macrocell* key2, const Macrocell* key3) const
 {
-	std::size_t hash_value = hash_pointers(key0, key1, key2, key3);
+	std::size_t hash_value = hash(key0, key1, key2, key3);
 	const std::size_t max_size = (data_pos.size() - 1);
 	std::size_t num = hash_value & max_size;
 
@@ -150,7 +152,7 @@ void HashLife_Table::insert(const Macrocell* key0, const Macrocell* key1, const 
 	if(++num_of_elements > max_load_factor * data.size())
 		internal_resize(data.size() << 1);
 
-	std::size_t hash_value = hash_pointers(key0, key1, key2, key3);
+	std::size_t hash_value = hash(key0, key1, key2, key3);
 	const std::size_t max_size = (data_pos.size() - 1);
 	std::size_t num = hash_value & max_size;
 
