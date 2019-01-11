@@ -18,8 +18,7 @@ class OpenGLWidget : public QOpenGLWidget
 	// mouse state (pressed/released)
 	bool mouse_pressed;
 
-	// zoom state (1=no zoom; 1.1=zoom in; 0.9=zoom out)
-	// cell size in px
+	// cell size in px; must be >0
 	std::size_t cell_size;
 
 	// move state in px
