@@ -5,6 +5,7 @@
 #include "graphiccore.h"
 #include <QKeyEvent>
 #include <mutex>
+#include <cmath>
 #ifdef ENABLE_DRAW_TIME_MEASUREMENT
 #include <QDebug>
 #include <chrono>
@@ -50,17 +51,27 @@ bool OpenGLWidget::eventFilter(QObject*, QEvent* event)
 	// pass event to parent
 	return false;
 }
-#include <cmath>
+
 void OpenGLWidget::wheelEvent(QWheelEvent* event)
 {
 	// mousewheel with CTRL: zoom in/out
 	if(event->modifiers() == Qt::ControlModifier)
 	{
-		cell_size *= (1 + (event->angleDelta().y() / 360. * 0.3 /* = zoom-speed factor */));
-		if(cell_size == 0)
+		double factor = (1 + (event->angleDelta().y() / 360. * 0.3 /* = zoom-speed factor */));
+		factor = (factor <= 0) ? 0.1 : factor;
+		if(static_cast<std::size_t>(cell_size * factor) <= 1)
 			cell_size = 1;
-		else if(cell_size > 8 * GraphicCore::get_config()->get_cell_size())
+		else if(static_cast<std::size_t>(cell_size * factor) == cell_size)
+		{
+			if(factor > 0)
+				++cell_size;
+			else
+				--cell_size;
+		}
+		else if(static_cast<std::size_t>(cell_size * factor) > 8 * GraphicCore::get_config()->get_cell_size())
 			cell_size = 8 * GraphicCore::get_config()->get_cell_size();
+		else
+			cell_size *= factor;
 	}
 	// mousewheel with no modifier: move
 	else if(event->modifiers() == Qt::NoModifier)
@@ -135,16 +146,16 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 			if(dif_x_active)
 			{
 				if(dif_x > 0)
-					dif_x -= cell_size - 1;
+					dif_x -= cell_size;
 				else
-					dif_x += cell_size - 1;
+					dif_x += cell_size;
 			}
 			if(dif_y_active)
 			{
 				if(dif_y > 0)
-					dif_y -= cell_size - 1;
+					dif_y -= cell_size;
 				else
-					dif_y += cell_size - 1;
+					dif_y += cell_size;
 			}
 
 			QPoint temp(event->pos().x() + dif_x, event->pos().y() + dif_y);
