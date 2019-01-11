@@ -2,13 +2,15 @@
 
 #include "graphicconfiguration.h"
 #include <fstream>
-#include <filesystem>
 
 #if __cplusplus < 201703L
+#include <experimental/filesystem>
 namespace std
 {
 	namespace filesystem = experimental::filesystem;
 }
+#else
+#include <filesystem>
 #endif
 
 GraphicConfiguration::GraphicConfiguration() : graphic_config_saved(true)
