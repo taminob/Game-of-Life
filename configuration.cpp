@@ -3,7 +3,14 @@
 #include "configuration.h"
 #include <string>
 #include <fstream>
-#include <experimental/filesystem>
+#include <filesystem>
+
+#if __cplusplus < 201703L
+namespace std
+{
+	namespace filesystem = experimental::filesystem;
+}
+#endif
 
 Configuration::Configuration() : config_saved(true)
 {
@@ -78,8 +85,8 @@ bool Configuration::write_config()
 	try
 	{
 		// check if path exists and create it if not
-		if(!std::experimental::filesystem::exists(config_path))
-			std::experimental::filesystem::create_directories(config_path);
+		if(!std::filesystem::exists(config_path))
+			std::filesystem::create_directories(config_path);
 	}
 	catch(...)	// if write permission is not granted
 	{

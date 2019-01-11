@@ -2,7 +2,14 @@
 
 #include "graphicconfiguration.h"
 #include <fstream>
-#include <experimental/filesystem>
+#include <filesystem>
+
+#if __cplusplus < 201703L
+namespace std
+{
+	namespace filesystem = experimental::filesystem;
+}
+#endif
 
 GraphicConfiguration::GraphicConfiguration() : graphic_config_saved(true)
 {
@@ -101,8 +108,8 @@ bool GraphicConfiguration::write_config()
 	try
 	{
 		// check if path exists and create it if not
-		if(!std::experimental::filesystem::exists(gconfig_path))
-			std::experimental::filesystem::create_directories(gconfig_path);
+		if(!std::filesystem::exists(gconfig_path))
+			std::filesystem::create_directories(gconfig_path);
 	}
 	catch(...)	// if write permission is not granted
 	{

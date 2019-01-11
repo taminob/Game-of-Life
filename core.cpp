@@ -9,6 +9,14 @@
 #include <filesystem>
 #include <iomanip>					// std::put_time
 
+#if __cplusplus < 201703L
+namespace std
+{
+	namespace filesystem = experimental::filesystem;
+}
+#endif
+
+
 Configuration Core::config;
 std::unique_ptr<Base_System> Core::system_;
 std::size_t Core::generation;
