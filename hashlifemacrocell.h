@@ -4,12 +4,13 @@
 #define HASHLIFEMACROCELL_H
 
 #include "basesystem.h"
-#include "hashlifetable.h"
 #include <map>
 #include <vector>
 #include <cmath>
 #include <array>
 #include <unordered_map>
+
+class HashLife_Table;
 
 struct Macrocell
 {
@@ -27,10 +28,7 @@ struct Macrocell
 
 	Macrocell(Macrocell* nw, Macrocell* ne, Macrocell* se, Macrocell* sw);
 
-	inline std::size_t hash() const
-	{
-		return HashLife_Table::hash(nw, ne, se, sw);
-	}
+	inline std::size_t hash() const;
 
 	std::size_t level() const
 	{

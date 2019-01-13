@@ -1,6 +1,7 @@
 // © Copyright (c) 2018 SqYtCO
 
 #include "hashlifemacrocell.h"
+#include "hashlifetable.h"
 #include <algorithm>
 #include <cassert>
 
@@ -26,6 +27,11 @@ Macrocell::Macrocell(Macrocell* nw, Macrocell* ne, Macrocell* se, Macrocell* sw)
 		this->population = (nw == reinterpret_cast<Macrocell*>(0x01));
 	else
 		this->population = this->nw->population + this->ne->population + this->se->population + this->sw->population;
+}
+
+std::size_t Macrocell::hash() const
+{
+	return HashLife_Table::hash(nw, ne, se, sw);
 }
 
 Macrocell* Macrocell::set_state(std::size_t x, std::size_t y, std::size_t level, Cell_State state)
