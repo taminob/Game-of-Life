@@ -130,7 +130,7 @@ void OpenGLWidget::mouseReleaseEvent(QMouseEvent*)
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 {
-	if(mouse_pressed && cell_size >= 1)
+	if(mouse_pressed)
 	{
 		int dif_x = previous_pos.x() - event->pos().x();
 		int dif_y = previous_pos.y() - event->pos().y();
