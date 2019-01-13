@@ -60,7 +60,7 @@ std::size_t HashLife_System::next_generation(std::size_t generations)
 {
 	calc_next_generation(generations);
 	master_cell = master_cell->calculate(level, Macrocell::hash_table.get_precalced());
-	Macrocell::hash_table.resize(--level);
+	Macrocell::hash_table.set_level(--level);
 	size_x >>= 1;
 	size_y >>= 1;
 	expand();
@@ -78,7 +78,7 @@ void HashLife_System::resize(std::size_t size)
 	size_x = 0x01ull << (level - 1);
 	size_y = size_x;
 
-	Macrocell::hash_table.resize(level);
+	Macrocell::hash_table.set_level(level);
 
 	if(master_cell == nullptr)
 	{

@@ -48,7 +48,7 @@ public:
 												Macrocell::new_macrocell(master_cell->se, empty_temp, empty_temp, empty_temp),
 												Macrocell::new_macrocell(empty_temp, master_cell->sw, empty_temp, empty_temp));
 
-		Macrocell::hash_table.resize(++level);
+		Macrocell::hash_table.set_level(++level);
 		size_x *= 2;
 		size_y *= 2;
 	}
