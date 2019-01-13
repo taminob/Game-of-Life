@@ -17,7 +17,7 @@ StartupDialog::StartupDialog(QWidget* parent) : QDialog(parent)
 	// load startup dialog preference
 	show_on_startup.setChecked(GraphicCore::get_config()->get_show_startup_dialog());
 	// connect checkbox
-	QObject::connect(&show_on_startup, &QCheckBox::stateChanged, [this](bool state) { GraphicCore::get_config()->set_show_startup_dialog(state); } );
+	QObject::connect(&show_on_startup, &QCheckBox::stateChanged, [](bool state) { GraphicCore::get_config()->set_show_startup_dialog(state); } );
 	// connect show help button
 	QObject::connect(&show_help_button, &QToolButton::clicked, [this]() { emit show_help(); });
 	// connect close button
