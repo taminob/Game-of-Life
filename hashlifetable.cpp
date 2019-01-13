@@ -3,6 +3,22 @@
 #include "hashlifetable.h"
 #include "hashlifemacrocell.h"
 
+static inline void hash_combine(std::size_t& seed, const Macrocell* cell)
+{
+	constexpr uint64_t factor = 0xC6A4A7935BD1E995ULL;
+	constexpr int r = 47;
+	std::uintptr_t cell_num = reinterpret_cast<std::uintptr_t>(cell);
+
+	cell_num *= factor;
+	cell_num ^= cell_num >> r;
+	cell_num *= factor;
+
+	seed ^= cell_num;
+	seed *= factor;
+
+	seed += 0xe6546b64;
+}
+
 HashLife_Table::HashLife_Table() : empty_cells(3),
 	  alive_cell(new Macrocell(reinterpret_cast<Macrocell*>(0x01), nullptr, nullptr, nullptr)),
 	  dead_cell(new Macrocell(nullptr, nullptr, nullptr, nullptr)), precalced_gens_exp(0),
@@ -39,11 +55,11 @@ std::size_t HashLife_Table::hash(const Macrocell* nw, const Macrocell* ne, const
 	return return_value;
 }
 
-void HashLife_Table::resize(std::size_t new_size)
+void HashLife_Table::set_level(std::size_t new_level)
 {
-	empty_cells.reserve(new_size + 1);
+	empty_cells.reserve(new_level + 1);
 
-	while(empty_cells.size() <= new_size)
+	while(empty_cells.size() <= new_level)
 	{
 		Macrocell* empty_temp = empty_cells[empty_cells.size() - 1];
 		empty_cells.emplace_back(Macrocell::new_macrocell(empty_temp, empty_temp,empty_temp, empty_temp));
@@ -85,7 +101,7 @@ void HashLife_Table::clear_results(std::size_t level)
 	{
 		// skip empty slots
 		if(!is_empty_slot(data_pos[i]))
-			// clear all results (alternative: calc level of each cell using Macrocell::level() -> expensive)
+			// clear all results (alternative: calc level of each cell using Macrocell::level() -> more expensive)
 //			clear_result(data[i].second, empty_cells.size(), level);
 			clear_result(data[i].second, data[i].second->level(), level);
 	}

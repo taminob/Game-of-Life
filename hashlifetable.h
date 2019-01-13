@@ -8,24 +8,6 @@
 
 struct Macrocell;
 
-inline void hash_combine(std::size_t& seed, const Macrocell* v)
-{
-	constexpr uint64_t m = 0xc6a4a7935bd1e995ULL;
-	constexpr int r = 47;
-	std::uintptr_t k = reinterpret_cast<std::uintptr_t>(v);
-
-	k *= m;
-	k ^= k >> r;
-	k *= m;
-
-	seed ^= k;
-	seed *= m;
-
-	// Completely arbitrary number, to prevent 0's
-	// from hashing to 0.
-	seed += 0xe6546b64;
-}
-
 class HashLife_Table
 {
 	std::vector<Macrocell*> empty_cells;
@@ -56,10 +38,10 @@ public:
 	HashLife_Table();
 	~HashLife_Table();
 
-	static inline std::size_t hash(const Macrocell* macrocell);
-	static inline std::size_t hash(const Macrocell* nw, const Macrocell* ne, const Macrocell* se, const Macrocell* sw);
+	static std::size_t hash(const Macrocell* macrocell);
+	static std::size_t hash(const Macrocell* nw, const Macrocell* ne, const Macrocell* se, const Macrocell* sw);
 
-	void resize(std::size_t new_size);
+	void set_level(std::size_t new_level);
 	void clear();
 
 	void clear_results(std::size_t level);
