@@ -131,7 +131,11 @@ void GraphicCore::next_generations(std::size_t generations)
 		if(stepping_stop)
 			break;
 		else
+		{
+			system_mutex.lock();
 			generations -= Core::next_generation(generations);
+			system_mutex.unlock();
+		}
 	}
 
 	stepping_stop = true;
@@ -227,7 +231,9 @@ void GraphicCore::calc_next_generation()
 
 	calc_thread.reset(new std::thread([]()
 	{
+		system_mutex.lock();
 		Core::calc_next_generation(gconfig.get_generations_per_step());
+		system_mutex.unlock();
 		emit opengl->start_update();
 	}));
 }
