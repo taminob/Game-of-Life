@@ -132,9 +132,10 @@ void GraphicCore::next_generations(std::size_t generations)
 			break;
 		else
 		{
-			system_mutex.lock();
-			generations -= Core::next_generation(generations);
-			system_mutex.unlock();
+			{
+				std::lock_guard<decltype(system_mutex)> lock(system_mutex);
+				generations -= Core::next_generation(generations);
+			}
 		}
 	}
 
@@ -188,16 +189,17 @@ void GraphicCore::start_generating()
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(gconfig.get_delay()));
 
-			system_mutex.lock();
 #ifdef ENABLE_CALC_TIME_MEASUREMENT
 			auto begin = std::chrono::high_resolution_clock::now();
 #endif
-			Core::next_generation();
+			{
+				std::lock_guard<decltype(system_mutex)> lock(system_mutex);
+				Core::next_generation();
+			}
 #ifdef ENABLE_CALC_TIME_MEASUREMENT
 			auto end = std::chrono::high_resolution_clock::now();
 			qDebug() << "calculating: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs";
 #endif
-			system_mutex.unlock();
 
 			emit opengl->cell_changed();
 			emit opengl->start_update();
@@ -231,9 +233,10 @@ void GraphicCore::calc_next_generation()
 
 	calc_thread.reset(new std::thread([]()
 	{
-		system_mutex.lock();
-		Core::calc_next_generation(gconfig.get_generations_per_step());
-		system_mutex.unlock();
+		{
+			std::lock_guard<decltype(system_mutex)> lock(system_mutex);
+			Core::calc_next_generation(gconfig.get_generations_per_step());
+		}
 		emit opengl->start_update();
 	}));
 }
