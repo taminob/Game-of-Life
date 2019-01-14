@@ -6,7 +6,6 @@
 #include "basesystem.h"
 #include "hashlifemacrocell.h"
 #include "hashlifetable.h"
-#include <qdebug.h>
 
 // class implements HashLife algorithm
 // algorithm supports only unlimitted fields
