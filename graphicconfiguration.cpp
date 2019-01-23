@@ -13,7 +13,7 @@ namespace std
 #include <filesystem>
 #endif
 
-GraphicConfiguration::GraphicConfiguration() : graphic_config_saved(true)
+GraphicConfiguration::GraphicConfiguration() : config_saved(true)
 {
 	// try reading in configuration; on failure set default values
 	if(!read_config())
@@ -39,6 +39,7 @@ void GraphicConfiguration::GraphicConfiguration::reset_config()
 	generations_per_step = Default_Values::GENERATIONS_PER_STEP;
 	show_startup_dialog = Default_Values::SHOW_STARTUP_DIALOG;
 	delay = Default_Values::DELAY;
+	save_path = Default_Values::SAVE_PATH;
 }
 
 bool GraphicConfiguration::read_config()
@@ -99,7 +100,7 @@ bool GraphicConfiguration::read_config()
 	if(!in)
 		return false;
 
-	graphic_config_saved = true;
+	config_saved = true;
 
 	// return on success
 	return true;
@@ -146,7 +147,7 @@ bool GraphicConfiguration::write_config()
 	if(!out)
 		return false;
 
-	graphic_config_saved = true;
+	config_saved = true;
 
 	return true;
 }

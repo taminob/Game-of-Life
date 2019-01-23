@@ -97,14 +97,8 @@ public:
 
 // get member
 public:
-	static inline GraphicConfiguration* get_config()
-	{
-		return &gconfig;
-	}
-	static inline std::mutex& get_mutex()
-	{
-		return system_mutex;
-	}
+	static inline GraphicConfiguration* get_config() { return &gconfig; }
+	static inline std::mutex& get_mutex() { return system_mutex; }
 };
 
 #endif // GRAPHICCORE_H

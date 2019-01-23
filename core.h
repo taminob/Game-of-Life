@@ -23,10 +23,8 @@ public:
 	// if Configuration::start_random is true, the game board will be filled with random cells; the ratio is given by Configuration::relation_dead/Configuration::relation_alive
 	static void new_system();
 
-	// save current game
-	// if "name" is empty, a name is generated from date and time and written to Configuration::save_path
-	// "name" has to contain an absolute or relative path (from exec dir) to file; in this case Configuration::save_path is not used!
-	static bool save(std::string file = std::string());
+	// save current game to file
+	static bool save(const std::string& file);
 	// load given file; the file must contain a valid format (0=dead, 1=alive, \n=next_row, space=ignored); file must end on ".gol", otherwise false will be returned
 	static bool load(const std::string& file);
 

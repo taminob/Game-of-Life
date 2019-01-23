@@ -3,10 +3,7 @@
 #include "core.h"
 #include "cellsystem.h"
 #include "hashlifesystem.h"
-#include <chrono>
-#include <sstream>
 #include <fstream>
-#include <iomanip>					// std::put_time
 
 #if __cplusplus < 201703L
 #include <experimental/filesystem>
@@ -46,48 +43,8 @@ void Core::calc_next_generation(std::size_t generations)
 		system_->calc_next_generation();
 }
 
-bool Core::save(std::string file)
+bool Core::save(const std::string& file)
 {
-	if(file.empty())
-	{
-		try
-		{
-			// check if path exists and create it if not
-			if(!std::filesystem::exists(config.get_save_path()))
-				std::filesystem::create_directories(config.get_save_path());
-		}
-		catch(...)	// if write permission is not granted
-		{
-			return false;
-		}
-
-		// create string with current date
-		std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-		std::string date;
-		std::ostringstream oss;
-		oss << std::put_time(std::localtime(&time), "%F_%H-%M");	// %y-%m-%d_%H-%M = YY-MM-DD_HH-min
-		date = oss.str();
-
-		// attached num if file exists already
-		std::size_t save_num = 0;
-		while(true)
-		{
-			// first try without num
-			if(save_num == 0)
-				file = config.get_save_path() + date + ".gol";
-			else
-				file = config.get_save_path() + date + "_" + std::to_string(save_num) + ".gol";
-
-			// check if file exists already
-			std::ifstream in(file);
-			// if file does not exist, break loop
-			if(!in)
-				break;
-			else
-				++save_num;
-		}
-	}
-
 	std::ofstream out(file);
 	// if creating fails
 	if(!out)
