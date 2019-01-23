@@ -8,9 +8,13 @@
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QLabel>
+#include <filesystem>
+#include <chrono>
+#include <fstream>
+#include <sstream>
+#include <iomanip>					// std::put_time
 #ifdef ENABLE_CALC_TIME_MEASUREMENT
 #include <QDebug>
-#include <chrono>
 #endif
 
 GraphicConfiguration GraphicCore::gconfig;
@@ -97,7 +101,7 @@ void GraphicCore::update_opengl()
 void GraphicCore::read_save()
 {
 	QString selected_filter("Game of Life(*.gol)");
-	Core::load(QFileDialog::getOpenFileName(nullptr, QFileDialog::tr("Select a file to open..."), Core::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game of Life(*.gol)"), &selected_filter).toStdString());
+	Core::load(QFileDialog::getOpenFileName(nullptr, QFileDialog::tr("Select a file to open..."), GraphicCore::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game of Life(*.gol)"), &selected_filter).toStdString());
 	update_opengl();
 	update_generation_counter();
 }
@@ -106,7 +110,7 @@ void GraphicCore::write_save_as()
 {
 	// ask for file name
 	QString selected_filter("Game of Life(*.gol)");
-	QString file_name = QFileDialog::getSaveFileName(nullptr, QFileDialog::tr("Choose a file name to save..."), Core::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game of Life(*.gol)"), &selected_filter);
+	QString file_name = QFileDialog::getSaveFileName(nullptr, QFileDialog::tr("Choose a file name to save..."), GraphicCore::get_config()->get_save_path().c_str(), QFileDialog::tr("All Files(*);;Game of Life(*.gol)"), &selected_filter);
 
 	// return if no file name was entered
 	if(file_name.isEmpty())
@@ -119,9 +123,49 @@ void GraphicCore::write_save_as()
 
 void GraphicCore::write_save()
 {
-	// write save; warning if writing fails
-	if(!Core::save())
+	try
+	{
+		// check if path exists and create it if not
+		if(!std::filesystem::exists(gconfig.get_save_path()))
+		//if(!std::filesystem::exists(std::filesystem::current_path().append(gconfig.get_save_path())))
+			if(!std::filesystem::create_directories(std::filesystem::current_path().append(gconfig.get_save_path())))
+				throw std::runtime_error("");
+
+		std::string file;
+		// create string with current date
+		std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::string date;
+		std::ostringstream oss;
+		oss << std::put_time(std::localtime(&time), "%F_%H-%M");	// %y-%m-%d_%H-%M = YY-MM-DD_HH-min
+		date = oss.str();
+
+		// attached num if file exists already
+		std::size_t save_num = 0;
+		while(true)
+		{
+			// first try without num
+			if(save_num == 0)
+				file = gconfig.get_save_path() + date + ".gol";
+			else
+				file = gconfig.get_save_path() + date + "_" + std::to_string(save_num) + ".gol";
+
+			// check if file exists already
+			std::ifstream in(file);
+			// if file does not exist, break loop
+			if(!in)
+				break;
+			else
+				++save_num;
+		}
+
+		// write save; warning if writing fails
+		if(!Core::save(file))
+			throw std::runtime_error("");
+	}
+	catch(...)	// if write permission is not granted
+	{
 		QMessageBox::warning(nullptr, QMessageBox::tr("Write Error"), QMessageBox::tr("Writing Save Failed!\nPlease Check Your Permissions."));
+	}
 }
 
 void GraphicCore::next_generations(std::size_t generations)
