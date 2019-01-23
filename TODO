@@ -8,3 +8,5 @@
 - update help_text
 - simplify user interface
 - update translation
+- add HashLife multithreading
+- clear HashLife_Table and remove unused macrocells
