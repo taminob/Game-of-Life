@@ -30,7 +30,6 @@ void Configuration::reset_config()
 	relation_dead = Default_Values::RELATION_DEAD;
 	relation_alive = Default_Values::RELATION_ALIVE;
 	border_behavior = Default_Values::BORDER_BEHAVIOR;
-	save_path = Default_Values::SAVE_PATH;
 	start_random = Default_Values::START_RANDOM;
 	survival_rules = Default_Values::SURVIVAL_RULES;
 	rebirth_rules = Default_Values::REBORN_RULES;

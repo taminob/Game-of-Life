@@ -25,7 +25,6 @@ namespace Default_Values
 	constexpr std::size_t RELATION_DEAD = 2;
 	constexpr std::size_t RELATION_ALIVE = 1;
 	constexpr Border_Behavior BORDER_BEHAVIOR = Borderless;
-	constexpr const char* SAVE_PATH = "GOL_Saves/";
 	constexpr std::size_t SAVE_NUM = 0;
 	constexpr bool START_RANDOM = true;
 	constexpr std::size_t SURVIVAL_RULES = 0x0C;	// 2 & 3
@@ -79,7 +78,6 @@ public:
 	inline void set_relation_dead(const std::size_t new_relation_dead) { config_saved = false; relation_dead = new_relation_dead; }
 	inline void set_relation_alive(const std::size_t new_relation_alive) { config_saved = false; relation_alive = new_relation_alive; }
 	inline void set_border_behavior(const Border_Behavior& new_border_behavior) { config_saved = false; border_behavior = new_border_behavior; }
-	inline void set_save_path(const std::string& new_save_path) { config_saved = false; save_path = new_save_path; }
 	inline void set_start_random(const bool& new_start_random) { config_saved = false; start_random = new_start_random; }
 	inline void set_survival_rules(std::size_t new_survival_rules) { config_saved = false; survival_rules = new_survival_rules; }
 	inline void set_rebirth_rules(std::size_t new_rebirth_rules) { config_saved = false; rebirth_rules = new_rebirth_rules; }
@@ -92,7 +90,6 @@ public:
 	inline std::size_t get_relation_dead() const { return relation_dead; }
 	inline std::size_t get_relation_alive() const { return relation_alive; }
 	inline const Border_Behavior& get_border_behavior() const { return border_behavior; }
-	inline const std::string& get_save_path() const { return save_path; }
 	inline const bool& get_start_random() const { return start_random; }
 	inline std::size_t get_survival_rules() { return survival_rules; }
 	inline std::size_t get_rebirth_rules() { return rebirth_rules; }

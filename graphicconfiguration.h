@@ -34,13 +34,14 @@ namespace Default_Values
 	constexpr std::size_t GENERATIONS_PER_STEP = 1;
 	constexpr bool SHOW_STARTUP_DIALOG = true;
 	constexpr std::size_t DELAY = 15;
+	constexpr const char* SAVE_PATH = "gol_saves/";
 }
 
 // contain and manage all graphic preferences
 class GraphicConfiguration
 {
-	// if all values of options are equal to saved values, "graphic_config_saved" is true; also true after reset
-	bool graphic_config_saved;
+	// if all values of options are equal to saved values, "config_saved" is true; also true after reset
+	bool config_saved;
 
 protected:
 	constexpr static const char* GCONFIG_FILE = ".gconfiguration";
@@ -51,7 +52,7 @@ public:
 	GraphicConfiguration();
 
 	// return current save state of graphic configuration
-	const bool& get_saved() { return graphic_config_saved; }
+	const bool& get_saved() { return config_saved; }
 	// gconfig_path has to be empty or end on a separator; after setting gconfig_path read config
 	void set_config_path(const std::string& new_config_path) { gconfig_path = new_config_path; read_config(); }
 
@@ -82,26 +83,28 @@ private:
 	std::size_t generations_per_step;		// generations per step; if >1 some generations will calculated but not displayed; config will be saved automatically after changing
 	bool show_startup_dialog;				// if true, a startup dialog is shown; config will be saved automatically after changing
 	std::size_t delay;						// delay between generations while autogenerating is running
+	std::string save_path;					// default path for saved games
 
 // set options
 public:
-	inline void set_language(const Language& new_language) { graphic_config_saved = false; language = new_language; }
-	inline void set_cell_size(std::size_t new_cell_size) { graphic_config_saved = false; cell_size = new_cell_size; }
-	inline void set_grid_active(const bool& new_grid_active) { graphic_config_saved = false; grid_active = new_grid_active; }
-	inline void set_generation_counter_size(std::size_t new_generation_counter_size) { graphic_config_saved = false; generation_counter_size = new_generation_counter_size; }
-	inline void set_exit_warning(const bool& new_exit_warning) { graphic_config_saved = false; exit_warning = new_exit_warning; }
-	inline void set_dead_color(const QColor& new_dead_color) { graphic_config_saved = false; dead_color = new_dead_color; }
-	inline void set_alive_color(const QColor& new_alive_color) { graphic_config_saved = false; alive_color = new_alive_color; }
-	inline void set_reviving_color(const QColor& new_reviving_color) { graphic_config_saved = false; reviving_color = new_reviving_color; }
-	inline void set_dying_color(const QColor& new_dying_color) { graphic_config_saved = false; dying_color = new_dying_color; }
-	inline void set_background_color(const QColor& new_background_color) { graphic_config_saved = false; background_color = new_background_color; }
-	inline void set_hide_generation_counter(const bool& new_hide_generation_counter) { graphic_config_saved = false; hide_generation_counter = new_hide_generation_counter; }
-	inline void set_fullscreen(const bool& new_fullscreen) { graphic_config_saved = false; fullscreen = new_fullscreen; }
-	inline void set_lock_after_first_generating(const bool& new_lock_after_first_generating) { graphic_config_saved = false; lock_after_first_generating = new_lock_after_first_generating; }
+	inline void set_language(const Language& new_language) { config_saved = false; language = new_language; }
+	inline void set_cell_size(std::size_t new_cell_size) { config_saved = false; cell_size = new_cell_size; }
+	inline void set_grid_active(const bool& new_grid_active) { config_saved = false; grid_active = new_grid_active; }
+	inline void set_generation_counter_size(std::size_t new_generation_counter_size) { config_saved = false; generation_counter_size = new_generation_counter_size; }
+	inline void set_exit_warning(const bool& new_exit_warning) { config_saved = false; exit_warning = new_exit_warning; }
+	inline void set_dead_color(const QColor& new_dead_color) { config_saved = false; dead_color = new_dead_color; }
+	inline void set_alive_color(const QColor& new_alive_color) { config_saved = false; alive_color = new_alive_color; }
+	inline void set_reviving_color(const QColor& new_reviving_color) { config_saved = false; reviving_color = new_reviving_color; }
+	inline void set_dying_color(const QColor& new_dying_color) { config_saved = false; dying_color = new_dying_color; }
+	inline void set_background_color(const QColor& new_background_color) { config_saved = false; background_color = new_background_color; }
+	inline void set_hide_generation_counter(const bool& new_hide_generation_counter) { config_saved = false; hide_generation_counter = new_hide_generation_counter; }
+	inline void set_fullscreen(const bool& new_fullscreen) { config_saved = false; fullscreen = new_fullscreen; }
+	inline void set_lock_after_first_generating(const bool& new_lock_after_first_generating) { config_saved = false; lock_after_first_generating = new_lock_after_first_generating; }
 	inline void set_left_button_alive_right_dead(const bool& new_left_button_alive_right_dead) { left_button_alive_right_dead = new_left_button_alive_right_dead; write_config(); }
 	inline void set_generations_per_step(std::size_t new_generations_per_step) { generations_per_step = new_generations_per_step; write_config(); }
 	inline void set_show_startup_dialog(const bool& new_show_startup_dialog) { show_startup_dialog = new_show_startup_dialog; write_config(); }
-	inline void set_delay(std::size_t new_delay) { graphic_config_saved = false; delay = new_delay; }
+	inline void set_delay(std::size_t new_delay) { config_saved = false; delay = new_delay; }
+	inline void set_save_path(const std::string& new_save_path) { config_saved = false; save_path = new_save_path; }
 
 // get options
 public:
@@ -122,6 +125,7 @@ public:
 	inline std::size_t get_generations_per_step() const { return generations_per_step; }
 	inline const bool& get_show_startup_dialog() const { return show_startup_dialog; }
 	inline std::size_t get_delay() const { return delay; }
+	inline const std::string& get_save_path() const { return save_path; }
 };
 
 #endif // GRAPHICCONFIGURATION_H
