@@ -8,6 +8,7 @@
 
 struct Macrocell;
 
+// hash map which stores all macrocells using robin hood hashing
 class HashLife_Table
 {
 	std::vector<Macrocell*> empty_cells;
