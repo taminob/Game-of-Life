@@ -85,7 +85,7 @@ Macrocell* Macrocell::calculate(std::size_t level, std::size_t generations)
 		return result;
 	if(population == 0)
 	{
-		result = Macrocell::hash_table.get_empty()[level - 1];
+		result = Macrocell::hash_table.get_empty(level - 1);
 		return result;
 	}
 
