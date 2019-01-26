@@ -15,6 +15,8 @@ class OpenGLWidget : public QOpenGLWidget
 {
 	Q_OBJECT
 
+	using big_signed = long long;
+
 	// mouse state (pressed/released)
 	bool mouse_pressed;
 
@@ -22,12 +24,15 @@ class OpenGLWidget : public QOpenGLWidget
 	std::size_t cell_size;
 
 	// move state in px
-	long move_x;
-	long move_y;
+	big_signed move_x;
+	big_signed move_y;
 
 	// pos of 0/0-cell (to move drawn cells and determine clicked cell)
-	long long null_pos_x;
-	long long null_pos_y;
+	big_signed null_pos_x;
+	big_signed null_pos_y;
+
+	big_signed drawing_pos_x;
+	big_signed drawing_pos_y;
 
 	// save previous mouse pos to calc clicked cells between two mouse move events
 	QPoint previous_pos;
