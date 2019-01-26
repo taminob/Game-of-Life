@@ -2,14 +2,14 @@
 
 #include "hashlifemacrocell.h"
 #include "hashlifetable.h"
-#include <algorithm>
-#include <cassert>
 
+// definition of static members
 HashLife_Table Macrocell::hash_table;
 
 Macrocell* Macrocell::new_macrocell(Macrocell* nw, Macrocell* ne, Macrocell* se, Macrocell* sw)
 {
 	Macrocell* temp = Macrocell::hash_table.get(nw, ne, se, sw);
+	// if cell was found in hash_table, return it; otherwise insert a new macrocell and return it
 	if(temp)
 		return temp;
 	else
@@ -23,10 +23,11 @@ Macrocell* Macrocell::new_macrocell(Macrocell* nw, Macrocell* ne, Macrocell* se,
 Macrocell::Macrocell(Macrocell* nw, Macrocell* ne, Macrocell* se, Macrocell* sw)
 	: nw(nw), ne(ne), se(se), sw(sw), result(nullptr)
 {
+	// check if cell is a zero level cell and set population
 	if(ne == nullptr)
-		this->population = (nw == reinterpret_cast<Macrocell*>(0x01));
+		this->population = (nw != nullptr);
 	else
-		this->population = this->nw->population + this->ne->population + this->se->population + this->sw->population;
+		this->population = nw->population + ne->population + se->population + sw->population;
 }
 
 std::size_t Macrocell::hash() const
