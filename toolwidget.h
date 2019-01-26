@@ -38,7 +38,7 @@ public:
 
 	// compile time constants
 	static constexpr std::size_t TOOL_HEIGHT = 35;
-	static constexpr std::size_t MAXIMUM_GENERATIONS_PER_STEP_INPUT = 100000;
+	static constexpr std::size_t MAXIMUM_GENERATIONS_PER_STEP_INPUT = 1000000;
 
 	// called when autogenerating is started/stopped to update play_stop button
 	void update_play_stop_button();

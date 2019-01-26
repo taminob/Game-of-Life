@@ -176,7 +176,7 @@ void ToolWidget::init_others()
 	generations_per_step.setMinimum(1);
 	generations_per_step.setValue(static_cast<int>(GraphicCore::get_config()->get_generations_per_step()));
 	generations_per_step.setCorrectionMode(QSpinBox::CorrectToNearestValue);
-	generations_per_step.setMaximumWidth(static_cast<int>(2.5 * height()));
+	generations_per_step.setMaximumWidth(static_cast<int>(3 * height()));
 	QObject::connect(&generations_per_step, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int)
 	{
 		GraphicCore::get_config()->set_generations_per_step(static_cast<std::size_t>(generations_per_step.value()));
