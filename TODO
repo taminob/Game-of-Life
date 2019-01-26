@@ -10,3 +10,4 @@
 - update translation
 - add HashLife multithreading
 - clear HashLife_Table and remove unused macrocells
+- allow generations per step which are not a power of two for hashlife algorithm
