@@ -65,8 +65,6 @@ bool Configuration::read_config()
 			relation_alive = std::stoul(value);
 		else if(property == "border_behavior")
 			border_behavior = static_cast<Border_Behavior>(std::stoul(value));
-		else if(property == "save_path")
-			save_path = value;
 		else if(property == "start_random")
 			start_random = std::stoul(value);
 		else if(property == "survival_rules")
@@ -106,7 +104,6 @@ bool Configuration::write_config()
 		<< "relation_dead=" << relation_dead << '\n'
 		<< "relation_alive=" << relation_alive << '\n'
 		<< "border_behavior=" << static_cast<int>(border_behavior) << '\n'
-		<< "save_path=" << save_path << '\n'
 		<< "start_random=" << start_random << '\n'
 		<< "survival_rules=" << survival_rules << '\n'
 		<< "rebirth_rules=" << rebirth_rules;

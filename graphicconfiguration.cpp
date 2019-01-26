@@ -94,6 +94,8 @@ bool GraphicConfiguration::read_config()
 			show_startup_dialog = std::stoul(value);
 		else if(property == "delay")
 			delay = std::stoul(value);
+		else if(property == "save_path")
+			save_path = value;
 	}
 
 	// return on error
@@ -141,7 +143,8 @@ bool GraphicConfiguration::write_config()
 	<< "left_button_alive_right_dead=" << left_button_alive_right_dead << '\n'
 	<< "generations_per_step=" << generations_per_step << '\n'
 	<< "show_startup_dialog=" << show_startup_dialog << '\n'
-	<< "delay=" << delay;
+	<< "delay=" << delay << '\n'
+	<< "save_path=" << save_path;
 
 	// return on error
 	if(!out)

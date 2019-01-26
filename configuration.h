@@ -65,7 +65,6 @@ private:
 	std::size_t relation_dead;				// determines ratio between living and dead cells by creating random cells; relation_dead is the proportion of dead cells
 	std::size_t relation_alive;				// determines ratio between living and dead cells by creating random cells; relation_alive is the proportion of living cells
 	Border_Behavior border_behavior;		// set behavior on borders (neighbors of border cells)
-	std::string save_path;					// path where saved games will be stored by default; the path must end with a separator
 	bool start_random;						// if true, on startup only dead cells are generated
 	std::size_t survival_rules;					// ruleset to survive: numbers are represented by a bitmask: (1<<X); X=neighbors
 	std::size_t rebirth_rules;				// ruleset to be born: numbers are represented by a bitmask: (1<<X); X=neighbors

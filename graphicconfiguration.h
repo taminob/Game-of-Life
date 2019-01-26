@@ -83,7 +83,7 @@ private:
 	std::size_t generations_per_step;		// generations per step; if >1 some generations will calculated but not displayed; config will be saved automatically after changing
 	bool show_startup_dialog;				// if true, a startup dialog is shown; config will be saved automatically after changing
 	std::size_t delay;						// delay between generations while autogenerating is running
-	std::string save_path;					// default path for saved games
+	std::string save_path;					// default path for saved games; string has to end with a separator
 
 // set options
 public:
