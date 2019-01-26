@@ -123,9 +123,9 @@ Macrocell* HashLife_Table::operator[](const Macrocell* key) const
 	return get(key->nw, key->ne, key->se, key->sw);
 }
 
-Macrocell* HashLife_Table::get(const Macrocell* key0, const Macrocell* key1, const Macrocell* key2, const Macrocell* key3) const
+Macrocell* HashLife_Table::get(const Macrocell* nw, const Macrocell* ne, const Macrocell* se, const Macrocell* sw) const
 {
-	std::size_t hash_value = hash(key0, key1, key2, key3);
+	std::size_t hash_value = hash(nw, ne, se, sw);
 	const std::size_t max_size = (data_pos.size() - 1);
 	std::size_t num = hash_value & max_size;
 
@@ -142,10 +142,10 @@ Macrocell* HashLife_Table::get(const Macrocell* key0, const Macrocell* key1, con
 				search_enabled = true;
 				if(data[num].first == hash_value)
 				{
-					if(data[num].second->nw == key0 &&
-							data[num].second->ne == key1 &&
-							data[num].second->se == key2 &&
-							data[num].second->sw == key3)
+					if(data[num].second->nw == nw &&
+							data[num].second->ne == ne &&
+							data[num].second->se == se &&
+							data[num].second->sw == sw)
 						return data[num].second;
 				}
 			}
@@ -163,12 +163,12 @@ void HashLife_Table::insert(const Macrocell* key, Macrocell* value)
 	insert(key->nw, key->ne, key->se, key->sw, value);
 }
 
-void HashLife_Table::insert(const Macrocell* key0, const Macrocell* key1, const Macrocell* key2, const Macrocell* key3, Macrocell* value)
+void HashLife_Table::insert(const Macrocell* nw, const Macrocell* ne, const Macrocell* se, const Macrocell* sw, Macrocell* value)
 {
 	if(++num_of_elements > max_load_factor * data.size())
 		internal_resize(data.size() << 1);
 
-	std::size_t hash_value = hash(key0, key1, key2, key3);
+	std::size_t hash_value = hash(nw, ne, se, sw);
 	const std::size_t max_size = (data_pos.size() - 1);
 	std::size_t num = hash_value & max_size;
 
