@@ -88,8 +88,8 @@ void OpenGLWidget::mousePressEvent(QMouseEvent* event)
 	mouse_pressed = true;
 
 	// calc pos of cell under mouse pointer
-	std::size_t x = static_cast<std::size_t>((event->pos().x() - null_pos_x) / cell_size);
-	std::size_t y = static_cast<std::size_t>((event->pos().y() - null_pos_y) / cell_size);
+	std::size_t x = static_cast<std::size_t>(event->pos().x() - null_pos_x) / cell_size;
+	std::size_t y = static_cast<std::size_t>(event->pos().y() - null_pos_y) / cell_size;
 
 	// check boundaries
 	if(x < Core::get_size_x() && y < Core::get_size_y()
@@ -135,13 +135,13 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		int dif_x = previous_pos.x() - event->pos().x();
 		int dif_y = previous_pos.y() - event->pos().y();
 
-		bool dif_x_active = std::abs(dif_x) >= cell_size;
-		bool dif_y_active = std::abs(dif_y) >= cell_size;
+		bool dif_x_active = static_cast<std::size_t>(std::abs(dif_x)) >= cell_size;
+		bool dif_y_active = static_cast<std::size_t>(std::abs(dif_y)) >= cell_size;
 
 		while(dif_x_active || dif_y_active)
 		{
-			dif_x_active = std::abs(dif_x) >= cell_size;
-			dif_y_active = std::abs(dif_y) >= cell_size;
+			dif_x_active = static_cast<std::size_t>(std::abs(dif_x)) >= cell_size;
+			dif_y_active = static_cast<std::size_t>(std::abs(dif_y)) >= cell_size;
 
 			if(dif_x_active)
 			{
@@ -161,8 +161,8 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 			QPoint temp(event->pos().x() + dif_x, event->pos().y() + dif_y);
 
 			// calc pos of cell under mouse pointer
-			std::size_t x = static_cast<std::size_t>((temp.x() - null_pos_x) / cell_size);
-			std::size_t y = static_cast<std::size_t>((temp.y() - null_pos_y) / cell_size);
+			std::size_t x = static_cast<std::size_t>(temp.x() - null_pos_x) / cell_size;
+			std::size_t y = static_cast<std::size_t>(temp.y() - null_pos_y) / cell_size;
 
 			if(x < Core::get_size_x() && y < Core::get_size_y()
 					&& (temp.x() - null_pos_x) >= 0 && (temp.y() - null_pos_y) >= 0
@@ -181,8 +181,8 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 		}
 
 		// calc pos of cell under mouse pointer
-		std::size_t x = static_cast<std::size_t>((event->pos().x() - null_pos_x) / cell_size);
-		std::size_t y = static_cast<std::size_t>((event->pos().y() - null_pos_y) / cell_size);
+		std::size_t x = static_cast<std::size_t>(event->pos().x() - null_pos_x) / cell_size;
+		std::size_t y = static_cast<std::size_t>(event->pos().y() - null_pos_y) / cell_size;
 
 		// check boundaries
 		if(x < Core::get_size_x() && y < Core::get_size_y()
@@ -329,29 +329,31 @@ void OpenGLWidget::paintGL()
 	glOrtho(0, width(), height(), 0, -1, 1);
 
 	// set null_pos central (moved by move_x/move_y and scaled by scale-factor)
-	null_pos_x = move_x + (width() / 2) - (Core::get_size_x() / 2) * cell_size;
-	null_pos_y = move_y + (height() / 2) - (Core::get_size_y() / 2) * cell_size;
+	null_pos_x = move_x + (width() / 2) - static_cast<big_signed>((Core::get_size_x() / 2) * cell_size);
+	null_pos_y = move_y + (height() / 2) - static_cast<big_signed>((Core::get_size_y() / 2) * cell_size);
 
 	// expand if borders are visible
 	while(Core::get_config()->get_border_behavior() == Border_Behavior::Borderless &&
 			// check right border
-			((null_pos_x + (static_cast<long long>(Core::get_size_x() * cell_size) - width())) <= 0 ||
+			((null_pos_x + static_cast<big_signed>(Core::get_size_x() * cell_size) - width()) <= 0 ||
 			// check lower border
-			 (null_pos_y + (static_cast<long long>(Core::get_size_y() * cell_size) - height())) <= 0 ||
+			 (null_pos_y + static_cast<big_signed>(Core::get_size_y() * cell_size) - height()) <= 0 ||
 			// check left and upper borders
 			 (null_pos_x) > 0 || (null_pos_y) > 0))
 	{
+		// if used algorithm does not support expanding, break to avoid infinite loop
 		if(!Core::expand())
 				break;
-		null_pos_x = move_x + (width() / 2) - (Core::get_size_x() / 2) * cell_size;
-		null_pos_y = move_y + (height() / 2) - (Core::get_size_y() / 2) * cell_size;
+		// update current null_pos
+		null_pos_x = move_x + (width() / 2) - static_cast<big_signed>((Core::get_size_x() / 2) * cell_size);
+		null_pos_y = move_y + (height() / 2) - static_cast<big_signed>((Core::get_size_y() / 2) * cell_size);
 		emit new_system_created();
 	}
 
 	// set background (+ dead cell) color
-	glClearColor(GraphicCore::get_config()->get_background_color().red() / 255.,
-				 GraphicCore::get_config()->get_background_color().green() / 255.,
-				 GraphicCore::get_config()->get_background_color().blue() / 255., 1);
+	glClearColor(GraphicCore::get_config()->get_background_color().red() / 255.f,
+				 GraphicCore::get_config()->get_background_color().green() / 255.f,
+				 GraphicCore::get_config()->get_background_color().blue() / 255.f, 1);
 
 	draw_cells();
 	draw_grid();
@@ -366,10 +368,10 @@ void OpenGLWidget::paintGL()
 void OpenGLWidget::draw_cells()
 {
 	// calc visible cells
-	std::size_t x_begin = -(null_pos_x) / cell_size;
-	std::size_t y_begin = -(null_pos_y) / cell_size;
-	std::size_t x_end = x_begin + width() / cell_size + 3;
-	std::size_t y_end = y_begin + height() / cell_size + 3;
+	std::size_t x_begin = static_cast<std::size_t>(-1 * null_pos_x) / cell_size;
+	std::size_t y_begin = static_cast<std::size_t>(-1 * null_pos_y) / cell_size;
+	std::size_t x_end = x_begin + static_cast<std::size_t>(width()) / cell_size + 3;
+	std::size_t y_end = y_begin + static_cast<std::size_t>(height()) / cell_size + 3;
 
 	// check boundaries
 	if(x_begin > Core::get_size_x())
@@ -382,46 +384,46 @@ void OpenGLWidget::draw_cells()
 		y_end = Core::get_size_y();
 
 	// draw dead cells as background (performance improvement)
-	glColor3ub(GraphicCore::get_config()->get_dead_color().red(),
-			   GraphicCore::get_config()->get_dead_color().green(),
-			   GraphicCore::get_config()->get_dead_color().blue());
+	glColor3ub(static_cast<GLubyte>(GraphicCore::get_config()->get_dead_color().red()),
+			   static_cast<GLubyte>(GraphicCore::get_config()->get_dead_color().green()),
+			   static_cast<GLubyte>(GraphicCore::get_config()->get_dead_color().blue()));
 
-	std::size_t graphic_size_x = Core::get_size_x() * cell_size;
-	std::size_t graphic_size_y = Core::get_size_y() * cell_size;
+	big_signed graphic_size_x = static_cast<big_signed>(Core::get_size_x() * cell_size);
+	big_signed graphic_size_y = static_cast<big_signed>(Core::get_size_y() * cell_size);
 
 	// if field is out of sight, don't draw any cell
-	if(null_pos_x > width() + static_cast<long>(graphic_size_x) || null_pos_x < (-1 * static_cast<long>(graphic_size_x)) ||
-		null_pos_y > height() + static_cast<long>(graphic_size_y) || null_pos_y < (-1 * static_cast<long>(graphic_size_y)))
+	if(null_pos_x > (width() + graphic_size_x) || null_pos_x < (-1 * graphic_size_x) ||
+		null_pos_y > (height() + graphic_size_y) || null_pos_y < (-1 * graphic_size_y))
 		return;
 
-	long real_null_pos_x = (null_pos_x < 0) ? (null_pos_x % static_cast<long>(cell_size)) : (null_pos_x > width()) ? width() : null_pos_x;
-	long real_null_pos_y = (null_pos_y < 0) ? (null_pos_y % static_cast<long>(cell_size)) : (null_pos_y > height()) ? height() : null_pos_y;
+	GLint real_null_pos_x = (null_pos_x < 0) ? (null_pos_x % static_cast<GLint>(cell_size)) : (null_pos_x > width()) ? width() : static_cast<GLint>(null_pos_x);
+	GLint real_null_pos_y = (null_pos_y < 0) ? (null_pos_y % static_cast<GLint>(cell_size)) : (null_pos_y > height()) ? height() : static_cast<GLint>(null_pos_y);
 
-	if(static_cast<long>(graphic_size_x) + null_pos_x < width())
+	if(graphic_size_x + null_pos_x < width())
 	{
-		if(static_cast<long>(graphic_size_y) + null_pos_y < height())
-			glRecti(real_null_pos_x, real_null_pos_y, null_pos_x + graphic_size_x, null_pos_y + graphic_size_y);
+		if(graphic_size_y + null_pos_y < height())
+			glRecti(real_null_pos_x, static_cast<GLint>(real_null_pos_y), static_cast<GLint>(null_pos_x + graphic_size_x), static_cast<GLint>(null_pos_y + graphic_size_y));
 		else
-			glRecti(real_null_pos_x, real_null_pos_y, null_pos_x + graphic_size_x, height());
+			glRecti(real_null_pos_x, static_cast<GLint>(real_null_pos_y), static_cast<GLint>(null_pos_x + graphic_size_x), height());
 	}
 	else
 	{
-		if(static_cast<long>(graphic_size_y) + null_pos_y < height())
-			glRecti(real_null_pos_x, real_null_pos_y, width(), null_pos_y + graphic_size_y);
+		if(graphic_size_y + null_pos_y < height())
+			glRecti(real_null_pos_x, real_null_pos_y, width(), static_cast<GLint>(null_pos_y + graphic_size_y));
 		else
 			glRecti(real_null_pos_x, real_null_pos_y, width(), height());
 	}
 
-	long x1 = real_null_pos_x, y1 = real_null_pos_y, x2, y2;
+	GLint x1 = real_null_pos_x, y1 = real_null_pos_y, x2, y2;
 	// draw line by line visible cells
 	for(std::size_t a = y_begin; a < y_end; ++a)
 	{
 		// y-coord of right lower corner
-		y2 = (a - y_begin + 1) * cell_size + real_null_pos_y;
+		y2 = static_cast<GLint>((a - y_begin + 1) * cell_size) + real_null_pos_y;
 
 		for(std::size_t b = x_begin; b < x_end; ++b)
 		{
-			x2 = (b - x_begin + 1) * cell_size + real_null_pos_x;
+			x2 = static_cast<GLint>((b - x_begin + 1) * cell_size) + real_null_pos_x;
 
 			// alive cells
 			if(Core::get_cell_state(b, a))
@@ -429,12 +431,14 @@ void OpenGLWidget::draw_cells()
 				// if autogenerating is running, use only alive color
 				if(GraphicCore::generating_running() || Core::get_next_cell_state(b, a))
 					// alive cell color
-					glColor3ub(GraphicCore::get_config()->get_alive_color().red(),
-							   GraphicCore::get_config()->get_alive_color().green(), GraphicCore::get_config()->get_alive_color().blue());
+					glColor3ub(static_cast<GLubyte>(GraphicCore::get_config()->get_alive_color().red()),
+							   static_cast<GLubyte>(GraphicCore::get_config()->get_alive_color().green()),
+							   static_cast<GLubyte>(GraphicCore::get_config()->get_alive_color().blue()));
 				else
 					// dying cell color
-					glColor3ub(GraphicCore::get_config()->get_dying_color().red(),
-							   GraphicCore::get_config()->get_dying_color().green(), GraphicCore::get_config()->get_dying_color().blue());
+					glColor3ub(static_cast<GLubyte>(GraphicCore::get_config()->get_dying_color().red()),
+							   static_cast<GLubyte>(GraphicCore::get_config()->get_dying_color().green()),
+							   static_cast<GLubyte>(GraphicCore::get_config()->get_dying_color().blue()));
 
 				glRecti(x1, y1, x2, y2);
 			}
@@ -442,8 +446,9 @@ void OpenGLWidget::draw_cells()
 			else if(!GraphicCore::generating_running() && Core::get_next_cell_state(b, a))
 			{
 				// reviving cell color
-				glColor3ub(GraphicCore::get_config()->get_reviving_color().red(),
-						   GraphicCore::get_config()->get_reviving_color().green(), GraphicCore::get_config()->get_reviving_color().blue());
+				glColor3ub(static_cast<GLubyte>(GraphicCore::get_config()->get_reviving_color().red()),
+						   static_cast<GLubyte>(GraphicCore::get_config()->get_reviving_color().green()),
+												static_cast<GLubyte>(GraphicCore::get_config()->get_reviving_color().blue()));
 				glRecti(x1, y1, x2, y2);
 			}
 
@@ -461,15 +466,15 @@ void OpenGLWidget::draw_grid()
 	if(GraphicCore::get_config()->get_grid_active())
 	{
 		// actual null position
-		long real_null_pos_x = (null_pos_x < 0) ? (null_pos_x % static_cast<long>(cell_size)) : (null_pos_x > width()) ? width() : null_pos_x;
-		long real_null_pos_y = (null_pos_y < 0) ? (null_pos_y % static_cast<long>(cell_size)) : (null_pos_y > height()) ? height() : null_pos_y;
-		long x_end = width() + 3 * cell_size + real_null_pos_x;
-		long y_end = height() + 3 * cell_size + real_null_pos_y;
+		GLint real_null_pos_x = (null_pos_x < 0) ? (null_pos_x % static_cast<GLint>(cell_size)) : (null_pos_x > width()) ? width() : static_cast<GLint>(null_pos_x);
+		GLint real_null_pos_y = (null_pos_y < 0) ? (null_pos_y % static_cast<GLint>(cell_size)) : (null_pos_y > height()) ? height() : static_cast<GLint>(null_pos_y);
+		GLint x_end = width() + 3 * static_cast<GLint>(cell_size) + real_null_pos_x;
+		GLint y_end = height() + 3 * static_cast<GLint>(cell_size) + real_null_pos_y;
 
 		glColor3f(0.5, 0.5, 0.5);			// fixed line color
 		glLineWidth(1.0);					// fixed line width
 
-		for(long line_coord_x = real_null_pos_x, line_coord_y = real_null_pos_y; line_coord_x <= x_end || line_coord_y <= y_end; line_coord_x += cell_size, line_coord_y += cell_size)
+		for(GLint line_coord_x = real_null_pos_x, line_coord_y = real_null_pos_y; line_coord_x <= x_end || line_coord_y <= y_end; line_coord_x += cell_size, line_coord_y += cell_size)
 		{
 			if(line_coord_x <= x_end)
 			{
