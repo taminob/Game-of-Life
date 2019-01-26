@@ -2,15 +2,15 @@
 
 #include "hashlifetable.h"
 #include "hashlifemacrocell.h"
+#include <array>
 
 static inline void hash_combine(std::size_t& seed, const Macrocell* cell)
 {
 	constexpr uint64_t factor = 0xC6A4A7935BD1E995ULL;
-	constexpr int r = 47;
 	std::uintptr_t cell_num = reinterpret_cast<std::uintptr_t>(cell);
 
 	cell_num *= factor;
-	cell_num ^= cell_num >> r;
+	cell_num ^= cell_num >> 47;
 	cell_num *= factor;
 
 	seed ^= cell_num;
@@ -23,7 +23,7 @@ HashLife_Table::HashLife_Table() : empty_cells(3),
 	  alive_cell(new Macrocell(reinterpret_cast<Macrocell*>(0x01), nullptr, nullptr, nullptr)),
 	  dead_cell(new Macrocell(nullptr, nullptr, nullptr, nullptr)), precalced_gens_exp(0),
 	  survival_rules((1 << 2) | (1 << 3)), rebirth_rules((1 << 3)),
-	  data_pos(262144, 0xFF), data(262144), num_of_elements(0)
+	  data_pos(1 << 18, 0xFF), data(1 << 18), num_of_elements(0)
 {
 	fill_hash_table();
 }
@@ -79,8 +79,8 @@ void HashLife_Table::clear()
 	alive_cell = new Macrocell(reinterpret_cast<Macrocell*>(0x01), nullptr, nullptr, nullptr);
 	dead_cell = new Macrocell(nullptr, nullptr, nullptr, nullptr);
 	precalced_gens_exp = 0;
-	data_pos.resize(262144);
-	data.resize(262144);
+	data_pos.resize(1 << 18);
+	data.resize(1 << 18);
 	num_of_elements = 0;
 
 	fill_hash_table();
@@ -280,43 +280,33 @@ void HashLife_Table::internal_resize(std::size_t new_size)
 	data = std::move(temp_data);
 }
 
-Macrocell* HashLife_Table::calc_gen(std::size_t bitmask)
-{
-	if(bitmask == 0)
-		return dead_cell;
-	int self = (bitmask >> 5) & 1;
-	bitmask &= 0x757;					// clear unimportant bits
-
-	std::size_t alive_neighbors = 0;
-	while(bitmask)
-	{
-		++alive_neighbors;
-		bitmask &= bitmask - 1;			// clear least significant bit
-	}
-
-	// if cell is alive, try survival_rules
-	if(self)
-	{
-		if(survival_rules & (1 << alive_neighbors))
-			return alive_cell;
-		else
-			return dead_cell;
-	}
-	// if cell is dead, try rebirth_rules
-	else if(rebirth_rules & (1 << alive_neighbors))
-		return alive_cell;
-	else
-		return dead_cell;
-}
-
 Macrocell* HashLife_Table::get_second_level_result(Macrocell* second_level)
 {
-	// get all bits of macrocell
-	std::size_t allbits = 0;
-	for(std::size_t y = 0; y < 4; ++y)
-		for(std::size_t x = 0; x < 4; ++x)
-			allbits = (allbits << 1) | second_level->get_state(x, y, 2);
+	Macrocell* result_cells[4];
+	for(std::size_t cell = 0; cell < 4; ++cell)
+	{
+		std::size_t alive_neighbors = 0;
+		for(std::size_t y = 0 + ((cell & 0x02) >> 1); y < 3 + ((cell & 0x02) >> 1); ++y)
+			for(std::size_t x = 0 + (cell & 0x01); x < 3 + (cell & 0x01); ++x)
+				alive_neighbors += second_level->get_state(x, y, 2);
+
+		bool self = second_level->get_state(1 + (cell & 0x01), 1 + ((cell & 0x02) >> 1), 2);
+		alive_neighbors -= self;
+		// if cell is alive, try survival_rules
+		if(self)
+		{
+			if(survival_rules & (1 << alive_neighbors))
+				result_cells[cell] = alive_cell;
+			else
+				result_cells[cell] = dead_cell;
+		}
+		// if cell is dead, try rebirth_rules
+		else if(rebirth_rules & (1 << alive_neighbors))
+			result_cells[cell] = alive_cell;
+		else
+			result_cells[cell] = dead_cell;
+	}
 
 	// requires level 1 macrocells in table
-	return get(calc_gen(allbits >> 5), calc_gen(allbits >> 4), calc_gen(allbits), calc_gen(allbits >> 1));
+	return get(result_cells[0], result_cells[1], result_cells[3], result_cells[2]);
 }
