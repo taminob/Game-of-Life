@@ -80,7 +80,7 @@ void HashLife_System::resize(std::size_t size)
 
 	if(master_cell == nullptr)
 	{
-		master_cell = Macrocell::hash_table.get_empty()[level];
+		master_cell = Macrocell::hash_table.get_empty(level);
 		return;
 	}
 	else
@@ -89,7 +89,7 @@ void HashLife_System::resize(std::size_t size)
 		Macrocell* new_ne = master_cell->ne;
 		Macrocell* new_se = master_cell->se;
 		Macrocell* new_sw = master_cell->sw;
-		Macrocell* empty = Macrocell::hash_table.get_empty()[level - 2];
+		Macrocell* empty = Macrocell::hash_table.get_empty(level - 2);
 
 		int change = static_cast<int>(prev_level) - static_cast<int>(level);
 		while(change-- > 0)

@@ -41,7 +41,7 @@ public:
 	inline void expand()
 	{
 		// double size of master_cell
-		Macrocell* empty_temp = Macrocell::hash_table.get_empty()[level - 1];
+		Macrocell* empty_temp = Macrocell::hash_table.get_empty(level - 1);
 		master_cell = Macrocell::new_macrocell(Macrocell::new_macrocell(empty_temp, empty_temp, master_cell->nw, empty_temp),
 												Macrocell::new_macrocell(empty_temp, empty_temp, empty_temp, master_cell->ne),
 												Macrocell::new_macrocell(master_cell->se, empty_temp, empty_temp, empty_temp),
