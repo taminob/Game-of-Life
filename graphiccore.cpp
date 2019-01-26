@@ -126,10 +126,14 @@ void GraphicCore::write_save()
 	try
 	{
 		// check if path exists and create it if not
-		if(!std::filesystem::exists(gconfig.get_save_path()))
-		//if(!std::filesystem::exists(std::filesystem::current_path().append(gconfig.get_save_path())))
-			if(!std::filesystem::create_directories(std::filesystem::current_path().append(gconfig.get_save_path())))
+		if(!std::filesystem::exists(gconfig.get_save_path()) && !gconfig.get_save_path().empty())
+		{
+			std::string save_dir = gconfig.get_save_path();
+			if(save_dir.back() == std::filesystem::path::preferred_separator)
+				save_dir.pop_back();
+			if(!std::filesystem::create_directories(save_dir))
 				throw std::runtime_error("");
+		}
 
 		std::string file;
 		// create string with current date
