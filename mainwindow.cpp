@@ -8,7 +8,7 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 
-MainWindow::MainWindow(const char* start_file, QWidget* parent) : QMainWindow(parent),
+MainWindow::MainWindow(const std::string& start_file, QWidget* parent) : QMainWindow(parent),
 											// init GraphicCore GUI elements before using them in view ctors
 											preferences_view((static_cast<void>(GraphicCore::init_gui(&opengl, &gen_counter)), this)), preferences_animation(&preferences_view, "pos"),
 											tool_view(this), tool_animation(&tool_view, "pos"),

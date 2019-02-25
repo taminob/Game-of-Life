@@ -61,7 +61,7 @@ class MainWindow : public QMainWindow
 
 public:
 	// ctor: open start_file and init all views and animations; connect all signals translate to set language
-	MainWindow(const char* start_file = nullptr, QWidget* parent = nullptr);
+	MainWindow(const std::string& start_file = std::string(), QWidget* parent = nullptr);
 	virtual ~MainWindow() override = default;
 
 	// show maximized or in fullscreen in dependence of the set preferences; display also StartupDialog
