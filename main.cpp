@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 	app.setPalette(dark_palette);
 
 	// if more than 1 argument is given, pass last argument as start_file
-	MainWindow win((argc > 1) ? argv[argc - 1] : nullptr);
+	MainWindow win((argc > 1) ? argv[argc - 1] : "");
 	// display window
 	win.show();
 
