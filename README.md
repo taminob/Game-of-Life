@@ -23,6 +23,7 @@ This is a fast implementation of Conway's popular Game of Life which supports ma
 #### Build process
 cd /path/to/game-of-life
 mkdir build
+cd build
 qmake ..
 make -j4 (GCC) or nmake (MSVC)
 
