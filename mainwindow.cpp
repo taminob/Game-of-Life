@@ -14,7 +14,7 @@ MainWindow::MainWindow(const std::string& start_file, QWidget* parent) : QMainWi
 											tool_view(this), tool_animation(&tool_view, "pos"),
 											help_view(this), help_animation(&help_view, "pos")
 {
-	if(start_file != nullptr)
+	if(!start_file.empty())
 	{
 		Core::load(start_file);
 		tool_view.update_current_size_label();
